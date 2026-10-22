@@ -88,7 +88,13 @@
     const sc = (me.showcase || []).slice(0, 3); while (sc.length < 3) sc.push(null); S.show = sc;
     S.set.pub = me.public; S.pendIn = s.pending_in || 0; S.unreadMsgs = s.unread_msgs || 0;
   }
-  async function sync() { if (syncing) return; syncing = true; try { apply(await rpc("get_state")); lastSync = Date.now(); } finally { syncing = false; } }
+  async function sync() {
+    if (syncing) return; syncing = true;
+    try {
+      const [st, sub, lv] = await Promise.all([rpc("get_state"), rpc("get_sub").catch(() => null), rpc("get_levels").catch(() => [])]);
+      apply(st); S.sub = sub || {}; S.lvl = {}; for (const [id, l] of lv || []) S.lvl[id] = l; lastSync = Date.now();
+    } finally { syncing = false; }
+  }
   window.paddockSync = sync;
 
   // ---------- chargement des données par page ----------
@@ -103,6 +109,7 @@
         S.offers = m.filter(x => x.status === "pending"); S.history = m.filter(x => x.status !== "pending");
       } else if (v === "friends" || v === "battle") {
         S.friends = (await rpc("get_friends")).map(absorb);
+        if (v === "battle") await liveList(true);
       } else if (v === "messages") {
         const l = await rpc("get_chats"); S.chats = {};
         for (const c of l) { const n = absorb(c); S.chats[n] = { msgs: [{ me: false, txt: c.last }], unread: c.unread > 0 }; }
@@ -140,7 +147,7 @@
     const inv = (() => { try { return sessionStorage.getItem("paddock-invite") || ""; } catch (e) { return ""; } })();
     h = h.replace("Adresse e-mail ou nom d'utilisateur", "Adresse e-mail")
       .replace('<div class="fine" style="margin:0">Démo : votre partie est enregistrée uniquement sur cet appareil.</div>', "")
-      .replace('<div class="fine" style="margin:0">Les comptes sont enregistrés sur l\'appareil où ils ont été créés.</div>', '<button type="button" class="linkbtn" data-act="forgot" style="justify-self:center">Mot de passe oublié ?</button>')
+      .replace('<div class="fine" style="margin:0">Les comptes sont enregistrés sur l\'appareil où ils ont été créés.</div>', "")
       .replace("J'accepte les conditions d'utilisation et les règles de la communauté.", 'J\'accepte les <a href="cgu.html" target="_blank">conditions d\'utilisation</a> et la <a href="confidentialite.html" target="_blank">politique de confidentialité</a>.')
       .replace('<label class="chk"><input type="checkbox" id="sc">', `<div class="field"><label for="si">Code d'invitation (facultatif)</label><input class="input" id="si" maxlength="20" value="${esc(inv)}"></div><label class="chk"><input type="checkbox" id="sc">`);
     return h;
@@ -198,13 +205,121 @@
     U.reveal = packOrder(res.filter(x => CARS[x.id]));
     blip(700, .12); _go("reveal"); sync().then(() => {}).catch(() => {});
   }
+  async function portal() {
+    const j = await http("POST", "/functions/v1/create-portal", { returnUrl: location.origin + location.pathname }, true);
+    if (j && j.url) location.href = j.url; else throw new Error("Page de gestion indisponible pour le moment.");
+  }
+  // ---------- Boutique : abonnement Paddock Pro ----------
+  const priceLabel = () => CFG.proPriceLabel ? ` · ${esc(CFG.proPriceLabel)}` : "";
+  function subPanel() {
+    const s = S.sub || {}, end = s.end ? new Date(s.end).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "";
+    const active = ["active", "trialing"].includes(s.status), late = s.status === "past_due";
+    if (active && s.cancel) return `<div style="color:var(--muted)">Abonnement résilié : Paddock Pro reste actif jusqu'au ${end}.</div><button class="btn ghost block" data-act="manage">Reprendre ou gérer mon abonnement</button>`;
+    if (active) return `<div style="color:var(--muted)">Abonnement actif${end ? ` · prochain renouvellement le ${end}` : ""}.</div><button class="btn ghost block" data-act="manage">Gérer ou résilier mon abonnement</button>`;
+    if (late) return `<div style="color:var(--red)">Le dernier paiement a échoué. Mettez à jour votre carte pour garder Paddock Pro.</div><button class="btn danger block" data-act="manage">Mettre à jour mon moyen de paiement</button>`;
+    if (S.acc[S.user.name] && S.acc[S.user.name].vip) return `<div style="color:var(--muted)">Paddock Pro vous a été offert par la modération.</div>`;
+    return `<button class="btn pro block" data-act="buypro">S'abonner${priceLabel()}${CFG.proPriceLabel ? " / mois" : ""}</button><div style="color:var(--dim);font-size:13px">Renouvellement automatique chaque mois. Résiliable à tout moment, sans engagement.</div>`;
+  }
+  const _shop = V.shop;
+  V.shop = function () {
+    let h = _shop();
+    const btn = '<button class="btn pro block" data-act="getpro">Obtenir Paddock Pro</button>';
+    const panel = CFG.paymentsEnabled ? subPanel() : '<div style="color:var(--dim);font-size:13px">L\'abonnement sera bientôt disponible.</div>';
+    if (h.includes(btn)) h = h.replace(btn, panel);
+    else h = h.replace("<div class=\"stack\"><h3", panel.replace(/^/, '<div class="panel stack" style="background:var(--pro-bg);border-color:var(--pro-line)">') + "</div><div class=\"stack\"><h3");
+    return h;
+  };
   async function checkout(product) {
     if (!CFG.paymentsEnabled) { modal(`<h2>Paiement bientôt disponible</h2><p style="color:var(--muted)">Les paiements ne sont pas encore activés sur ce site. Aucun montant n'a été débité.</p><button class="btn ghost block" data-act="close">Compris</button>`, 1); return; }
     const j = await http("POST", "/functions/v1/create-checkout", { product, returnUrl: location.origin + location.pathname }, true);
     if (j && j.url) location.href = j.url; else throw new Error("Paiement indisponible pour le moment.");
   }
 
+
+  // ---------- bataille en direct ----------
+  let lastLive = 0, lastInv = 0; const seenInv = new Set(), seenActive = new Set();
+  const fmtSec = n => `${Math.floor(n / 60)}:${String(n % 60).padStart(2, "0")}`;
+  const liveLeft = () => { const L = U.lv; return L && L.st ? Math.max(0, L.st.left - Math.floor((Date.now() - L.at) / 1000)) : 0; };
+  async function livePoll(force) {
+    const L = U.lv; if (!L || (L.busy && !force)) return;
+    const st = await rpc("live_get", { bid: L.id });
+    if (U.lv !== L) return;
+    const was = L.st && L.st.status;
+    if (st.foe) L.foe = absorb(st.foe);
+    const key = JSON.stringify(Object.assign({}, st, { left: 0 }));
+    L.at = Date.now();
+    if (key !== L.key) { L.key = key; L.st = st; if (st.status === "play" && was !== "play") blip(660); if (st.status === "done" && was !== "done") { await sync(); blip(st.result === "win" ? 880 : 300); } if (U.view === "live") render(true); }
+    else L.st.left = st.left;
+  }
+  async function liveList(quiet) {
+    const r = await rpc("live_list");
+    S.liveInv = (r.invites || []).map(x => ({ id: x.id, from: absorb(x.from) }));
+    if (quiet) return r;
+    const open = document.querySelector(".overlay");
+    const fresh = S.liveInv.find(x => !seenInv.has(x.id));
+    if (fresh && !open && U.view !== "live") {
+      S.liveInv.forEach(x => seenInv.add(x.id));
+      modal(`<h2>Défi en direct</h2><p style="color:var(--muted)">${nm(fresh.from)} vous défie en bataille en direct.</p><div class="row"><button class="btn ghost grow" data-act="lvno" data-id="${fresh.id}">Refuser</button><button class="btn green grow" data-act="lvyes" data-id="${fresh.id}">Jouer</button></div>`, 1);
+    } else if (r.active && !seenActive.has(r.active) && !open && U.view !== "live" && !(U.lv && U.lv.id === r.active)) {
+      seenActive.add(r.active);
+      modal(`<h2>Bataille en direct</h2><p style="color:var(--muted)">Une bataille en direct vous attend.</p><div class="row"><button class="btn ghost grow" data-act="close">Plus tard</button><button class="btn green grow" data-act="lvresume" data-id="${r.active}">Reprendre</button></div>`, 1);
+    }
+    if (U.view === "battle") render(true);
+    return r;
+  }
+  function openLive(id) { U.lv = { id, st: null, pick: [], at: Date.now() }; seenActive.add(id); closeModal(); window.go("live"); livePoll(true).catch(e => toast(e.message)); }
+  const resTxt = (e, foe) => bResTxt(e.res, e.a, e.z, e.stat, e.by_me ? "" : foe);
+  const rlog = (log, foe) => log.length ? `<div class="rlog">${log.map((e, i) => `<div><span>Manche ${i + 1} · ${e.by_me ? "vous" : esc(foe)} · ${e.stat === "hp" ? "attaque" : "défense"} · ${fmt(e.a)} contre ${fmt(e.z)}</span><b class="${e.res > 0 ? "w" : e.res < 0 ? "l" : "d"}">${e.res > 0 ? "Gagnée" : e.res < 0 ? "Perdue" : "Égalité"}</b></div>`).join("")}</div>` : "";
+  V.live = () => {
+    const L = U.lv;
+    if (!L) return `<div class="pagehead"><h1>Bataille en direct</h1></div><div class="panel empty"><b>Aucune partie en cours</b><button class="btn green" data-act="go" data-v="battle">Retour aux batailles</button></div>`;
+    const st = L.st, foe = L.foe || "Adversaire";
+    if (!st) return `<div class="pagehead"><h1>Bataille en direct</h1><p>Connexion à la partie…</p></div><div class="panel"><div class="spin"></div></div>`;
+    const left = liveLeft();
+    const score = `<div class="score" style="margin-bottom:14px"><span>Vous <b>${st.score[0]}</b></span><span>${esc(foe)} <b>${st.score[1]}</b></span></div>`;
+    if (st.status === "cancel") return `<div class="pagehead"><h1>Partie annulée</h1><p>Le défi a expiré, a été refusé ou annulé.</p></div><div class="row"><button class="btn ghost grow" data-act="lvquit">Retour</button><button class="btn green grow" data-act="lvfind">Chercher un adversaire</button></div>`;
+    if (st.status === "done") {
+      const t = st.result === "win" ? "Victoire !" : st.result === "draw" ? "Égalité" : "Défaite";
+      return `<div class="pagehead"><h1>${t}</h1><p>${st.reward ? `Vous gagnez ${st.reward} pistons.` : st.log.length < 3 ? "La partie s'est terminée avant la fin (abandon ou temps écoulé)." : "Améliorez vos voitures et retentez votre chance."}</p></div>
+        <div class="score panel"><span>Vous <b>${st.score[0]}</b></span><span>${esc(foe)} <b>${st.score[1]}</b></span></div>${rlog(st.log, foe)}
+        <div class="row" style="margin-top:16px"><button class="btn ghost grow" data-act="lvquit">Terminer</button>${st.mode === "random" ? '<button class="btn green grow" data-act="lvfind">Rejouer</button>' : `<button class="btn green grow" data-act="lvinvite" data-f="${esc(foe)}">Revanche</button>`}</div>`;
+    }
+    if (st.status === "invite") return `<div class="pagehead"><h1>${st.mode === "random" ? "Recherche d'un adversaire" : "Défi envoyé"}</h1><p>${st.mode === "random" ? "La partie démarre dès qu'un autre joueur cherche aussi un adversaire." : `En attente de la réponse de ${esc(foe)}.`}</p></div>
+      <div class="panel livebox" style="text-align:center"><div class="spin"></div><div>Expire dans <span class="timer" id="lvtimer">${fmtSec(left)}</span></div><button class="btn ghost block" data-act="lvcancel">Annuler</button></div>`;
+    if (st.status === "pick") {
+      if (st.picks) return `<div class="pagehead"><h1>Contre ${esc(foe)}</h1><p>Vos voitures sont prêtes. En attente de celles de ${esc(foe)}…</p></div><div class="panel livebox" style="text-align:center"><div class="spin"></div><div>Temps restant <span class="timer" id="lvtimer">${fmtSec(left)}</span></div><button class="btn ghost block" data-act="lvcancel">Abandonner</button></div>`;
+      const mine = sortIds(Object.keys(S.col).map(Number), "atk");
+      return `<div class="pagehead"><h1>Contre ${esc(foe)}</h1><p>Choisissez 3 voitures (${L.pick.length}/3) · <span class="timer" id="lvtimer">${fmtSec(left)}</span>${st.foe_ready ? ` · ${esc(foe)} est prêt` : ""}</p></div>
+        <div class="row" style="margin-bottom:14px"><button class="btn ghost grow" data-act="lvauto">Choix automatique</button><button class="btn green grow" data-act="lvgo" ${L.pick.length === 3 ? "" : "disabled"}>Valider</button></div>
+        <div class="pickgrid">${mine.slice(0, 60).map(id => cardHTML(id, { act: "lvpick", own: true, cls: L.pick.includes(id) ? "sel" : "" })).join("")}</div>
+        <button class="btn ghost block" style="margin-top:16px" data-act="lvcancel">Annuler la partie</button>`;
+    }
+    const k = Math.min(st.round, 2), my = st.picks[k], last = st.log[st.log.length - 1];
+    return `<div class="pagehead"><h1>Manche ${k + 1} / 3</h1><p>${last ? esc(resTxt(last, foe)) : "Chacun a choisi ses voitures. C'est parti !"}</p></div>${score}
+      <div class="arena">${cardHTML(my, { lv: st.lv[k] })}<span class="vs">VS</span><div class="facedown">?</div></div>
+      ${st.my_turn ? `<div class="turnnote">À vous de choisir · <span class="timer" id="lvtimer">${left}s</span></div><div class="row" style="margin-top:12px"><button class="btn ghost grow" data-act="lvmove" data-s="hp"><span style="color:#e58a6e;display:inline-flex">${I.atk}</span>Attaque</button><button class="btn ghost grow" data-act="lvmove" data-s="v"><span style="color:#8fb4e0;display:inline-flex">${I.def}</span>Défense</button></div>`
+        : `<div class="turnnote">${esc(foe)} choisit la stat · <span class="timer" id="lvtimer">${left}s</span></div><div class="spin" style="margin-top:12px"></div>`}
+      ${rlog(st.log, foe)}<button class="btn ghost block" style="margin-top:16px" data-act="lvcancel">Abandonner</button>`;
+  };
   window.OA = {
+    // améliorations
+    upgrade: act(async (el, d) => {
+      const id = +d.id; const r = await rpc("upgrade_card", { cid: id });
+      S.lvl[id] = r.lvl; S.coins = r.coins; blip(880); toast(`${CARS[id].n} passe au niveau ${r.lvl} !`); cardModal(id); render(true);
+    }),
+    // bataille en direct
+    btab: act(async (el, d) => { U.btab = d.t; render(); if (d.t === "live") await liveList(true).then(() => render(true)); }),
+    lvfind: act(async () => { const r = await rpc("live_find"); openLive(r.id); }),
+    lvinvite: act(async (el, d) => { const r = await rpc("live_invite", { name: d.f }); openLive(r.id); }),
+    lvyes: act(async (el, d) => { await rpc("live_respond", { bid: +d.id, accept: true }); openLive(+d.id); }),
+    lvno: act(async (el, d) => { await rpc("live_respond", { bid: +d.id, accept: false }); closeModal(); S.liveInv = (S.liveInv || []).filter(x => x.id !== +d.id); render(true); }),
+    lvresume: act(async (el, d) => { openLive(+d.id); }),
+    lvcancel: act(async () => { const L = U.lv; if (!L) return; await rpc("live_cancel", { bid: L.id }); await livePoll(true); }),
+    lvpick: (el) => { const L = U.lv; const id = +el.dataset.card; if (L.pick.includes(id)) L.pick = L.pick.filter(x => x !== id); else if (L.pick.length < 3) L.pick.push(id); render(true); },
+    lvauto: () => { const L = U.lv; L.pick = Object.keys(S.col).map(Number).sort((a, b) => pw(b) * (1 + LVB * (lvOf(b) - 1)) - pw(a) * (1 + LVB * (lvOf(a) - 1))).slice(0, 3); render(true); },
+    lvgo: act(async () => { const L = U.lv; L.busy = true; try { await rpc("live_pick", { bid: L.id, picks: L.pick }); await livePoll(true); } finally { L.busy = false; } }),
+    lvmove: act(async (el, d) => { const L = U.lv; if (L.busy) return; L.busy = true; try { await rpc("live_move", { bid: L.id, stat: d.s }); await livePoll(true); } finally { L.busy = false; } }),
+    lvquit: () => { U.lv = null; U.btab = "live"; window.go("battle"); },
     open: act(async () => { if (!S.packs) return toast("Plus de paquet disponible pour l'instant."); await openKind("normal"); }),
     openpro: act(async () => { await openKind("pro"); }),
     openev: act(async () => { await openKind("event"); }),
@@ -274,15 +389,14 @@
     // batailles
     bgo: act(async () => {
       const B = U.battle; const r = await rpc("battle_start", { name: B.foe, picks: B.pick });
-      B.id = r.id; B.foeCards = [null, null, null]; B.phase = "play"; B.round = 0; B.score = [0, 0]; B.res = ""; render();
+      B.id = r.id; B.foeCards = [null, null, null]; B.myLv = r.my_lv || [1, 1, 1]; B.foeLv = [1, 1, 1]; B.phase = "play"; B.round = 0; B.score = [0, 0]; B.res = ""; render();
     }),
     bstat: act(async (el, d) => {
       const B = U.battle; if (B.res) return;
-      const r = await rpc("battle_play", { bid: B.id, stat: d.s });
-      B.foeCards[B.round] = r.foe; B.score = r.score; B.reward = r.reward; B.done = r.done;
-      const u = d.s === "hp" ? "ch" : "km/h";
-      B.res = r.res > 0 ? `Manche gagnée : ${fmt(r.a)} ${u} contre ${fmt(r.z)} ${u}.` : r.res < 0 ? `Manche perdue : ${fmt(r.a)} ${u} contre ${fmt(r.z)} ${u}.` : `Égalité à ${fmt(r.a)} ${u}.`;
-      blip(r.res > 0 ? 780 : 240); render();
+      const r = await rpc("battle_play", { bid: B.id, stat: d.s === "ai" ? "hp" : d.s });
+      B.foeCards[B.round] = r.foe; B.foeLv[B.round] = r.foe_lv || 1; B.score = r.score; B.reward = r.reward; B.done = r.done;
+      B.res = bResTxt(r.res, r.a, r.z, r.stat, B.round === 1 ? B.foe : "");
+      blip(r.res > 0 ? 780 : r.res < 0 ? 240 : 500); render();
     }),
     bnext: act(async () => { const B = U.battle; B.res = ""; if (B.round < 2) B.round++; else { B.phase = "end"; await sync(); } render(); }),
     // écuries
@@ -329,11 +443,12 @@
     }),
     buy: act(async (el, d) => { await checkout(+d.n === 5000 ? "pistons_5000" : "pistons_2500"); }),
     buypro: act(async () => { await checkout("pro_month"); }),
+    manage: act(async () => { await portal(); }),
     logout2: act(async () => { try { await http("POST", "/auth/v1/logout", {}, true); } catch (x) {} sess = null; saveSess(); closeModal(); signedOut(); }),
     wipe2: act(async () => { await rpc("delete_account"); sess = null; saveSess(); closeModal(); signedOut(); toast("Compte supprimé."); }),
     forgot: act(async () => {
-      const m = ($("#le") && $("#le").value.trim()) || "";
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(m)) { const el = $("#el"); if (el) el.textContent = "Entrez d'abord votre adresse e-mail ci-dessus."; return; }
+      const m = ($("#fe") && $("#fe").value.trim()) || ($("#le") && $("#le").value.trim()) || "";
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(m)) { const el = $("#fer") || $("#el"); if (el) el.textContent = "Entrez une adresse e-mail valide."; return; }
       await http("POST", "/auth/v1/recover", { email: m });
       modal(`<h2>E-mail envoyé</h2><p style="color:var(--muted)">Si un compte existe avec <b>${esc(m)}</b>, vous allez recevoir un lien pour choisir un nouveau mot de passe.</p><button class="btn green block" data-act="close">Compris</button>`, 1);
     }),
@@ -349,7 +464,7 @@
   const _getpro = null;
   document.addEventListener("click", e => {
     const el = e.target.closest('[data-act="getpro"]'); if (!el || !CFG.paymentsEnabled) return;
-    setTimeout(() => { const m = $(".modal"); if (m && !m.querySelector('[data-act="buypro"]')) { const b = document.createElement("button"); b.className = "btn pro block"; b.dataset.act = "buypro"; b.textContent = "S'abonner à Paddock Pro"; b.style.marginTop = "10px"; m.appendChild(b); } }, 0);
+    setTimeout(() => { const m = $(".modal"); if (m && !m.querySelector('[data-act="buypro"]')) { const b = document.createElement("button"); b.className = "btn pro block"; b.dataset.act = "buypro"; b.textContent = "S'abonner à Paddock Pro" + (CFG.proPriceLabel ? " · " + CFG.proPriceLabel + " / mois" : ""); b.style.marginTop = "10px"; m.appendChild(b); } }, 0);
   }, true);
 
   // changement d'ami dans la fenêtre d'échange
@@ -377,6 +492,11 @@
     const t = Date.now(), typing = document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName);
     if (!typing && !syncing && t - lastSync > 30000) sync().then(() => render(true)).catch(() => {});
     if (!typing && t - lastPoll > (U.view === "chat" ? 5000 : 12000) && ["chat", "market", "listing", "trades"].includes(U.view)) { lastPoll = t; loadFor(U.view === "listing" ? "market" : U.view); }
+    if (U.view === "live" && U.lv) {
+      const tm = document.getElementById("lvtimer"); if (tm) { const l = liveLeft(); tm.textContent = U.lv.st && U.lv.st.status === "play" ? l + "s" : fmtSec(l); }
+      const st = U.lv.st && U.lv.st.status;
+      if (st !== "done" && st !== "cancel" && t - lastLive > 1500) { lastLive = t; livePoll().catch(() => {}); }
+    } else if (t - lastInv > 10000) { lastInv = t; liveList().catch(() => {}); }
   };
 
   // ---------- démarrage ----------

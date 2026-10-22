@@ -2,9 +2,9 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <title>Paddock</title>
-<meta name="theme-color" content="#0c0d0c">
+<meta name="theme-color" content="#0a0a0b">
 <meta name="description" content="Paddock, le jeu de cartes à collectionner des voitures : ouvrez des paquets, complétez votre garage, échangez et défiez vos amis.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/favicon.png">
@@ -15,21 +15,22 @@
 
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..800&family=Manrope:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: appli mobile une colonne (max 520px), barre d'onglets fixe en bas, cartes pastel par rareté */
 :root{
-  --bg:#0c0d0c;--panel:#131514;--panel2:#1a1d1c;--line:#262a28;--line2:#343937;
-  --text:#f3f4f2;--muted:#8d928f;--dim:#606562;
-  --green:#34d399;--green-ink:#05261a;--green-d:#1f6b4c;--green-soft:#11291f;
-  --blue:#38bdf8;--blue-soft:#0f2533;--red:#f87171;--red-bg:#261112;--red-line:#5b1d20;
-  --pro1:#7c3aed;--pro2:#c026d3;--pro-bg:#130d1f;--pro-line:#3b2470;--gold:#facc15;
-  --cED:#f43f5e;--cL:#d9ad2c;--cUR:#e58b3a;--cSR:#e0679f;--cR:#a68ce0;--cPC:#8faad8;--cC:#8fc2a8;
-  --f-head:"Outfit","Avenir Next","Segoe UI",system-ui,sans-serif;
-  --f-body:"Inter","Helvetica Neue",Arial,system-ui,sans-serif;
+  --bg:#0a0a0b;--panel:#121214;--panel2:#1a1a1d;--line:#222226;--line2:#2f2f35;
+  --text:#f2efe8;--muted:#9b978e;--dim:#66635d;
+  --green:#cfb27a;--green-ink:#17120a;--green-d:#8a7448;--green-soft:#1b170f;
+  --blue:#7fb2e5;--blue-soft:#111a24;--red:#e8705f;--red-bg:#1f1110;--red-line:#4a201b;
+  --pro1:#5b4fe0;--pro2:#a35be8;--pro-bg:#110f1c;--pro-line:#2e2752;--gold:#d6b46a;
+  --cED:#e43a4f;--cL:#d6b46a;--cUR:#d08a55;--cSR:#d4708f;--cR:#9d88e0;--cPC:#7fa2cf;--cC:#8fa69a;
+  --f-head:"Archivo","Helvetica Neue",Arial,system-ui,sans-serif;
+  --f-body:"Manrope","Helvetica Neue",Arial,system-ui,sans-serif;
+  --r:12px;
   color-scheme:dark;
 }
-body.light{--bg:#f3f4f2;--panel:#ffffff;--panel2:#eceeec;--line:#dde1de;--line2:#c9cecb;--text:#121413;--muted:#5d635f;--dim:#8b918d;--green-soft:#d8f6e9;--blue-soft:#dcf1fb;--red-bg:#fdeaea;--red-line:#f3b9b9;--pro-bg:#f3ecff;--pro-line:#cdb6f5;color-scheme:light}
+body.light{--bg:#f4f2ee;--panel:#ffffff;--panel2:#ecebe7;--line:#e2e0da;--line2:#cfccc4;--text:#141414;--muted:#66625a;--dim:#99958c;--green:#8a6d36;--green-ink:#fff;--green-d:#b8995e;--green-soft:#f2ecdf;--blue-soft:#e6eef7;--red-bg:#fbecea;--red-line:#efc3bc;--pro-bg:#f1eefc;--pro-line:#d3cbf3;color-scheme:light}
 *{box-sizing:border-box}
 html,body{min-height:100%}
 body{background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
@@ -47,7 +48,7 @@ h1,h2,h3{font-family:var(--f-head);margin:0;letter-spacing:-.01em}
 .modbtns{display:flex;flex-wrap:wrap;gap:6px}
 .tg{border:1px solid var(--line2);background:var(--panel);color:var(--muted);border-radius:10px;padding:7px 11px;font-size:14px;font-weight:600}
 .tg.on{border-color:transparent}
-.tg.on.cert{background:#1d9bf0;color:#fff}.tg.on.vip{background:linear-gradient(90deg,#7c3aed,#d946ef);color:#fff}.tg.on.mod{background:var(--green);color:var(--green-ink)}.tg.on.ban{background:var(--red);color:#1a0505}
+.tg.on.cert{background:#1d9bf0;color:#fff}.tg.on.vip{background:linear-gradient(90deg,#7c3aed,#d946ef);color:#fff}.tg.on.mod{background:var(--green);color:var(--green-ink)}.tg{border-radius:999px}.tg.on.ban{background:var(--red);color:#1a0505}
 .tg:disabled{opacity:.4;cursor:not-allowed}
 
 /* top bar */
@@ -345,6 +346,200 @@ body.light .probox .t{color:#4c2c8f}
 .chk{display:flex;gap:10px;align-items:flex-start;color:var(--muted);font-size:14px}
 .chk input{margin-top:2px;width:18px;height:18px;accent-color:var(--green);flex:0 0 auto}
 .fine{color:var(--dim);font-size:13px;text-align:center;margin-top:10px}
+
+/* ===== Paddock — thème Premium épuré (showroom) ===== */
+body{font-size:15px;letter-spacing:.005em;background:
+  radial-gradient(900px 420px at 50% -180px,rgba(207,178,122,.07),transparent 70%),var(--bg);background-attachment:fixed}
+body.light{background:var(--bg)}
+h1,h2,h3{font-stretch:112%;letter-spacing:-.005em}
+::selection{background:rgba(207,178,122,.35)}
+.pagehead{padding-block:18px 20px}
+.pagehead h1{font-size:25px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-stretch:118%}
+.pagehead{position:relative;padding-top:34px}
+.pagehead::before{content:"";position:absolute;top:20px;left:0;width:26px;height:2px;background:var(--green)}
+.pagehead h1[style*=flex]>span{width:auto!important}.pagehead h1 svg{width:24px;height:24px}
+.pagehead p{font-size:14px;letter-spacing:.01em}
+/* barre du haut */
+.topbar{padding-block:16px 4px;justify-content:space-between}
+.topbar::before{content:"PADDOCK";font-family:var(--f-head);font-stretch:125%;font-weight:800;font-size:15px;letter-spacing:.32em;color:var(--text);margin-right:auto}
+.coins{background:transparent;border:1px solid var(--line2);border-radius:999px;padding:6px 14px 6px 10px;color:var(--green);font-weight:700;letter-spacing:.02em}
+.bell{color:var(--muted)}
+.bell .dot{background:var(--green)}
+/* boutons */
+.btn{border-radius:10px;font-weight:700;font-size:15px;letter-spacing:.02em;padding:13px 20px;transition:transform .15s,filter .15s,background .15s}
+.btn:not(:disabled):active{transform:scale(.98)}
+.btn.green{background:linear-gradient(180deg,#dcc28f,#c3a467);color:var(--green-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 18px -8px rgba(207,178,122,.6)}
+body.light .btn.green{background:linear-gradient(180deg,#9c7d43,#7f632f);color:#fff}
+.btn.green:not(:disabled):hover{filter:brightness(1.06)}
+.btn.dark{background:var(--panel2);color:var(--text);border:1px solid var(--line2)}
+.btn.ghost{background:transparent;border:1px solid var(--line2)}
+.btn.ghost:hover{border-color:var(--muted)}
+.btn.outline-green{background:transparent;border:1px solid var(--green-d);color:var(--green)}
+.btn.pro{background:linear-gradient(100deg,var(--pro1),var(--pro2));box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
+.linkbtn{color:var(--green);font-size:14px;letter-spacing:.02em;text-decoration:underline;text-decoration-color:rgba(207,178,122,.35);text-underline-offset:4px}
+/* panneaux */
+.panel{border-radius:14px;background:linear-gradient(180deg,var(--panel),color-mix(in srgb,var(--panel) 85%,var(--bg)));border:1px solid var(--line)}
+.label{font-size:11px;letter-spacing:.16em;font-weight:700}
+.input,.select{border-radius:10px;background-color:var(--panel)}
+.input:focus{border-color:var(--green-d);box-shadow:0 0 0 3px rgba(207,178,122,.12)}
+.lrow{border-radius:12px;background:var(--panel);border:1px solid var(--line)}
+.empty b{font-stretch:112%}
+/* onglets */
+.tab{font-size:14px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;border-bottom-width:2px}
+.tab.on{color:var(--text);border-color:var(--green)}
+.seg{border-radius:12px;padding:4px;gap:4px;background:var(--panel);border-color:var(--line)}
+.seg button{border-radius:9px;font-size:14px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:10px}
+.seg button.on{background:var(--panel2);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2),inset 0 -2px 0 var(--green)}
+/* puces de rareté */
+.rchips{gap:8px;padding-block:12px 16px}
+.rchip{border:1px solid var(--line2);border-radius:999px;padding:5px 12px 5px 10px;font-size:12px;font-weight:700;letter-spacing:.08em;opacity:1;display:inline-flex;align-items:center;gap:7px;color:var(--muted)!important}
+.rchip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.rchip.L::before{background:var(--cL)}.rchip.UR::before{background:var(--cUR)}.rchip.SR::before{background:var(--cSR)}.rchip.R::before{background:var(--cR)}.rchip.PC::before{background:var(--cPC)}.rchip.C::before{background:var(--cC)}.rchip.ED::before{background:var(--cED)}
+.rchip.on{background:var(--panel2);border-color:var(--green-d);color:var(--text)!important}
+.wishchip{border:1px solid var(--line2);background:transparent;border-radius:999px;font-size:13px}
+/* ---- cartes : pièces de collection sur fond noir ---- */
+.grid{gap:12px}
+.card{--rc:var(--cC);border-radius:14px;background:#111113;color:#f2efe8;border:1px solid color-mix(in srgb,var(--rc) 30%,#26262b);box-shadow:0 14px 30px -18px rgba(0,0,0,.9);transition:transform .2s,border-color .2s}
+.card:hover{border-color:color-mix(in srgb,var(--rc) 65%,#26262b)}
+.card.r-C{--rc:var(--cC)}.card.r-PC{--rc:var(--cPC)}.card.r-R{--rc:var(--cR)}.card.r-SR{--rc:var(--cSR)}.card.r-UR{--rc:var(--cUR)}.card.r-L{--rc:var(--cL)}.card.r-ED{--rc:var(--cED)}
+.card.r-L,.card.r-UR,.card.r-ED{box-shadow:0 14px 30px -18px rgba(0,0,0,.9),0 0 0 1px color-mix(in srgb,var(--rc) 25%,transparent),0 10px 34px -14px color-mix(in srgb,var(--rc) 55%,transparent)}
+.c-img{aspect-ratio:16/10;background:radial-gradient(120% 85% at 50% 108%,#3a3a40 0,#1b1b1f 45%,#0d0d0f 80%)}
+.c-img::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.28),transparent 30%,transparent 70%,rgba(17,17,19,.85))}
+.phimg{background:#151517}
+.badge{top:9px;left:9px;background:rgba(10,10,11,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:var(--rc);border:1px solid color-mix(in srgb,var(--rc) 55%,transparent);font-size:10.5px;font-weight:800;letter-spacing:.14em;padding:3px 8px;border-radius:999px;z-index:3}
+.star{color:rgba(255,255,255,.55);z-index:3}
+.star.on{color:var(--gold)}
+.count{z-index:3;background:rgba(10,10,11,.8);border:1px solid rgba(255,255,255,.12);font-size:11px;letter-spacing:.04em}
+.newtag{z-index:3;background:var(--green);color:var(--green-ink);font-size:10px;letter-spacing:.14em}
+.owned-mark{z-index:3}
+.c-body{background:linear-gradient(180deg,#141416,#0f0f11);padding:11px 13px 12px;gap:4px}
+.c-body::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;z-index:0;background:linear-gradient(90deg,transparent,var(--rc) 20%,var(--rc) 80%,transparent);opacity:.9}
+.c-title{font-size:14.5px;font-weight:700;font-stretch:108%;letter-spacing:0;color:#f6f3ec}
+.c-desc{color:rgba(242,239,232,.55);font-size:12.5px}
+.c-stats{border-top:1px solid rgba(255,255,255,.08);font-size:14px;font-weight:700;padding-top:9px;color:#f2efe8}
+.c-stats small{opacity:.5}
+.ic-atk{color:#e58a6e}.ic-def{color:#8fb4e0}
+.card.r-L .c-body{background:linear-gradient(165deg,#1d180e 0%,#121110 55%,#0f0f11)}
+.card.r-L .c-title{color:#ecd7a6}
+.card.r-ED .c-body{background:linear-gradient(165deg,#22090e,#120b0d 60%,#0f0f11)}
+.card.r-ED .c-desc{color:rgba(255,255,255,.6)}
+.card.r-ED .badge{color:#ff8a98}
+.card.big{border-radius:18px}
+.card.big .c-title{font-size:21px}
+.card.big .badge{font-size:12px;top:12px;left:12px}
+.card.missing{filter:grayscale(1) brightness(.5)}
+/* paquets */
+.packview h1{font-size:26px;text-transform:uppercase;letter-spacing:.04em;font-stretch:120%;margin-top:14px}
+.packview .sub{font-size:15px}
+.pack{filter:drop-shadow(0 26px 30px rgba(0,0,0,.7)) drop-shadow(0 0 26px rgba(207,178,122,.18));margin:22px 0 6px}
+.pack svg{width:190px}
+.openbtn{color:var(--green);font-size:15px;letter-spacing:.34em;text-transform:uppercase;font-stretch:125%;font-weight:800;border:1px solid var(--green-d);border-radius:999px;padding:12px 34px 12px 40px;margin-top:6px}
+.openbtn:not(:disabled):hover{background:var(--green-soft)}
+.openbtn:disabled{border-color:var(--line2)}
+.packcount{border-radius:14px;border-color:var(--line);padding:12px 30px}
+.packcount b{font-size:28px;color:var(--text);font-stretch:115%}
+.packcount div{font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.probox{border-radius:14px;background:linear-gradient(135deg,var(--pro-bg),var(--panel));border-color:var(--pro-line)}
+.probox .t{font-family:var(--f-head);font-stretch:112%;font-weight:700;color:var(--text)}
+.reveal .ctr{font-size:13px;letter-spacing:.16em;text-transform:uppercase}
+.reveal .ctr b{color:var(--text);font-size:24px;letter-spacing:0}
+.reveal .card{animation:pop .5s cubic-bezier(.2,.8,.2,1)}
+@keyframes pop{from{transform:translateY(14px) scale(.94);opacity:0;filter:brightness(2)}}
+.dots .arrow{border-radius:50%;background:transparent}
+.dots i{width:6px;height:6px;background:var(--line2)}
+.dots i.on{width:22px;height:6px;border-radius:9px;background:var(--green)}
+/* marché */
+.lcard{border-radius:14px;padding:6px 6px 12px}
+.kv{flex-wrap:wrap;row-gap:4px}.kv .big{font-stretch:108%;font-size:28px}
+.stack>*,.panel{min-width:0}
+/* navigation */
+.nav{background:rgba(10,10,11,.88);-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);border-top:1px solid var(--line)}
+body.light .nav{background:rgba(255,255,255,.9)}
+.nav button{position:relative;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:13px 2px 13px;gap:6px}
+.nav button svg{width:23px;height:23px;stroke-width:1.6}
+.nav button.on{color:var(--text)}
+.nav button.on::before{content:"";position:absolute;top:-1px;left:30%;right:30%;height:2px;border-radius:0 0 2px 2px;background:var(--green)}
+.nav button.on svg{color:var(--green)}
+/* fenêtres */
+.overlay{background:rgba(0,0,0,.66);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.modal{border-radius:18px;border-color:var(--line2);background:linear-gradient(180deg,var(--panel2),var(--panel) 40%)}
+.modal h2{font-size:18px;text-transform:uppercase;letter-spacing:.04em;font-stretch:115%}
+.menu button{font-size:16px;border-radius:10px}
+.menu svg{color:var(--green)}
+.toast{border-radius:14px;width:max-content;font-size:14px;font-weight:600;background:#f2efe8;color:#111;box-shadow:0 10px 30px -10px rgba(0,0,0,.8)}
+/* paramètres */
+.set h3{font-size:12px;text-transform:uppercase;letter-spacing:.16em}
+.set h3 svg{width:18px;height:18px;color:var(--green)}
+.toggle .tt{font-size:16px}
+.sw{width:52px;height:30px}
+.sw::after{top:4px;left:4px;width:22px;height:22px}
+.sw.on::after{left:26px}
+.sw.on::after{background:var(--green-ink)}
+.buy{border-radius:14px;border-color:var(--line2);background:linear-gradient(120deg,rgba(207,178,122,.08),transparent 60%)}
+.buy .ico{border-radius:12px;background:var(--green-soft);border-color:var(--green-d);color:var(--green)}
+.buy b{color:var(--text);font-size:19px;font-stretch:108%}
+.buy .price{border-color:var(--green-d);background:transparent;color:var(--green);border-radius:999px}
+.pill{border-color:var(--green-d);background:transparent;font-size:10.5px;letter-spacing:.16em}
+/* profil */
+.banner{border-radius:12px;background:linear-gradient(120deg,#2a2418,#121214 50%,#1b1b20);background-size:cover;background-position:center}
+.banner::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.45))}
+.banner .btn{z-index:1}
+.av{box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.prof h2{font-stretch:115%}
+.bignum b{color:var(--text);font-stretch:115%}
+.slot{border:1px dashed var(--line2);border-radius:14px}
+/* divers */
+.bub{border-radius:14px}
+.bub.me{background:var(--green);color:var(--green-ink)}
+.arena .vs{color:var(--green);font-stretch:125%;letter-spacing:.12em}
+.score b{color:var(--text)}
+.facedown{border-radius:14px;background:repeating-linear-gradient(135deg,#141416 0 8px,#101012 8px 16px)}
+.ach .ai{border-radius:12px;background:var(--panel2)}
+.bar{height:4px}
+/* accueil / inscription */
+.logo{font-stretch:125%;letter-spacing:.24em;font-size:19px;text-transform:uppercase}
+.logo svg{width:34px;height:34px}
+.sg-hero h1{font-size:32px;text-transform:uppercase;letter-spacing:.01em;font-stretch:118%;line-height:1.02}
+.sg-hero p{font-size:16px}
+.feat div{border-radius:12px;background:transparent}
+.feat svg{color:var(--green)}
+.feat b{font-stretch:112%}
+.marq .card{width:150px}
+
+/* téléphone : pas de zoom au double-tap, pas de décalage horizontal */
+html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{overflow-x:clip;max-width:100%}
+.app{overflow-x:clip}
+button,a,.card,input,select{touch-action:manipulation}
+/* niveaux de carte */
+.lvtag{position:absolute;top:10px;right:11px;z-index:1;font-family:var(--f-body);font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--gold);border:1px solid color-mix(in srgb,var(--gold) 50%,transparent);border-radius:999px;padding:2px 7px;background:rgba(10,10,11,.55)}
+.card.haslv .c-title{padding-right:48px}
+.card.big .lvtag{font-size:12px;top:13px;right:14px}
+.upbox{display:grid;gap:12px;border:1px solid var(--line2);border-radius:14px;padding:14px;margin-bottom:12px;background:linear-gradient(120deg,rgba(214,180,106,.07),transparent 60%)}
+.upbox .uph{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.upbox b{font-family:var(--f-head);font-stretch:110%;font-size:16px}
+.upbox .ups{color:var(--muted);font-size:13px}
+.lvdots{display:flex;gap:5px}
+.lvdots i{width:22px;height:4px;border-radius:4px;background:var(--line2)}
+.lvdots i.on{background:var(--gold)}
+/* bataille */
+.turnnote{text-align:center;color:var(--muted);font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin-top:6px}
+.rlog{display:grid;gap:6px;margin-top:16px}
+.rlog div{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.rlog b.w{color:var(--green)}.rlog b.l{color:var(--red)}.rlog b.d{color:var(--muted)}
+.livebox{display:grid;gap:12px}
+.spin{width:38px;height:38px;border-radius:50%;border:3px solid var(--line2);border-top-color:var(--green);animation:spin 1s linear infinite;margin:6px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.timer{font-variant-numeric:tabular-nums;color:var(--gold);font-weight:700}
+.packview{width:100%}.packview>*{max-width:100%}.upbox .uph{flex-wrap:wrap}
+@media (max-width:370px){
+ .pagehead h1,.packview h1{font-size:21px}.sg-hero h1{font-size:26px}
+ .btn{white-space:normal;padding-inline:14px}
+ .authseg button{font-size:11px;letter-spacing:.02em;padding:9px 3px}
+ .sg-head .btn{padding:7px 10px;font-size:13px}.logo{font-size:16px;letter-spacing:.18em}
+ .row{flex-wrap:wrap}.row>.grow,.row>.input{min-width:150px}
+}
+.arena{align-items:stretch}.arena .vs{align-self:center}.arena .facedown{aspect-ratio:auto;min-height:150px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -438,25 +633,28 @@ function carSVG(c){
  ${fender}<path d="${body}" fill="${c.c}"/><path d="${body}" fill="url(#${gid})"/><path d="${win}" fill="#1c2633" opacity=".88"/>${front}${wheel(w1)}${wheel(w2)}</svg>`;
  return svgCache[c.id]=s;
 }
-const PACKSVG=`<svg viewBox="0 0 200 300" aria-hidden="true"><defs><linearGradient id="pk" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d9d9d6"/><stop offset=".22" stop-color="#ffffff"/><stop offset=".8" stop-color="#ffffff"/><stop offset="1" stop-color="#d4d4d0"/></linearGradient><radialGradient id="pkg" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#e9e9e6"/></radialGradient></defs>
-<path d="M10 14 L190 14 L184 40 L186 260 L190 286 L10 286 L16 260 L14 40 Z" fill="url(#pk)"/>
-<path d="M10 14 ${Array.from({length:30},(_,i)=>`L${10+i*6+3} ${i%2?14:18}`).join(" ")} L190 14 L190 24 L10 24Z" fill="#cfcfcb"/>
-<path d="M10 286 ${Array.from({length:30},(_,i)=>`L${10+i*6+3} ${i%2?286:282}`).join(" ")} L190 286 L190 276 L10 276Z" fill="#cfcfcb"/>
-<g opacity=".8"><g transform="translate(50 64) rotate(-18)"><rect x="-22" y="-14" width="44" height="28" rx="4" fill="#c4b5fd"/><path d="M-22 -14h11v14h11v-14h11v14h11" fill="none" stroke="#a78bfa" stroke-width="5" opacity=".6"/></g>
-<circle cx="156" cy="96" r="19" fill="none" stroke="#86efac" stroke-width="11"/>
-<g transform="translate(40 160) rotate(12)"><rect x="-20" y="-13" width="40" height="26" rx="4" fill="#fdba74"/></g>
-<circle cx="158" cy="196" r="17" fill="none" stroke="#fde047" stroke-width="10"/>
-<g transform="translate(52 238) rotate(-10)"><rect x="-20" y="-12" width="40" height="24" rx="4" fill="#93c5fd"/></g>
-<circle cx="150" cy="256" r="13" fill="none" stroke="#f9a8d4" stroke-width="8"/></g>
-<g transform="translate(100 150)"><rect x="-38" y="-38" width="76" height="76" rx="18" fill="#111"/><circle r="24" fill="none" stroke="#fff" stroke-width="6"/><circle r="5" fill="#fff"/><path d="M-22 4 L-5 2 M22 4 L5 2 M0 6 L0 22" stroke="#fff" stroke-width="6" stroke-linecap="round"/></g></svg>`;
-const LOGO=`<svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="var(--text)"/><circle cx="20" cy="20" r="11" fill="none" stroke="var(--bg)" stroke-width="3.5"/><circle cx="20" cy="20" r="2.6" fill="var(--bg)"/><path d="M10 22 L17.5 21 M30 22 L22.5 21 M20 23 L20 31" stroke="var(--bg)" stroke-width="3.5" stroke-linecap="round"/></svg>`;
+const PACKSVG=`<svg viewBox="0 0 200 300" aria-hidden="true"><defs>
+<linearGradient id="pk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#26262b"/><stop offset=".45" stop-color="#121214"/><stop offset=".55" stop-color="#18181b"/><stop offset="1" stop-color="#0b0b0c"/></linearGradient>
+<linearGradient id="pkr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1dcaa"/><stop offset=".5" stop-color="#a88a52"/><stop offset="1" stop-color="#e3c88f"/></linearGradient>
+<linearGradient id="pks" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".09"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+<path d="M12 12 H188 V288 H12 Z" fill="url(#pk)"/>
+<path d="M12 12 ${Array.from({length:29},(_,i)=>`L${12+i*6+3} ${i%2?12:16}`).join(" ")} L188 12 L188 20 L12 20Z" fill="#2c2c31"/>
+<path d="M12 288 ${Array.from({length:29},(_,i)=>`L${12+i*6+3} ${i%2?288:284}`).join(" ")} L188 288 L188 280 L12 280Z" fill="#2c2c31"/>
+<rect x="22" y="30" width="156" height="240" rx="4" fill="none" stroke="url(#pkr)" stroke-width="1.2"/>
+<path d="M-40 300 L120 0 H170 L10 300Z" fill="url(#pks)"/>
+<text x="100" y="62" text-anchor="middle" fill="#cfb27a" font-family="Archivo,Arial,sans-serif" font-size="9" font-weight="700" letter-spacing="4">SÉRIE 01</text>
+<g transform="translate(100 146)"><circle r="34" fill="none" stroke="url(#pkr)" stroke-width="1.5"/><circle r="22" fill="none" stroke="url(#pkr)" stroke-width="4"/><circle r="4" fill="url(#pkr)"/><path d="M-20 4 L-6 2 M20 4 L6 2 M0 6 L0 20" stroke="url(#pkr)" stroke-width="4" stroke-linecap="round"/></g>
+<text x="100" y="222" text-anchor="middle" fill="#f2efe8" font-family="Archivo,Arial,sans-serif" font-size="17" font-weight="800" letter-spacing="6">PADDOCK</text>
+<path d="M70 234 H130" stroke="url(#pkr)" stroke-width="1"/>
+<text x="100" y="250" text-anchor="middle" fill="#8f8a80" font-family="Manrope,Arial,sans-serif" font-size="8" font-weight="600" letter-spacing="2.5">5 VOITURES</text></svg>`;
+const LOGO=`<svg viewBox="0 0 40 40" aria-hidden="true"><rect x=".75" y=".75" width="38.5" height="38.5" rx="10" fill="#111113" stroke="#cfb27a" stroke-opacity=".55" stroke-width="1.5"/><circle cx="20" cy="20" r="10.5" fill="none" stroke="#cfb27a" stroke-width="3"/><circle cx="20" cy="20" r="2.4" fill="#cfb27a"/><path d="M10.5 21.5 L17.5 20.8 M29.5 21.5 L22.5 20.8 M20 22.8 L20 30" stroke="#cfb27a" stroke-width="3" stroke-linecap="round"/></svg>`;
 
 /* ---------- state ---------- */
 const KEY="paddock-v2";
 const OWNER=/^valenting_?$/i;
 function hpw(s){let h1=0xdeadbeef^s.length,h2=0x41c6ce57^s.length;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677)}h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);return(h2>>>0).toString(16)+(h1>>>0).toString(16)}
 const PLAYERS=["Kev205","LaDS19","Gullwing","Turbo_Jojo","Mimi_GTI","Nono4L","Scuderia_Max","Ptit_Clio","Vroum83","Sergio_V12","Camille_RS","Bertrand911"];
-const AVC=["#fde047","#86efac","#93c5fd","#f9a8d4","#c4b5fd","#fdba74","#5eead4","#fca5a5"];
+const AVC=["#d6b46a","#a9b8ad","#9fb6d6","#d3a3b4","#b3a7dc","#d6a27d","#9fc7c0","#cfa39b"];
 const avColor=n=>AVC[[...n].reduce((a,c)=>a+c.charCodeAt(0),0)%AVC.length];
 let S=null;
 function load(){try{const v=localStorage.getItem(KEY);if(v)S=JSON.parse(v)}catch(e){}}
@@ -482,7 +680,7 @@ const isVip=n=>!!A(n).vip||(A(n).proUntil||0)>now(),isMod=n=>!!(A(n).mod||A(n).a
 const meVip=()=>isVip(S.user.name);
 const BADGE={cert:'<svg class="bdg" viewBox="0 0 24 24" aria-label="Compte certifié"><path fill="#1d9bf0" d="M12 1.8l2.6 1.9 3.2-.1 1 3 2.6 1.9-1 3.1 1 3.1-2.6 1.9-1 3-3.2-.1L12 22.2l-2.6-1.9-3.2.1-1-3-2.6-1.9 1-3.1-1-3.1 2.6-1.9 1-3 3.2.1z"/><path d="m7.8 12.2 2.8 2.8 5.6-5.8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
  vip:'<span class="probadge" aria-label="Membre Paddock Pro"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17.5 5.6 8l4.1 4L12 6l2.3 6 4.1-4L20 17.5z" fill="currentColor"/></svg>PRO</span>',
- mod:'<svg class="bdg" viewBox="0 0 24 24" aria-label="Modérateur"><path d="M12 2 4 5v6.5c0 5 3.4 8.6 8 10.5 4.6-1.9 8-5.5 8-10.5V5z" fill="#34d399"/><path d="m8.5 12 2.5 2.5 4.5-5" fill="none" stroke="#05261a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'};
+ mod:'<svg class="bdg" viewBox="0 0 24 24" aria-label="Modérateur"><path d="M12 2 4 5v6.5c0 5 3.4 8.6 8 10.5 4.6-1.9 8-5.5 8-10.5V5z" fill="#cfb27a"/><path d="m8.5 12 2.5 2.5 4.5-5" fill="none" stroke="#17120a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'};
 function nm(n){const a=A(n);return`<span class="nm">${esc(n)}${a.cert?BADGE.cert:""}${a.mod||a.admin?BADGE.mod:""}${a.vip?BADGE.vip:""}</span>`}
 function own(id,n=1){S.col[id]=(S.col[id]||0)+n;if(S.col[id]<=0)delete S.col[id];if(S.holo&&S.holo[id]>(S.col[id]||0)){if(S.col[id])S.holo[id]=S.col[id];else delete S.holo[id]}}
 const uniq=()=>Object.keys(S.col).length;
@@ -568,13 +766,26 @@ function tick(){
 function updateTimers(){document.querySelectorAll("[data-end]").forEach(e=>e.textContent=fmtLeft(+e.dataset.end-now()));const pc=$("#packnext");if(pc&&S.packs<10)pc.textContent=`Prochain paquet dans ${fmtLeft(S.packTs+packStep()-now())}`}
 
 /* ---------- card render ---------- */
+
+/* ---------- niveaux de carte (améliorations en pistons) ---------- */
+const LVMAX=5,LVB=.08,UPC=[50,120,250,500],UPM={C:1,PC:1.2,R:1.5,SR:2,UR:2.5,L:3,ED:3};
+const lvOf=id=>(S&&S.lvl&&S.lvl[id])||1;
+const effS=(id,s,lv)=>Math.round(CARS[id][s]*(1+LVB*((lv||1)-1)));
+const upCost=id=>{const l=lvOf(id);return l>=LVMAX?0:Math.round(UPC[l-1]*UPM[CARS[id].r]/5)*5};
+let PCT=null;
+function pct(){if(PCT)return PCT;const n=Math.max(1,CARS.length-1),ph={},pv={};const rank=k=>{const a=[...CARS].sort((x,y)=>x[k]-y[k]);let r=0;a.forEach((c,i)=>{if(i&&c[k]!==a[i-1][k])r=i;(k==="hp"?ph:pv)[c.id]=r/n})};rank("hp");rank("v");return PCT={ph,pv}}
+const pw=id=>pct().ph[id]+pct().pv[id];
+const bestStat=id=>pct().ph[id]>=pct().pv[id]?"hp":"v";
+const SNAME={hp:"l'attaque",v:"la défense"},SU={hp:"ch",v:"km/h"};
+function bResTxt(r,a,z,s,who){const u=SU[s];const by=who?`${who} choisit ${SNAME[s]}. `:`Vous choisissez ${SNAME[s]}. `;return by+(r>0?`Manche gagnée : ${fmt(a)} ${u} contre ${fmt(z)} ${u}.`:r<0?`Manche perdue : ${fmt(a)} ${u} contre ${fmt(z)} ${u}.`:`Égalité à ${fmt(a)} ${u}.`)}
 function cardHTML(id,o={}){
  const c=CARS[id];const n=S&&S.col[id]||0;
  const isHolo=o.holo||(o.count&&S&&S.holo&&S.holo[id]);
- return`<${o.tag||"div"} class="card r-${c.r} ${o.big?"big":""} ${isHolo?"holo":""} ${o.cls||""}" data-card="${id}" ${o.act?`data-act="${o.act}"`:""} ${o.tag==="button"?'type="button"':""}>
+ const lv=o.lv||((o.own||o.count)&&n?lvOf(id):1);
+ return`<${o.tag||"div"} class="card r-${c.r} ${o.big?"big":""} ${isHolo?"holo":""} ${lv>1?"haslv":""} ${o.cls||""}" data-card="${id}" ${o.act?`data-act="${o.act}"`:""} ${o.tag==="button"?'type="button"':""}>
  <div class="c-img">${IMGMODE==="url"&&c.th?`<img class="phimg" src="${esc(c.th)}" alt="${esc(c.n)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">${carSVG(c)}`:carSVG(c)}<span class="badge">${c.r}</span>${o.star?`<span class="star ${S.fav.includes(id)?"on":""}" data-act="fav" data-id="${id}" role="button" aria-label="Favori">${S.fav.includes(id)?I.starf:I.star}</span>`:""}${o.count&&n>1?`<span class="count">×${n}</span>`:""}${isHolo?'<span class="holotag">✦ BRILLANTE</span>':o.isnew?'<span class="newtag">NOUVELLE</span>':""}${o.owned&&n?'<span class="owned-mark">Possédée</span>':""}</div>
- <div class="c-body"><div class="c-title">${esc(c.n)}</div><div class="c-desc">${esc(o.big?c.long:c.desc)}</div>
- <div class="c-stats"><span>${I.atk}${fmt(c.hp)} <small>ch</small></span><span>${I.def}${fmt(c.v)} <small>km/h</small></span></div></div></${o.tag||"div"}>`}
+ <div class="c-body">${lv>1?`<span class="lvtag">NIV ${lv}</span>`:""}<div class="c-title">${esc(c.n)}</div><div class="c-desc">${esc(o.big?c.long:c.desc)}</div>
+ <div class="c-stats"><span>${I.atk}${fmt(effS(id,"hp",lv))} <small>ch</small></span><span>${I.def}${fmt(effS(id,"v",lv))} <small>km/h</small></span></div></div></${o.tag||"div"}>`}
 const coinIc=I.coin;
 
 /* ---------- views ---------- */
@@ -690,21 +901,28 @@ V.chat=()=>{const c=S.chats[U.chat]||{msgs:[]};c.unread=false;return`<button cla
  <div class="pagehead headrow"><div class="row"><div class="av" style="background:${avColor(U.chat)}">${avInner(U.chat)}</div><h1 style="font-size:24px">${nm(U.chat)}</h1></div><button class="sq trd" data-act="newtrade" data-f="${esc(U.chat)}" aria-label="Échanger">${I.swap}</button></div>
  <div class="chat">${c.msgs.map(m=>`<div class="bub ${m.me?"me":"them"}">${esc(m.txt)}</div>`).join("")||'<div style="color:var(--muted);text-align:center;padding:20px">Dites bonjour à '+esc(U.chat)+' !</div>'}${c.pending?'<div class="bub them" style="color:var(--muted)">…</div>':""}</div>
  <form class="chatbar" id="chatf"><input class="input grow" id="chatin" placeholder="Votre message…" autocomplete="off"><button class="btn green" type="submit">Envoyer</button></form>`};
+function liveEntry(){const inv=S.liveInv||[];
+ return`<div class="livebox">${inv.map(x=>`<div class="lrow"><div class="av" style="background:${avColor(x.from)}">${avInner(x.from)}</div><div class="grow"><div class="name">${nm(x.from)}</div><div class="sub">vous défie en direct</div></div><button class="btn ghost" style="padding:8px 12px" data-act="lvno" data-id="${x.id}">Refuser</button><button class="btn green" style="padding:8px 12px" data-act="lvyes" data-id="${x.id}">Jouer</button></div>`).join("")}
+ <div class="panel stack"><div><b style="font-family:var(--f-head);font-size:17px">Adversaire au hasard</b><div style="color:var(--muted);font-size:14px;margin-top:4px">Affrontez un joueur connecté en ce moment. +80 pistons par victoire.</div></div><button class="btn green block" data-act="lvfind" ${uniq()<3?"disabled":""}>Chercher un adversaire</button></div>
+ ${S.friends.length?`<div class="label" style="margin-top:6px">Défier un ami en direct</div><div class="stack">${S.friends.map(f=>`<div class="lrow"><div class="av" style="background:${avColor(f)}">${avInner(f)}</div><div class="name">${nm(f)}</div><button class="btn outline-green" style="padding:8px 12px" data-act="lvinvite" data-f="${esc(f)}" ${uniq()<3?"disabled":""}>Défier</button></div>`).join("")}</div>`:""}
+ <div class="panel" style="color:var(--muted);font-size:14px">Chacun choisit 3 voitures en secret. Vous choisissez la stat aux manches 1 et 3, l'invité à la manche 2. 60 secondes par coup.</div></div>`}
 V.battle=()=>{const B=U.battle;
- if(!B)return`<div class="pagehead"><h1>Bataille</h1><p>Trois manches, vos cartes contre celles d'un ami. Choisissez l'attaque ou la défense : la plus forte l'emporte.</p></div>
- ${!S.friends.length?`<div class="panel empty">${I.swords}<b>Aucun adversaire</b>Ajoutez un ami pour le défier en bataille.<div style="margin-top:16px"><button class="btn green" data-act="go" data-v="friends">Trouver des amis</button></div></div>`:uniq()<3?`<div class="panel empty">${I.swords}<b>Il vous faut au moins 3 voitures</b>Ouvrez quelques paquets avant de défier vos amis.<div style="margin-top:16px"><button class="btn green" data-act="go" data-v="packs">Ouvrir un paquet</button></div></div>`
+ if(!B)return`<div class="pagehead"><h1>Bataille</h1><p>Trois manches. Vous choisissez la stat aux manches 1 et 3, votre adversaire à la manche 2. Les voitures en face sont de force équivalente aux vôtres.</p></div>
+ <div class="seg"><button class="${U.btab!=="live"?"on":""}" data-act="btab" data-t="quick">Rapide</button><button class="${U.btab==="live"?"on":""}" data-act="btab" data-t="live">En direct</button></div>
+ ${U.btab==="live"?(uniq()<3?`<div class="panel empty">${I.swords}<b>Il vous faut au moins 3 voitures</b>Ouvrez quelques paquets avant de jouer en direct.</div>`:liveEntry()):!S.friends.length?`<div class="panel empty">${I.swords}<b>Aucun adversaire</b>Ajoutez un ami pour le défier en bataille.<div style="margin-top:16px"><button class="btn green" data-act="go" data-v="friends">Trouver des amis</button></div></div>`:uniq()<3?`<div class="panel empty">${I.swords}<b>Il vous faut au moins 3 voitures</b>Ouvrez quelques paquets avant de défier vos amis.<div style="margin-top:16px"><button class="btn green" data-act="go" data-v="packs">Ouvrir un paquet</button></div></div>`
  :`<div class="label" style="font-weight:600;margin-bottom:10px">Choisissez un adversaire</div><div class="stack">${S.friends.map(f=>`<button class="lrow" style="border:0;width:100%;text-align:left" data-act="bstart" data-f="${esc(f)}"><div class="av" style="background:${avColor(f)}">${avInner(f)}</div><div class="name">${nm(f)}</div><span style="color:var(--green);width:24px;display:inline-flex">${I.swords}</span></button>`).join("")}</div>
- <div class="panel" style="margin-top:16px;color:var(--muted)">Victoires : <b style="color:var(--text)">${S.stats.wins}</b> sur ${S.stats.battles} batailles · +60 pistons par victoire</div>`}`;
+ <div class="panel" style="margin-top:16px;color:var(--muted)">Victoires : <b style="color:var(--text)">${S.stats.wins}</b> sur ${S.stats.battles} batailles · +60 pistons par victoire, +15 en cas d'égalité</div>`}`;
  if(B.phase==="pick"){const mine=sortIds(Object.keys(S.col).map(Number),"atk");return`<div class="pagehead"><h1>Contre ${esc(B.foe)}</h1><p>Choisissez 3 voitures (${B.pick.length}/3)</p></div>
  <div class="row" style="margin-bottom:14px"><button class="btn ghost grow" data-act="bauto">Choix automatique</button><button class="btn green grow" data-act="bgo" ${B.pick.length===3?"":"disabled"}>Lancer la bataille</button></div>
- <div class="pickgrid">${mine.slice(0,60).map(id=>cardHTML(id,{act:"bpick",cls:B.pick.includes(id)?"sel":""})).join("")}</div>`}
+ <div class="pickgrid">${mine.slice(0,60).map(id=>cardHTML(id,{act:"bpick",own:true,cls:B.pick.includes(id)?"sel":""})).join("")}</div>`}
  const k=B.round;const my=B.pick[k],th=B.foeCards[k];
- if(B.phase==="end"){const win=B.score[0]>B.score[1];return`<div class="pagehead"><h1>${win?"Victoire !":B.score[0]===B.score[1]?"Égalité":"Défaite"}</h1><p>${win?"Vous gagnez 60 pistons.":"Retentez votre chance avec d'autres voitures."}</p></div>
+ if(B.phase==="end"){const win=B.score[0]>B.score[1];return`<div class="pagehead"><h1>${win?"Victoire !":B.score[0]===B.score[1]?"Égalité":"Défaite"}</h1><p>${win?"Vous gagnez 60 pistons.":B.score[0]===B.score[1]?"Vous gagnez 15 pistons.":"Retentez votre chance avec d'autres voitures, ou améliorez-les."}</p></div>
  <div class="score panel"><span>Vous <b>${B.score[0]}</b></span><span>${esc(B.foe)} <b>${B.score[1]}</b></span></div><div class="row" style="margin-top:16px"><button class="btn ghost grow" data-act="bquit">Terminer</button><button class="btn green grow" data-act="bstart" data-f="${esc(B.foe)}">Revanche</button></div>`}
- return`<div class="pagehead"><h1>Manche ${k+1} / 3</h1><p>${B.res?esc(B.res):"Choisissez la stat à comparer."}</p></div>
+ const foeTurn=k===1;
+ return`<div class="pagehead"><h1>Manche ${k+1} / 3</h1><p>${B.res?esc(B.res):foeTurn?`C'est ${esc(B.foe)} qui choisit la stat de cette manche.`:"Choisissez la stat à comparer."}</p></div>
  <div class="score" style="margin-bottom:14px"><span>Vous <b>${B.score[0]}</b></span><span>${esc(B.foe)} <b>${B.score[1]}</b></span></div>
- <div class="arena">${cardHTML(my)}<span class="vs">VS</span>${B.res?cardHTML(th):'<div class="facedown">?</div>'}</div>
- <div class="row" style="margin-top:18px">${B.res?`<button class="btn green block" data-act="bnext">${k<2?"Manche suivante":"Voir le résultat"}</button>`:`<button class="btn ghost grow" data-act="bstat" data-s="hp"><span style="color:#ef4444;display:inline-flex">${I.atk}</span>Attaque</button><button class="btn ghost grow" data-act="bstat" data-s="v"><span style="color:#3b82f6;display:inline-flex">${I.def}</span>Défense</button>`}</div>`};
+ <div class="arena">${cardHTML(my,{lv:(B.myLv||[])[k]||lvOf(my)})}<span class="vs">VS</span>${B.res&&th!=null?cardHTML(th,{lv:(B.foeLv||[])[k]||1}):'<div class="facedown">?</div>'}</div>
+ <div class="row" style="margin-top:18px">${B.res?`<button class="btn green block" data-act="bnext">${k<2?"Manche suivante":"Voir le résultat"}</button>`:foeTurn?`<button class="btn green block" data-act="bstat" data-s="ai">Révéler le choix de ${esc(B.foe)}</button>`:`<button class="btn ghost grow" data-act="bstat" data-s="hp"><span style="color:#e58a6e;display:inline-flex">${I.atk}</span>Attaque</button><button class="btn ghost grow" data-act="bstat" data-s="v"><span style="color:#8fb4e0;display:inline-flex">${I.def}</span>Défense</button>`}</div>`};
 const ACH=[["Premier paquet","Ouvrir 1 paquet",()=>S.stats.packs,1,5],["Accro aux paquets","Ouvrir 25 paquets",()=>S.stats.packs,25,25],["Petit garage","Posséder 25 voitures uniques",uniq,25,15],["Grand garage","Posséder 100 voitures uniques",uniq,100,50],["Musée roulant","Posséder 300 voitures uniques",uniq,300,150],["Légende","Posséder une carte légendaire",()=>Object.keys(S.col).filter(id=>CARS[id].r==="L").length,1,30],["Pilote","Gagner 1 bataille",()=>S.stats.wins,1,10],["Champion","Gagner 10 batailles",()=>S.stats.wins,10,60],["Négociant","Réussir 1 échange",()=>S.stats.trades,1,10],["Commissaire-priseur","Remporter 1 enchère",()=>S.stats.auctions,1,15],["Vendeur","Vendre 1 carte au marché",()=>S.stats.sales,1,10]];
 V.achievements=()=>{const w=wk();return`<div class="pagehead"><h1>Succès</h1><p>${S.claimed.length} / ${ACH.length} débloqués</p></div>
  <div class="headrow" style="margin-bottom:10px"><b style="font-family:var(--f-head);font-size:19px">Défis de la semaine</b><span style="color:var(--muted);font-size:13px">Nouveaux défis dans <span data-end="${weekEnd()}">${fmtLeft(weekEnd()-now())}</span></span></div>
@@ -752,21 +970,25 @@ function signupHTML(){const pick=[...BYR.L.slice(0,6),...BYR.UR.slice(0,6),...BY
  <div class="marq" aria-hidden="true"><div class="tr">${strip(a)}</div></div><div class="marq rev" aria-hidden="true"><div class="tr">${strip(b)}</div></div>
  <div class="sg-hero"><h1>L'histoire de l'automobile devient votre terrain de jeu.</h1><p>${fmt(CARS.length)} voitures, de la Ford T à la Bugatti Chiron. Plus une voiture est recherchée sur Wikipédia, plus sa carte est rare. Sa puissance fixe son attaque, sa vitesse de pointe sa défense.</p></div>
  <div class="feat"><div>${I.pack}<p style="margin:0"><b>Ouvrez des paquets</b><span>Cinq voitures tirées au sort, des citadines aux hypercars.</span></p></div><div>${I.book}<p style="margin:0"><b>Complétez votre collection</b><span>Six raretés, des favorites et une liste de souhaits.</span></p></div><div>${I.swords}<p style="margin:0"><b>Défiez vos amis</b><span>Attaque contre défense, en trois manches.</span></p></div><div>${I.gavel}<p style="margin:0"><b>Échangez et vendez</b><span>Troquez vos doublons ou mettez-les aux enchères.</span></p></div></div>
- ${U.auth==="login"?loginForm():`<form class="panel stack" id="sgf" novalidate><h2 style="font-size:24px">Créer un compte</h2><div style="color:var(--muted)">Déjà inscrit ? <button type="button" class="linkbtn" data-act="auth" data-m="login">Se connecter</button></div>${PENDING&&PENDING.user?`<div class="err" style="color:var(--gold)">Un compte existe déjà sur cet appareil (${esc(PENDING.user.name)}). En créer un nouveau remplacera l'ancien et toutes ses cartes.</div>`:""}
+ <div class="seg authseg" style="margin-bottom:12px"><button class="${U.auth!=="login"&&U.auth!=="forgot"?"on":""}" data-act="auth" data-m="signup">Inscription</button><button class="${U.auth==="login"?"on":""}" data-act="auth" data-m="login">Connexion</button><button class="${U.auth==="forgot"?"on":""}" data-act="auth" data-m="forgot">Mot de passe</button></div>
+ ${U.auth==="forgot"?forgotForm():U.auth==="login"?loginForm():`<form class="panel stack" id="sgf" novalidate><h2 style="font-size:24px">Créer un compte</h2><div style="color:var(--muted)">Déjà inscrit ? <button type="button" class="linkbtn" data-act="auth" data-m="login">Se connecter</button></div>${PENDING&&PENDING.user?`<div class="err" style="color:var(--gold)">Un compte existe déjà sur cet appareil (${esc(PENDING.user.name)}). En créer un nouveau remplacera l'ancien et toutes ses cartes.</div>`:""}
  <div class="field"><label for="su">Nom d'utilisateur</label><input class="input" id="su" autocomplete="username" maxlength="20"><div class="err" id="eu"></div></div>
  <div class="field"><label for="se">Adresse e-mail</label><input class="input" id="se" type="email" autocomplete="email"><div class="err" id="ee"></div></div>
  <div class="field"><label for="sp">Mot de passe</label><input class="input" id="sp" type="password" autocomplete="new-password"><div class="err" id="ep"></div></div>
  <label class="chk"><input type="checkbox" id="sc"><span>J'accepte les conditions d'utilisation et les règles de la communauté.</span></label><div class="err" id="ec"></div>
  <button class="btn green block" type="submit">Créer mon compte</button>
  <div class="fine" style="margin:0">Démo : votre partie est enregistrée uniquement sur cet appareil.</div></form>`}<div style="height:30px"></div>`}
+function forgotForm(){return`<form class="panel stack" id="fgf" novalidate><h2 style="font-size:24px">Mot de passe oublié</h2><div style="color:var(--muted)">Entrez l'adresse e-mail de votre compte : vous recevrez un lien pour choisir un nouveau mot de passe.</div>
+ <div class="field"><label for="fe">Adresse e-mail</label><input class="input" id="fe" type="email" autocomplete="email"></div><div class="err" id="fer"></div>
+ <button class="btn green block" type="button" data-act="forgot">Recevoir le lien</button><button type="button" class="linkbtn" data-act="auth" data-m="login" style="justify-self:center">Retour à la connexion</button></form>`}
 function loginForm(){return`<form class="panel stack" id="lgf" novalidate><h2 style="font-size:24px">Se connecter</h2><div style="color:var(--muted)">Pas encore de compte ? <button type="button" class="linkbtn" data-act="auth" data-m="signup">Créer un compte</button></div>
  <div class="field"><label for="le">Adresse e-mail ou nom d'utilisateur</label><input class="input" id="le" autocomplete="username"></div>
  <div class="field"><label for="lp">Mot de passe</label><input class="input" id="lp" type="password" autocomplete="current-password"></div><div class="err" id="el"></div>
- <button class="btn green block" type="submit">Se connecter</button><div class="fine" style="margin:0">Les comptes sont enregistrés sur l'appareil où ils ont été créés.</div></form>`}
+ <button class="btn green block" type="submit">Se connecter</button><button type="button" class="linkbtn" data-act="auth" data-m="forgot" style="justify-self:center">Mot de passe oublié ?</button><div class="fine" style="margin:0">Les comptes sont enregistrés sur l'appareil où ils ont été créés.</div></form>`}
 
 /* ---------- render ---------- */
 const NAV=[["packs","Paquets",I.pack],["collection","Collection",I.book],["trades","Échanges",I.swap],["market","Marché",I.gavel],["more","Plus",I.dots]];
-const MORE=["shop","mod","profile","all","guild","friends","messages","chat","battle","achievements","ranking","settings"];
+const MORE=["live","shop","mod","profile","all","guild","friends","messages","chat","battle","achievements","ranking","settings"];
 function render(keep){
  document.body.classList.toggle("light",!!(S&&S.set.light));
  const app=$("#app"),nav=$("#nav");
@@ -787,12 +1009,15 @@ function go(v){U.view=v;U.bid=0;render();window.scrollTo(0,0)}
 /* ---------- modal ---------- */
 function modal(html,center){$("#layer").innerHTML=`<div class="overlay ${center?"center":""}" data-act="closebg"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`}
 function closeModal(){$("#layer").innerHTML=""}
+function upBox(id){const l=lvOf(id),cost=upCost(id);const nx=l+1;
+ return`<div class="upbox"><div class="uph"><div><b>Niveau ${l} / ${LVMAX}</b><div class="lvdots" style="margin-top:7px">${Array.from({length:LVMAX},(_,i)=>`<i class="${i<l?"on":""}"></i>`).join("")}</div></div>${l<LVMAX?`<button class="btn green" style="padding:10px 14px" data-act="upgrade" data-id="${id}" ${S.coins>=cost?"":"disabled"}>Améliorer · ${fmt(cost)}</button>`:'<span class="pill">NIVEAU MAX</span>'}</div>
+ <div class="ups">${l<LVMAX?`Niveau ${nx} : ${fmt(effS(id,"hp",nx))} ch et ${fmt(effS(id,"v",nx))} km/h en bataille (+${LVB*100*(nx-1)} %).${S.coins<cost?` Il vous manque ${fmt(cost-S.coins)} pistons.`:""}`:`+${LVB*100*(LVMAX-1)} % d'attaque et de défense en bataille.`}</div></div>`}
 function cardModal(id,mode){const c=CARS[id];const n=S.col[id]||0;const inWish=S.wish.includes(id);
- modal(`<h2><span>${RNAME[c.r]}</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2>${cardHTML(id,{big:true})}
+ modal(`<h2><span>${RNAME[c.r]}</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2>${cardHTML(id,{big:true,own:true})}
  ${c.th?(IMGMODE==="url"?`<div class="credit">Photo : ${esc(c.art||"auteur inconnu")} · ${esc(c.lic)} · <a href="${esc(c.fp)}" target="_blank" rel="noopener">Wikimedia Commons</a></div>`:`<div class="credit"><a href="${esc(c.fp)}" target="_blank" rel="noopener">Voir la photo sur Wikimedia Commons</a> · ${esc(c.art||"auteur inconnu")} · ${esc(c.lic)}</div>`):""}
  <div style="text-align:center;color:var(--muted);margin:12px 0">${n?`Vous en possédez ${n}`:"Vous ne possédez pas encore cette voiture"}${c.views?` · ${fmt(c.views)} vues Wikipédia en 60 jours`:""}</div>
  ${c.wt?`<div style="text-align:center;margin-bottom:12px"><a class="linkbtn" style="text-decoration:none" href="https://${c.wiki}.wikipedia.org/wiki/${encodeURIComponent(c.wt.replace(/ /g,"_"))}" target="_blank" rel="noopener">Lire l'article Wikipédia</a></div>`:""}
- <div class="stack">${n?`<button class="btn ghost" data-act="favm" data-id="${id}">${S.fav.includes(id)?"Retirer des favorites":"Ajouter aux favorites"}</button><button class="btn outline-green" data-act="sellid" data-id="${id}">Mettre en vente au marché</button>`:`<button class="btn ${inWish?"ghost":"green"}" data-act="wishm" data-id="${id}">${inWish?"Retirer de la liste de souhaits":"Ajouter à la liste de souhaits"}</button>`}</div>`)}
+ ${n?upBox(id):""}<div class="stack">${n?`<button class="btn ghost" data-act="favm" data-id="${id}">${S.fav.includes(id)?"Retirer des favorites":"Ajouter aux favorites"}</button><button class="btn outline-green" data-act="sellid" data-id="${id}">Mettre en vente au marché</button>`:`<button class="btn ${inWish?"ghost":"green"}" data-act="wishm" data-id="${id}">${inWish?"Retirer de la liste de souhaits":"Ajouter à la liste de souhaits"}</button>`}</div>`)}
 function pickCardModal(title,ids,act,extra=""){modal(`<h2><span>${title}</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2>${extra}${ids.length?`<div class="pickgrid">${ids.slice(0,90).map(id=>cardHTML(id,{act,count:true})).join("")}</div>`:'<div class="empty">Aucune carte disponible.</div>'}`)}
 let TR=null;
 function tradeModal(f){TR={who:f||S.friends[0],give:null,want:null};drawTrade()}
@@ -894,11 +1119,15 @@ document.addEventListener("click",e=>{
  bstart:()=>{U.battle={foe:d.f,phase:"pick",pick:[],round:0,score:[0,0],res:""};render();window.scrollTo(0,0)},
  bpick:()=>{const id=+el.dataset.card;const B=U.battle;if(B.pick.includes(id))B.pick=B.pick.filter(x=>x!==id);else if(B.pick.length<3)B.pick.push(id);render()},
  bauto:()=>{const B=U.battle;B.pick=sortIds(Object.keys(S.col).map(Number),"atk").slice(0,3);render()},
- bgo:()=>{const B=U.battle;const avg=B.pick.reduce((a,id)=>a+RAR.indexOf(CARS[id].r),0)/3;const pool=S.fc[B.foe].filter(id=>Math.abs(RAR.indexOf(CARS[id].r)-avg)<=1.2);const src=pool.length>=3?pool:S.fc[B.foe];B.foeCards=Array.from({length:3},()=>rnd(src));B.phase="play";B.round=0;render()},
- bstat:()=>{const B=U.battle;const my=CARS[B.pick[B.round]],th=CARS[B.foeCards[B.round]];const s=d.s;const a=my[s],b=th[s];const u=s==="hp"?"ch":"km/h";
-  if(a>b){B.score[0]++;B.res=`Manche gagnée : ${fmt(a)} ${u} contre ${fmt(b)} ${u}.`;blip(780)}else if(a<b){B.score[1]++;B.res=`Manche perdue : ${fmt(a)} ${u} contre ${fmt(b)} ${u}.`;blip(240)}else B.res=`Égalité à ${fmt(a)} ${u}.`;render()},
- bnext:()=>{const B=U.battle;B.res="";if(B.round<2){B.round++}else{B.phase="end";S.stats.battles++;if(B.score[0]>B.score[1]){S.stats.wins++;wkInc("wins");S.coins+=60}save()}render()},
+ bgo:()=>{const B=U.battle;const fc=[...new Set(S.fc[B.foe])];const used=new Set();B.foeCards=B.pick.map(id=>{const t=pw(id);const cand=fc.filter(x=>!used.has(x)).sort((a,b)=>Math.abs(pw(a)-t)-Math.abs(pw(b)-t)).slice(0,4);const x=cand.length?rnd(cand):rnd(fc);used.add(x);return x});B.myLv=B.pick.map(lvOf);B.foeLv=[1,1,1];B.phase="play";B.round=0;render()},
+ bstat:()=>{const B=U.battle;const k=B.round,my=B.pick[k],th=B.foeCards[k];const ai=d.s==="ai"||k===1;const s=ai?bestStat(th):d.s;const a=effS(my,s,B.myLv[k]),b=effS(th,s,B.foeLv[k]);const r=Math.sign(a-b);
+  if(r>0)B.score[0]++;else if(r<0)B.score[1]++;B.res=bResTxt(r,a,b,s,ai?B.foe:"");blip(r>0?780:r<0?240:500);render()},
+ bnext:()=>{const B=U.battle;B.res="";if(B.round<2){B.round++}else{B.phase="end";S.stats.battles++;if(B.score[0]>B.score[1]){S.stats.wins++;wkInc("wins");S.coins+=60}else if(B.score[0]===B.score[1])S.coins+=15;save()}render()},
  bquit:()=>{U.battle=null;render()},
+ btab:()=>{U.btab=d.t;render()},
+ lvfind:()=>toast("La bataille en direct se joue en ligne, sur paddock.click."),lvinvite:()=>toast("La bataille en direct se joue en ligne, sur paddock.click."),
+ lvyes:()=>{},lvno:()=>{},
+ upgrade:()=>{const id=+d.id;const cost=upCost(id);if(!cost)return;if(S.coins<cost)return toast("Pas assez de pistons.");S.coins-=cost;S.lvl=S.lvl||{};S.lvl[id]=lvOf(id)+1;save();blip(880);toast(`${CARS[id].n} passe au niveau ${S.lvl[id]} !`);cardModal(id);render(true)},
  pickshow:()=>{U.showK=+d.k;pickCardModal("Ajouter à la vitrine",sortIds(Object.keys(S.col).map(Number),"rar"),"showpick")},
  showpick:()=>{S.show[U.showK]=+el.dataset.card;save();closeModal();render()},
  modt:()=>{const n=d.n,k=d.k,a=A(n),me=S.user.name;if(!isMod(me))return;
@@ -906,7 +1135,8 @@ document.addEventListener("click",e=>{
   a[k]=!a[k];if(k==="ban"&&a.ban){S.friends=S.friends.filter(f=>f!==n);S.listings=S.listings.filter(l=>l.mine||l.seller!==n);ensureMarket()}
   save();toast({cert:a.cert?`${n} est maintenant certifié.`:`Certification retirée à ${n}.`,vip:a.vip?`${n} est maintenant membre Paddock Pro.`:`Paddock Pro retiré à ${n}.`,mod:a.mod?`${n} est maintenant modérateur.`:`${n} n'est plus modérateur.`,ban:a.ban?`${n} est suspendu.`:`${n} n'est plus suspendu.`}[k]);render()},
  modf:()=>{U.modf=d.f;render()},
- auth:()=>{U.auth=d.m;render();const f=$(U.auth==="login"?"#lgf":"#sgf");if(f)f.scrollIntoView({behavior:"smooth"})},
+ auth:()=>{U.auth=d.m;render();const f=$(U.auth==="login"?"#lgf":U.auth==="forgot"?"#fgf":"#sgf");if(f)f.scrollIntoView({behavior:"smooth",block:"center"})},
+ forgot:()=>{const m=($("#fe")&&$("#fe").value.trim())||"";const er=$("#fer");if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(m)){if(er)er.textContent="Entrez une adresse e-mail valide.";return}modal(`<h2>Version de démonstration</h2><p style="color:var(--muted)">Ici, les comptes restent sur cet appareil : aucun e-mail ne peut être envoyé. Sur paddock.click, vous recevrez un lien pour choisir un nouveau mot de passe.</p><button class="btn green block" data-act="close">Compris</button>`,1)},
  unshow:()=>{S.show[+d.k]=null;save();render()}
  };
  if(H[a])H[a]();
