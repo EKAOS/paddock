@@ -121,7 +121,9 @@
         S.guild = g.mine ? { name: g.mine.name, owner: g.mine.owner, members: (g.mine.members || []).map(absorb) } : null;
         U.guildRank = g.ranking || [];
       } else if (v === "ranking") {
-        U.rank = (await rpc("get_ranking")).map(p => { absorb(p); return p; });
+        const [rk, lr] = await Promise.all([rpc("get_ranking"), rpc("get_live_ranking").catch(() => [])]);
+        U.rank = rk.map(p => { absorb(p); return p; });
+        U.lrank = (lr || []).map(p => ({ u: absorb(p), w: p.w, g: p.g, me: p.me }));
       } else if (v === "mod") {
         U.modNames = (await rpc("mod_list", { q: "" })).map(absorb);
       } else return;
@@ -301,6 +303,15 @@
         : `<div class="turnnote">${esc(foe)} choisit la stat · <span class="timer" id="lvtimer">${left}s</span></div><div class="spin" style="margin-top:12px"></div>`}
       ${rlog(st.log, foe)}<button class="btn ghost block" style="margin-top:16px" data-act="lvcancel">Abandonner</button>`;
   };
+  // fiche d'un autre joueur
+  window.OP = async n => {
+    modal(`<div class="pp"><h2><span>Profil</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2><div class="spin"></div></div>`);
+    try {
+      const r = await rpc("get_profile", { name: n });
+      const name = absorb(r.u) || n;
+      modal(profileHTML({ name, private: r.private, friend: r.friend, since: r.since, unique: r.unique, legend: r.legend, wins: r.wins, show: r.show || [], banner: r.banner, avatar: r.avatar }));
+    } catch (x) { closeModal(); toast(x.message); }
+  };
   window.OA = {
     // améliorations
     upgrade: act(async (el, d) => {
@@ -311,6 +322,7 @@
     btab: act(async (el, d) => { U.btab = d.t; render(); if (d.t === "live") await liveList(true).then(() => render(true)); }),
     lvfind: act(async () => { const r = await rpc("live_find"); openLive(r.id); }),
     lvinvite: act(async (el, d) => { const r = await rpc("live_invite", { name: d.f }); openLive(r.id); }),
+    pvlive: act(async (el, d) => { closeModal(); const r = await rpc("live_invite", { name: d.f }); openLive(r.id); }),
     lvyes: act(async (el, d) => { await rpc("live_respond", { bid: +d.id, accept: true }); openLive(+d.id); }),
     lvno: act(async (el, d) => { await rpc("live_respond", { bid: +d.id, accept: false }); closeModal(); S.liveInv = (S.liveInv || []).filter(x => x.id !== +d.id); render(true); }),
     lvresume: act(async (el, d) => { openLive(+d.id); }),
@@ -342,7 +354,8 @@
     }),
     notifs: act(async () => {
       const h = S.notifs.length ? `<div class="stack">${S.notifs.map(n => `<div class="lrow" style="${n.read ? "" : "border:1px solid var(--green-d)"}"><div class="grow"><div>${esc(n.txt)}</div><div class="sub">${new Date(n.t).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</div></div></div>`).join("")}</div>` : '<div class="empty">Aucune notification.</div>';
-      modal(`<h2><span>Notifications</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2>${h}`);
+      const ph = patchHTML(); markPatchSeen(); render(true);
+      modal(`<h2><span>Notifications</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2><div class="stack">${ph}${h}</div>`);
       if (S.notifs.some(n => !n.read)) { await rpc("mark_notifs_read"); S.notifs.forEach(n => n.read = true); render(true); }
     }),
     // marché
