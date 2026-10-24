@@ -66,6 +66,8 @@
     const a = S.acc[u.u] || (S.acc[u.u] = {});
     a.cert = !!u.cert; a.admin = !!u.admin; a.mod = !!u.mod && !u.admin; a.vip = !!u.pro; a.ac = u.ac;
     if ("ban" in u) a.ban = !!u.ban;
+    if ("seen" in u) a.seen = T(u.seen);
+    if ("ai" in u) a.ai = u.ai || null;
     if ("pro_perm" in u) { a.vip = !!u.pro_perm; a.proUntil = T(u.pro_until); }
     return u.u;
   }
@@ -91,11 +93,41 @@
   async function sync() {
     if (syncing) return; syncing = true;
     try {
-      const [st, sub, lv] = await Promise.all([rpc("get_state"), rpc("get_sub").catch(() => null), rpc("get_levels").catch(() => [])]);
-      apply(st); S.sub = sub || {}; S.lvl = {}; for (const [id, l] of lv || []) S.lvl[id] = l; lastSync = Date.now();
+      const vis = document.visibilityState !== "hidden";
+      const [st, sub, lv, ev, , cm, wl] = await Promise.all([rpc("get_state"), rpc("get_sub").catch(() => null), rpc("get_levels").catch(() => []),
+        rpc("get_event").catch(() => null), vis ? rpc("ping").catch(() => null) : null,
+        rpc("get_community").catch(() => null), rpc("get_wish").catch(() => null)]);
+      apply(st); S.sub = sub || {}; S.evSrv = ev && ev.until ? { t: ev.theme, until: T(ev.until) } : null;
+      if (cm) S.comm = cm;
+      if (S.user.av && S.user.av.t === "img" && thumbFor !== S.user.av.d.length) { thumbFor = S.user.av.d.length; makeThumb(S.user.av.d).then(t => rpc("set_avatar_thumb", { val: t })).catch(() => {}); }
+      if (wl) { if (!wl.length && S.wish.length && !S.wishUp) { S.wishUp = true; rpc("set_wishes", { ids: S.wish }).catch(() => {}); } else S.wish = wl; } S.lvl = {}; for (const [id, l] of lv || []) S.lvl[id] = l; lastSync = Date.now();
     } finally { syncing = false; }
   }
   window.paddockSync = sync;
+  // identifiant de l'appareil (3 comptes maximum par appareil), gardé à deux endroits
+  function deviceId() {
+    let d = null;
+    try { d = localStorage.getItem("paddock-device"); } catch (e) {}
+    if (!d) { const m = document.cookie.match(/(?:^|; )pdkdev=([a-z0-9-]{8,64})/); if (m) d = m[1]; }
+    if (!d) d = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2)).toLowerCase();
+    try { localStorage.setItem("paddock-device", d); } catch (e) {}
+    try { document.cookie = "pdkdev=" + d + "; max-age=315360000; path=/; SameSite=Lax" + (location.protocol === "https:" ? "; Secure" : ""); } catch (e) {}
+    return d;
+  }
+  // miniature 96 px de la photo de profil, pour les classements
+  let thumbFor = -1;
+  function makeThumb(src) {
+    return new Promise((ok, ko) => {
+      const im = new Image();
+      im.onload = () => {
+        const c = document.createElement("canvas"); c.width = c.height = 96; const x = c.getContext("2d");
+        const s = Math.min(im.width, im.height); x.drawImage(im, (im.width - s) / 2, (im.height - s) / 2, s, s, 0, 0, 96, 96);
+        let d = c.toDataURL("image/webp", .75); if (!/^data:image\/webp/.test(d)) d = c.toDataURL("image/jpeg", .8);
+        ok(d);
+      };
+      im.onerror = ko; im.src = src;
+    });
+  }
 
   // ---------- chargement des données par page ----------
   async function loadFor(v) {
@@ -116,6 +148,8 @@
       } else if (v === "chat") {
         const l = await rpc("get_messages", { name: U.chat });
         S.chats[U.chat] = { msgs: l.map(m => ({ me: m.me, txt: m.txt, t: T(m.t) })), unread: false };
+      } else if (v === "shop") {
+        U.merch = await rpc("get_merchant");
       } else if (v === "guild") {
         const g = await rpc("get_guild");
         S.guild = g.mine ? { name: g.mine.name, owner: g.mine.owner, members: (g.mine.members || []).map(absorb) } : null;
@@ -138,6 +172,7 @@
   window.avInner = function (n) {
     if (S && S.user && n === S.user.name) return _avInner(n);
     const a = S && S.acc && S.acc[n];
+    if (a && a.ai) return `<img src="${esc(a.ai)}" alt="">`;
     if (a && a.ac != null && CARS[a.ac]) return cardAv(a.ac);
     return esc(String(n)[0].toUpperCase());
   };
@@ -173,11 +208,14 @@
       try {
         const free = await http("POST", "/rest/v1/rpc/username_available", { q: u });
         if (!free) { set("eu", "Ce pseudo est déjà pris."); return; }
-        const j = await http("POST", "/auth/v1/signup", { email: m, password: p, data: { username: u, invite: inv } });
+        const dev = deviceId();
+        const okDev = await http("POST", "/rest/v1/rpc/device_ok", { d: dev }).catch(() => true);
+        if (okDev === false) { set("ec", "Vous avez déjà créé 3 comptes sur cet appareil : c'est le maximum. Connectez-vous à l'un d'eux."); return; }
+        const j = await http("POST", "/auth/v1/signup", { email: m, password: p, data: { username: u, invite: inv, device: dev } });
         try { sessionStorage.removeItem("paddock-invite"); } catch (x) {}
         if (j && j.access_token) { setSess(j); await afterLogin("Bienvenue au paddock ! 10 paquets vous attendent."); }
         else modal(`<h2>Vérifiez vos e-mails</h2><p style="color:var(--muted)">Nous avons envoyé un lien de confirmation à <b>${esc(m)}</b>. Cliquez dessus, puis revenez vous connecter.</p><button class="btn green block" data-act="close">Compris</button>`, 1);
-      } catch (x) { set("ec", x.message); } finally { btn.disabled = false; }
+      } catch (x) { set("ec", /Database error saving new user/i.test(x.message) ? "Inscription impossible : pseudo déjà pris ou limite de 3 comptes par appareil atteinte." : x.message); } finally { btn.disabled = false; }
     },
     lgf: async e => {
       const m = $("#le").value.trim(), p = $("#lp").value, el = $("#el");
@@ -226,12 +264,13 @@
   V.shop = function () {
     let h = _shop();
     const btn = '<button class="btn pro block" data-act="getpro">Obtenir Paddock Pro</button>';
-    const panel = CFG.paymentsEnabled ? subPanel() : '<div style="color:var(--dim);font-size:13px">L\'abonnement sera bientôt disponible.</div>';
+    const panel = window.IN_APP ? '<div style="color:var(--muted);font-size:13px">Les achats ne sont pas disponibles dans l\'application. Si vous êtes déjà membre Paddock Pro, tous vos avantages sont bien actifs ici.</div>' : CFG.paymentsEnabled ? subPanel() : '<div style="color:var(--dim);font-size:13px">L\'abonnement sera bientôt disponible.</div>';
     if (h.includes(btn)) h = h.replace(btn, panel);
-    else h = h.replace("<div class=\"stack\"><h3", panel.replace(/^/, '<div class="panel stack" style="background:var(--pro-bg);border-color:var(--pro-line)">') + "</div><div class=\"stack\"><h3");
+    else h = h.replace("<div class=\"stack noapp\"><h3", panel.replace(/^/, '<div class="panel stack" style="background:var(--pro-bg);border-color:var(--pro-line)">') + "</div><div class=\"stack noapp\"><h3");
     return h;
   };
   async function checkout(product) {
+    if (window.IN_APP) { toast("Les achats ne sont pas disponibles dans l'application."); return; }
     if (!CFG.paymentsEnabled) { modal(`<h2>Paiement bientôt disponible</h2><p style="color:var(--muted)">Les paiements ne sont pas encore activés sur ce site. Aucun montant n'a été débité.</p><button class="btn ghost block" data-act="close">Compris</button>`, 1); return; }
     const j = await http("POST", "/functions/v1/create-checkout", { product, returnUrl: location.origin + location.pathname }, true);
     if (j && j.url) location.href = j.url; else throw new Error("Paiement indisponible pour le moment.");
@@ -309,10 +348,65 @@
     try {
       const r = await rpc("get_profile", { name: n });
       const name = absorb(r.u) || n;
-      modal(profileHTML({ name, private: r.private, friend: r.friend, since: r.since, unique: r.unique, legend: r.legend, wins: r.wins, show: r.show || [], banner: r.banner, avatar: r.avatar }));
+      modal(profileHTML({ name, private: r.private, friend: r.friend, since: r.since, unique: r.unique, legend: r.legend, wins: r.wins, show: r.show || [], banner: r.banner, avatar: r.avatar, friends: r.friends, seen: T(r.seen) }));
     } catch (x) { closeModal(); toast(x.message); }
   };
+  window.OG = async g => {
+    modal(`<div class="pp"><h2><span>${esc(g)}</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2><div class="spin"></div></div>`);
+    try {
+      const r = await rpc("get_guild_info", { name: g });
+      modal(guildHTML({ name: r.name, owner: r.owner, members: (r.members || []).map(m => ({ u: absorb(m), n: m.n })) }));
+    } catch (x) { closeModal(); toast(x.message); }
+  };
+
+  // ---------- notifications sur le téléphone ----------
+  const pushOk = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window && /^https:/.test(location.protocol);
+  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent), standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  let pushSub = null;
+  async function pushState() {
+    if (!pushOk()) return;
+    try { const reg = await navigator.serviceWorker.ready; pushSub = await reg.pushManager.getSubscription(); } catch (e) { pushSub = null; }
+  }
+  const b64u = s => { const p = "=".repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from(b, c => c.charCodeAt(0)); };
+  window.PUSH = {
+    row() {
+      const lbl = `<div class="grow"><div style="font-weight:600">Notifications sur ce téléphone</div><div style="color:var(--muted);font-size:13px">`;
+      if (!pushOk()) return `<div class="row" style="margin-top:12px">${lbl}${isIOS && !standalone ? "Sur iPhone : touchez Partager puis « Sur l'écran d'accueil », ouvrez Paddock depuis l'icône, puis revenez ici." : "Votre navigateur ne permet pas les notifications."}</div></div></div>`;
+      if (Notification.permission === "denied") return `<div class="row" style="margin-top:12px">${lbl}Bloquées dans les réglages du navigateur. Autorisez-les pour paddock.click puis revenez ici.</div></div></div>`;
+      return `<div class="row" style="margin-top:12px;align-items:center">${lbl}Enchère dépassée, paquets prêts, messages, défis…</div></div>${pushSub ? '<button class="btn ghost" data-act="pushoff">Désactiver</button>' : '<button class="btn green" data-act="pushon">Activer</button>'}</div>`;
+    }
+  };
+  pushState();
+  if ("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message", e => { if (e.data === "open-notifs") { const b = document.querySelector('[data-act="notifs"]'); if (b) b.click(); } });
+
   window.OA = {
+    mbuy: act(async () => {
+      const r = await rpc("merchant_buy"); U.merch = r; blip(880); toast(`${CARS[r.card].n} rejoint votre collection !`); await after("shop");
+    }),
+    commclaim: act(async (el, d) => {
+      const res = await rpc("claim_community", { wk: d.w });
+      U.reveal = packOrder(res.filter(x => CARS[x.id])); blip(700, .12); _go("reveal"); sync().catch(() => {});
+    }),
+    wishm: act(async (el, d) => {
+      const id = +d.id, on = !S.wish.includes(id);
+      S.wish = on ? [...S.wish, id] : S.wish.filter(x => x !== id); save(); cardModal(id); render(true);
+      await rpc("set_wish", { card: id, val: on });
+    }),
+    pushon: act(async () => {
+      const perm = await Notification.requestPermission();
+      if (perm !== "granted") { toast("Notifications refusées."); render(true); return; }
+      const key = await rpc("get_push_key");
+      if (!key) throw new Error("Notifications pas encore disponibles.");
+      const reg = await navigator.serviceWorker.ready;
+      const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(key) });
+      const j = sub.toJSON();
+      await rpc("save_push", { endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth });
+      pushSub = sub; blip(880); toast("Notifications activées sur ce téléphone."); render(true);
+    }),
+    pushoff: act(async () => {
+      if (pushSub) { await rpc("delete_push", { endpoint: pushSub.endpoint }).catch(() => {}); await pushSub.unsubscribe().catch(() => {}); }
+      pushSub = null; toast("Notifications désactivées sur ce téléphone."); render(true);
+    }),
     // améliorations
     upgrade: act(async (el, d) => {
       const id = +d.id; const r = await rpc("upgrade_card", { cid: id });

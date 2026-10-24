@@ -1,7 +1,8 @@
 {
+  "id": "/",
   "name": "Paddock",
   "short_name": "Paddock",
-  "description": "Le jeu de cartes à collectionner des voitures.",
+  "description": "Le jeu de cartes à collectionner des voitures : ouvrez des paquets, échangez, enchérissez et affrontez vos amis.",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",
@@ -10,8 +11,68 @@
   "background_color": "#0a0a0b",
   "theme_color": "#0a0a0b",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": [
+    "games",
+    "entertainment"
+  ],
+  "prefer_related_applications": false,
+  "screenshots": [
+    {
+      "src": "screenshots/2-paquets.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Ouvrez des paquets de 5 voitures"
+    },
+    {
+      "src": "screenshots/3-legendaire.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Tombez sur des cartes légendaires et brillantes"
+    },
+    {
+      "src": "screenshots/4-collection.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Plus de 3 200 voitures à collectionner"
+    },
+    {
+      "src": "screenshots/5-marche.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Enchérissez au marché"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ouvrir un paquet",
+      "url": "./",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
   ]
 }
