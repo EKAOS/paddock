@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "click.paddock.app",
+        "sha256_cert_fingerprints": ["97:3B:BD:A5:E6:7F:00:C2:55:CA:B9:86:54:5B:F7:3A:4A:53:76:64:CB:53:FC:31:AB:40:0C:24:F8:A6:07:22"]
+      }
+    }]
