@@ -68,6 +68,7 @@
     if ("ban" in u) a.ban = !!u.ban;
     if ("seen" in u) a.seen = T(u.seen);
     if ("ai" in u) a.ai = u.ai || null;
+    if ("lv" in u) a.lv = u.lv;
     if ("pro_perm" in u) { a.vip = !!u.pro_perm; a.proUntil = T(u.pro_until); }
     return u.u;
   }
@@ -94,15 +95,40 @@
     if (syncing) return; syncing = true;
     try {
       const vis = document.visibilityState !== "hidden";
-      const [st, sub, lv, ev, , cm, wl] = await Promise.all([rpc("get_state"), rpc("get_sub").catch(() => null), rpc("get_levels").catch(() => []),
+      const res = await Promise.all([rpc("get_state"), rpc("get_sub").catch(() => null), rpc("get_levels").catch(() => []),
         rpc("get_event").catch(() => null), vis ? rpc("ping").catch(() => null) : null,
-        rpc("get_community").catch(() => null), rpc("get_wish").catch(() => null)]);
-      apply(st); S.sub = sub || {}; S.evSrv = ev && ev.until ? { t: ev.theme, until: T(ev.until) } : null;
-      if (cm) S.comm = cm;
-      if (S.user.av && S.user.av.t === "img" && thumbFor !== S.user.av.d.length) { thumbFor = S.user.av.d.length; makeThumb(S.user.av.d).then(t => rpc("set_avatar_thumb", { val: t })).catch(() => {}); }
-      if (wl) { if (!wl.length && S.wish.length && !S.wishUp) { S.wishUp = true; rpc("set_wishes", { ids: S.wish }).catch(() => {}); } else S.wish = wl; } S.lvl = {}; for (const [id, l] of lv || []) S.lvl[id] = l; lastSync = Date.now();
+        rpc("get_community").catch(() => null), rpc("get_wish").catch(() => null), rpc("get_level").catch(() => null),
+        rpc("get_secrets").catch(() => null), rpc("get_poll").catch(() => undefined)]);
+      applyAll(res, true);
+      try { localStorage.setItem(OKEY, JSON.stringify({ t: Date.now(), r: res.slice(0, 8) })); } catch (e) {}
+      if (window.OFFLINE) { window.OFFLINE = false; setTimeout(() => toast("De retour en ligne."), 200); }
     } finally { syncing = false; }
   }
+  // applique les réponses du serveur (ou la dernière copie gardée pour le mode hors ligne)
+  function applyAll(res, live) {
+    {
+      const [st, sub, lv, ev, , cm, wl, lvl, sec, poll] = res;
+      apply(st); S.sub = sub || {}; S.evSrv = ev && ev.until ? { t: ev.theme, until: T(ev.until) } : null;
+      if (cm) S.comm = cm;
+      if (lvl) { const before = S.lvInfo && S.lvInfo.lv; S.lvInfo = lvl; if (before && lvl.lv > before) setTimeout(() => { blip(990, .25); toast(`Niveau ${lvl.lv} atteint ! Récompense dans vos notifications.`); }, 400); }
+      if (S.user.av && S.user.av.t === "img" && thumbFor !== S.user.av.d.length) { thumbFor = S.user.av.d.length; makeThumb(S.user.av.d).then(t => rpc("set_avatar_thumb", { val: t })).catch(() => {}); }
+      if (wl) { if (!wl.length && S.wish.length && !S.wishUp) { S.wishUp = true; rpc("set_wishes", { ids: S.wish }).catch(() => {}); } else S.wish = wl; } S.lvl = {}; for (const [id, l] of lv || []) S.lvl[id] = l;
+      if (live) {
+        lastSync = Date.now();
+        if (sec) { const prev = S.secrets; S.secrets = prev ? Object.assign({}, prev) : null; if (prev) Object.keys(sec).forEach(k => { if (!prev[k]) secretUnlock(k); }); S.secrets = sec; }
+        if (poll !== undefined) S.poll = poll ? Object.assign({}, poll, { end: T(poll.end) }) : null;
+      }
+    }
+  }
+  const OKEY = "paddock-offline";
+  function offlineBoot() {
+    try {
+      const o = JSON.parse(localStorage.getItem(OKEY) || "null"); if (!o || !o.r) return false;
+      S = null; applyAll(o.r, false); window.OFFLINE = true; return !!(S && S.user);
+    } catch (e) { return false; }
+  }
+  window.addEventListener("online", () => { if (sess) sync().then(() => render(true)).catch(() => {}); });
+  window.addEventListener("offline", () => { if (S && S.user) { window.OFFLINE = true; render(true); } });
   window.paddockSync = sync;
   // identifiant de l'appareil (3 comptes maximum par appareil), gardé à deux endroits
   function deviceId() {
@@ -133,7 +159,8 @@
   async function loadFor(v) {
     try {
       if (v === "market" || v === "listing") {
-        const l = await rpc("get_market");
+        const [l, au] = await Promise.all([rpc("get_market"), rpc("get_auto_bids").catch(() => ({}))]); U.autos = au || {};
+        U.prices = Object.assign(U.prices || {}, await rpc("get_prices", { cards: [...new Set(l.map(x => x.card))] }).catch(() => ({})));
         S.listings = l.map(x => ({ id: String(x.id), card: x.card, holo: x.holo, seller: absorb(x.seller), mine: x.mine, start: x.start, end: T(x.end), t: T(x.t), bids: x.bids.map(b => ({ who: b.who, amt: b.amt })) }));
       } else if (v === "trades") {
         const l = await rpc("get_trades");
@@ -152,14 +179,17 @@
         U.merch = await rpc("get_merchant");
       } else if (v === "guild") {
         const g = await rpc("get_guild");
-        S.guild = g.mine ? { name: g.mine.name, owner: g.mine.owner, members: (g.mine.members || []).map(absorb) } : null;
-        U.guildRank = g.ranking || [];
+        S.guild = g.mine ? { name: g.mine.name, owner: g.mine.owner, members: (g.mine.members || []).map(absorb), goal: g.mine.goal, wk: Object.fromEntries((g.mine.members || []).map(m => [m.u || m.name || absorb(m), m.wk || 0])) } : null;
+        U.guildRank = g.ranking || []; U.guildWeek = g.week || []; U.gchamp = g.champ || null;
       } else if (v === "ranking") {
         const [rk, lr] = await Promise.all([rpc("get_ranking"), rpc("get_live_ranking").catch(() => [])]);
         U.rank = rk.map(p => { absorb(p); return p; });
         U.lrank = (lr || []).map(p => ({ u: absorb(p), w: p.w, g: p.g, me: p.me }));
       } else if (v === "mod") {
-        U.modNames = (await rpc("mod_list", { q: "" })).map(absorb);
+        const [ml, rp] = await Promise.all([rpc("mod_list", { q: "" }), rpc("get_reports").catch(() => [])]);
+        U.modNames = ml.map(absorb); U.reports = (rp || []).map(r => Object.assign({}, r, { t: T(r.t) }));
+      } else if (v === "settings") {
+        U.blocks = await rpc("get_blocks");
       } else return;
       if (U.view === v || (v === "market" && U.view === "listing")) render(true);
     } catch (e) { toast(e.message); }
@@ -189,7 +219,7 @@
       .replace('<label class="chk"><input type="checkbox" id="sc">', `<div class="field"><label for="si">Code d'invitation (facultatif)</label><input class="input" id="si" maxlength="20" value="${esc(inv)}"></div><label class="chk"><input type="checkbox" id="sc">`);
     return h;
   };
-  function signedOut() { S = null; U.view = "packs"; render(); }
+  function signedOut() { try { localStorage.removeItem(OKEY); } catch (e) {} window.OFFLINE = false; S = null; U.view = "packs"; render(); }
 
   async function afterLogin(msg) {
     await sync(); U.view = "packs"; render(); window.scrollTo(0, 0); if (msg) toast(msg);
@@ -263,6 +293,8 @@
   const _shop = V.shop;
   V.shop = function () {
     let h = _shop();
+    h = h.replace('<div class="fine">Le paiement n\'est pas encore branché : aucun montant n\'est débité.</div>',
+      CFG.paymentsEnabled ? '<div class="fine">Paiement sécurisé par Stripe. Les pistons arrivent quelques secondes après le paiement.</div>' : '<div class="fine">Le paiement n\'est pas encore activé : aucun montant n\'est débité.</div>');
     const btn = '<button class="btn pro block" data-act="getpro">Obtenir Paddock Pro</button>';
     const panel = window.IN_APP ? '<div style="color:var(--muted);font-size:13px">Les achats ne sont pas disponibles dans l\'application. Si vous êtes déjà membre Paddock Pro, tous vos avantages sont bien actifs ici.</div>' : CFG.paymentsEnabled ? subPanel() : '<div style="color:var(--dim);font-size:13px">L\'abonnement sera bientôt disponible.</div>';
     if (h.includes(btn)) h = h.replace(btn, panel);
@@ -348,9 +380,24 @@
     try {
       const r = await rpc("get_profile", { name: n });
       const name = absorb(r.u) || n;
-      modal(profileHTML({ name, private: r.private, friend: r.friend, since: r.since, unique: r.unique, legend: r.legend, wins: r.wins, show: r.show || [], banner: r.banner, avatar: r.avatar, friends: r.friends, seen: T(r.seen) }));
+      modal(profileHTML(Object.assign({}, r, { name, seen: T(r.seen), show: r.show || [] })));
     } catch (x) { closeModal(); toast(x.message); }
   };
+  window.OPRICES = async ids => {
+    try {
+      const r = await rpc("get_prices", { cards: ids }); U.prices = Object.assign(U.prices || {}, r);
+      ids.forEach(id => { if (!r[id]) U.prices[id] = null; });
+      const el = document.getElementById("sellpx"); if (el && ids.length === 1) el.innerHTML = priceBox(ids[0]);
+    } catch (x) {}
+  };
+  window.OPCOL = async n => {
+    try {
+      const l = await rpc("get_collection", { name: n }); const cards = {};
+      l.forEach(([c, k, h]) => { if (CARS[c]) cards[c] = [k, h]; });
+      closeModal(); U.pcol = { name: n, cards, q: "", r: "", b: "", t: "", sort: "rar", p: 0, mode: "" }; go("pcol");
+    } catch (x) { toast(x.message); }
+  };
+  const pollConv = p => p ? Object.assign({}, p, { end: T(p.end) }) : null;
   window.OG = async g => {
     modal(`<div class="pp"><h2><span>${esc(g)}</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2><div class="spin"></div></div>`);
     try {
@@ -380,6 +427,26 @@
   if ("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message", e => { if (e.data === "open-notifs") { const b = document.querySelector('[data-act="notifs"]'); if (b) b.click(); } });
 
   window.OA = {
+    reportgo: act(async (el, d) => {
+      const r = (document.querySelector("input[name=rpr]:checked") || {}).value || "autre";
+      await rpc("report_user", { name: d.f, reason: r, details: $("#rpd").value.trim() }); closeModal(); toast("Signalement envoyé. Merci, la modération va regarder.");
+    }),
+    blockgo: act(async (el, d) => { await rpc("block_user", { name: d.f }); delete S.chats[d.f]; closeModal(); toast(`${d.f} est bloqué.`); await after("settings"); }),
+    unblock: act(async (el, d) => { await rpc("unblock_user", { name: d.f }); closeModal(); toast(`${d.f} est débloqué.`); await after("settings"); }),
+    rpdone: act(async (el, d) => { await rpc("resolve_report", { rid: +d.id, all_target: !!d.all }); toast("Signalement traité."); await after("mod"); }),
+    pvote: act(async (el, d) => { if (!S.poll) return; S.poll = pollConv(await rpc("vote_poll", { pid: S.poll.id, choice: +d.i })); blip(700); render(true); }),
+    pollnew: act(async () => {
+      const q = $("#pollq").value.trim(), o = [1, 2, 3, 4].map(i => $("#pollo" + i).value.trim()).filter(Boolean);
+      S.poll = pollConv(await rpc("mod_create_poll", { question: q, options: o, days: +$("#polld").value })); toast("Sondage lancé : il apparaît dans l'onglet Paquets de tous les joueurs."); render(true);
+    }),
+    pollclose: act(async (el, d) => { await rpc("mod_close_poll", { pid: +d.id }); S.poll = pollConv(await rpc("get_poll")); toast("Sondage clos."); render(true); }),
+    autoon: act(async () => {
+      const m = parseInt(($("#autoin") || {}).value) || 0; if (!m) return toast("Indiquez un maximum.");
+      await rpc("set_auto_bid", { lid: +U.lid, max_amount: m }); blip(660); toast(`Enchère automatique activée jusqu'à ${fmt(m)} pistons.`); await after("market");
+    }),
+    autooff: act(async () => { await rpc("cancel_auto_bid", { lid: +U.lid }); toast("Enchère automatique arrêtée."); await after("market"); }),
+    pubjoin: (el, d) => { try { sessionStorage.setItem("paddock-invite", d.f); } catch (e) {} U.auth = "signup"; render(); window.scrollTo(0, 0); },
+    pubhave: () => { U.auth = "login"; render(); window.scrollTo(0, 0); },
     mbuy: act(async () => {
       const r = await rpc("merchant_buy"); U.merch = r; blip(880); toast(`${CARS[r.card].n} rejoint votre collection !`); await after("shop");
     }),
@@ -492,7 +559,7 @@
       });
     }),
     addf: act(async (el, d) => { await rpc("add_friend", { name: d.f }); toast(`${d.f} ajouté à vos amis.`); el.outerHTML = '<span class="pill">Ami</span>'; await loadFor("friends"); }),
-    chat: act(async (el, d) => { U.chat = d.f; S.chats[d.f] = S.chats[d.f] || { msgs: [], unread: false }; closeModal(); window.go("chat"); }),
+    chat: act(async (el, d) => { U.chat = d.f; S.chats[d.f] = S.chats[d.f] || { msgs: [], unread: false }; closeModal(); window.go("chat"); setTimeout(() => sync().then(() => render(true)).catch(() => {}), 1500); }),
     // batailles
     bgo: act(async () => {
       const B = U.battle; const r = await rpc("battle_start", { name: B.foe, picks: B.pick });
@@ -517,6 +584,10 @@
     ginv1: act(async (el, d) => { await rpc("guild_invite", { name: d.f }); closeModal(); toast(`${d.f} a rejoint l'écurie.`); await after("guild"); }),
     gleave: act(async () => { await rpc("leave_guild"); await after("guild"); }),
     // modération
+    modpro: act(async (el, d) => {
+      const days = +d.d; await rpc("mod_pro_days", { name: d.n, days });
+      toast(days ? `Paddock Pro offert à ${d.n} pour ${days} jours.` : `Paddock Pro retiré à ${d.n}.`); await after("mod");
+    }),
     modt: act(async (el, d) => {
       const a = A(d.n); const flag = d.k === "vip" ? "pro" : d.k;
       const cur = flag === "pro" ? !!a.vip : flag === "mod" ? !!(a.mod || a.admin) : !!a[flag];
@@ -621,8 +692,20 @@
       $("#app").innerHTML = `<div class="panel empty" style="margin-top:40px"><b>Configuration manquante</b>Renseignez l'adresse et la clé publique Supabase dans le fichier config.js.</div>`; return;
     }
     S = null;
-    if (sess) { try { await sync(); } catch (e) { if (!sess) S = null; } }
+    if (sess) { try { await sync(); } catch (e) { if (!sess || !offlineBoot()) { if (!sess) S = null; } } }
     render();
+    const pm = location.hash.match(/^#profil-(.+)$/);
+    if (pm) {
+      const who = decodeURIComponent(pm[1]); history.replaceState(null, "", location.pathname);
+      if (S && S.user) setTimeout(() => openProfile(who), 300);
+      else {
+        try {
+          const pr = await http("POST", "/rest/v1/rpc/get_public_profile", { name: who });
+          if (pr) { $("#app").innerHTML = publicProfileHTML(pr); window.scrollTo(0, 0); }
+          else toast("Ce joueur n'existe pas ou n'est plus sur Paddock.");
+        } catch (x) { toast(x.message); }
+      }
+    }
     if (location.hash === "#paiement-ok") { history.replaceState(null, "", location.pathname); setTimeout(() => toast("Paiement reçu, merci ! Votre achat arrive dans quelques secondes."), 300); setTimeout(() => sync().then(() => render(true)).catch(() => {}), 4000); }
     else if (location.hash === "#paiement-annule") { history.replaceState(null, "", location.pathname); setTimeout(() => toast("Paiement annulé. Aucun montant n'a été débité."), 300); }
     setInterval(() => { if (S && S.user) tick(); }, 1000);
