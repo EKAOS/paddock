@@ -224,6 +224,7 @@
   async function afterLogin(msg) {
     await sync(); U.view = "packs"; render(); window.scrollTo(0, 0); if (msg) toast(msg);
     if (window.PLAY) playRestore(); else playInit();
+    if (/inscri|bienvenue/i.test(msg || "")) { try { adsEvent("sign_up"); } catch (e) {} }
   }
 
   window.OS = {

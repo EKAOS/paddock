@@ -611,6 +611,8 @@ button,a,.card,input,select{touch-action:manipulation}
 .pmore{display:grid;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}.pmore div{display:flex;justify-content:space-between;gap:10px;padding:9px 12px;font-size:13.5px}.pmore div+div{border-top:1px solid var(--line)}.pmore span{color:var(--muted)}.pmore b{font-variant-numeric:tabular-nums}
 .navbadge{position:absolute;top:6px;right:calc(50% - 22px);min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--red);color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center;letter-spacing:0;box-shadow:0 0 0 2px var(--panel)}
 .menubadge{margin-left:auto;background:var(--red);color:#fff;font-size:12px;font-weight:800;border-radius:999px;padding:2px 9px}
+#ckbar{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:80;max-width:560px;margin:0 auto;background:var(--panel);border:1px solid var(--line2);border-radius:16px;padding:14px 16px;display:grid;gap:12px;font-size:13.5px;color:var(--muted);box-shadow:0 20px 50px -10px rgba(0,0,0,.7)}
+#ckbar a{color:var(--green)}#ckbar .ckb{display:grid;grid-template-columns:1fr 1fr;gap:10px}#ckbar .btn{padding:10px 12px}
 textarea.input{font:inherit;resize:vertical;line-height:1.4}
 .pfoot{display:flex;justify-content:center;gap:10px;color:var(--dim);font-size:13.5px;margin-top:2px}.pfoot .linkbtn{color:var(--dim);font-size:13.5px}
 .rpr{display:flex;gap:10px;align-items:center;padding:11px 12px;border-radius:12px;border:1px solid var(--line2);background:var(--panel2);cursor:pointer;font-size:14.5px}.rpr:has(input:checked){border-color:var(--red)}.rpr input{accent-color:var(--red)}
@@ -1033,6 +1035,22 @@ const coinIc=I.coin;
 
 /* ---------- views ---------- */
 const unreadCount=()=>{const loc=Object.values(S.chats||{}).filter(c=>c.unread).length;return window.ONLINE?Math.max(S.unreadMsgs||0,loc):loc};
+// ---------- mesure des publicités (Google Ads), seulement avec consentement ----------
+const ADS_ID="AW-18536972244";
+const ADS_ON=/(^|\.)paddock\.click$/.test(location.hostname)&&!IN_APP;
+function consentGet(){try{const c=JSON.parse(localStorage.getItem("paddock-consent")||"null");if(c&&Date.now()-c.t<182*86400000)return c.v}catch(e){}return null}
+function consentSet(v){try{localStorage.setItem("paddock-consent",JSON.stringify({v,t:Date.now()}))}catch(e){}if(v==="yes")adsLoad();else adsOff();const b=document.getElementById("ckbar");if(b)b.remove()}
+let adsLoaded=false;
+function adsLoad(){if(!ADS_ON||adsLoaded)return;adsLoaded=true;window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};
+ gtag("consent","default",{ad_storage:"granted",ad_user_data:"granted",ad_personalization:"granted",analytics_storage:"denied"});gtag("js",new Date());gtag("config",ADS_ID);
+ const sc=document.createElement("script");sc.async=true;sc.src="https://www.googletagmanager.com/gtag/js?id="+ADS_ID;document.head.appendChild(sc)}
+function adsOff(){if(window.gtag)gtag("consent","update",{ad_storage:"denied",ad_user_data:"denied",ad_personalization:"denied"});
+ try{document.cookie.split(";").map(c=>c.trim().split("=")[0]).filter(n=>/^(_gcl|_gac|IDE|test_cookie)/.test(n)).forEach(n=>{document.cookie=n+"=; max-age=0; path=/; domain=.paddock.click";document.cookie=n+"=; max-age=0; path=/"})}catch(e){}}
+function adsEvent(name,params){if(adsLoaded&&window.gtag)gtag("event",name,params||{})}
+function consentBar(){if(!ADS_ON||consentGet()||document.getElementById("ckbar"))return;const b=document.createElement("div");b.id="ckbar";b.setAttribute("role","dialog");b.setAttribute("aria-label","Cookies");
+ b.innerHTML=`<div>Paddock aimerait utiliser un cookie de <b>Google Ads</b> pour savoir si ses publicités font venir des joueurs. Rien d'autre n'est suivi. <a href="confidentialite.html#cookies" target="_blank" rel="noopener">En savoir plus</a></div><div class="ckb"><button class="btn ghost" data-ck="no">Refuser</button><button class="btn green" data-ck="yes">Accepter</button></div>`;
+ b.addEventListener("click",e=>{const k=e.target.closest("[data-ck]");if(k)consentSet(k.dataset.ck)});document.body.appendChild(b)}
+if(consentGet()==="yes")adsLoad();setTimeout(consentBar,1500);
 function topbar(){const unread=S.notifs.some(n=>!n.read)||!patchSeen();return`${window.OFFLINE?'<div class="offbar">Hors ligne · vous consultez votre collection. Tout se remettra à jour au retour du réseau.</div>':""}<div class="topbar"><button class="coins" data-act="go" data-v="shop" aria-label="Boutique, solde">${coinIc}${fmt(S.coins)}</button><button class="bell" data-act="notifs" aria-label="Notifications">${I.bell}${unread?'<span class="dot"></span>':""}</button></div>`}
 function rchips(cur,act){return`<div class="rchips">${RCH.map(r=>`<button class="rchip ${r} ${cur===r?"on":""}" data-act="${act}" data-r="${r}">${RSHORT[r]}</button>`).join("")}</div>`}
 
@@ -1247,6 +1265,7 @@ V.shop=()=>`<div class="pagehead"><h1 style="display:flex;gap:10px;align-items:c
 V.settings=()=>{const t=(k,tt,ts)=>`<div class="toggle"><div><div class="tt">${tt}</div><div class="ts">${ts}</div></div><button class="sw ${S.set[k]?"on":""}" data-act="set" data-k="${k}" aria-label="${tt}"></button></div>`;
  return`<div class="pagehead"><h1>Paramètres</h1></div><div class="stack set">
  <div class="panel"><h3>Son</h3>${t("sound","Sons activés","Effets sonores à l'ouverture des paquets")}</div>
+ ${ADS_ON?`<div class="panel"><h3>Cookies</h3><div class="toggle"><div><div class="tt">Mesure des publicités</div><div class="ts">Un cookie Google Ads pour savoir si nos pubs font venir des joueurs</div></div><button class="sw ${consentGet()==="yes"?"on":""}" data-act="ckset" aria-label="Mesure des publicités"></button></div></div>`:""}
  ${blocksHTML()}<div class="panel stack"><h3 style="margin:0">Informations du compte</h3><div class="field"><label for="semail">Adresse e-mail</label><input class="input" id="semail" type="email" value="${esc(S.user.email)}"></div><div class="field"><label for="suser" style="display:flex;gap:6px;align-items:center">Nom d'utilisateur ${BADGE.vip}</label><input class="input" id="suser" value="${esc(S.user.name)}" maxlength="20" ${!meVip()||now()<nameNext()?"disabled":""}>
  <div class="ts" style="color:var(--muted);font-size:13px">${!meVip()?'Changer de pseudo est réservé aux membres Paddock Pro.':now()<nameNext()?`Prochain changement de pseudo possible dans <span data-end="${nameNext()}">${fmtLeft(nameNext()-now())}</span>.`:'Vous pouvez changer de pseudo une fois tous les 7 jours.'}</div></div><button class="btn dark block" data-act="saveacc">Sauvegarder</button></div>
  <div class="panel stack"><h3 style="margin:0;display:flex;gap:8px;align-items:center">Lien d'invitation ${BADGE.vip}</h3>
@@ -1513,6 +1532,7 @@ document.addEventListener("click",e=>{
  wipe2:()=>{try{localStorage.removeItem(KEY)}catch(e){}S=null;closeModal();render()},
  claim:()=>{const i=+d.i;if(S.claimed.includes(i))return;S.claimed.push(i);S.coins+=ACH[i][4];save();toast(`+${ACH[i][4]} pistons`);render()},
  gtab:()=>{U.gtab=d.t;render()},
+ ckset:()=>{consentSet(consentGet()==="yes"?"no":"yes");toast(consentGet()==="yes"?"Mesure des publicités activée.":"Mesure des publicités désactivée.");render()},
  report:()=>reportModal(d.f),block:()=>blockModal(d.f),
  reportgo:()=>{const r=(document.querySelector('input[name=rpr]:checked')||{}).value||"autre";S.reports=S.reports||[];if(S.reports.some(x=>x.target===d.f))return toast("Vous avez déjà signalé ce joueur.");S.reports.unshift({id:Date.now(),target:d.f,by:S.user.name,reason:r,details:$("#rpd").value.trim(),t:now(),n:1});save();closeModal();toast("Signalement envoyé. Merci, la modération va regarder.")},
  blockgo:()=>{S.blocks=S.blocks||[];if(!S.blocks.includes(d.f))S.blocks.push(d.f);S.friends=S.friends.filter(f=>f!==d.f);delete S.chats[d.f];save();closeModal();toast(`${d.f} est bloqué.`);render()},
