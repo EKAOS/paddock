@@ -223,6 +223,7 @@
 
   async function afterLogin(msg) {
     await sync(); U.view = "packs"; render(); window.scrollTo(0, 0); if (msg) toast(msg);
+    if (window.PLAY) playRestore(); else playInit();
   }
 
   window.OS = {
@@ -296,13 +297,68 @@
     h = h.replace('<div class="fine">Le paiement n\'est pas encore branché : aucun montant n\'est débité.</div>',
       CFG.paymentsEnabled ? '<div class="fine">Paiement sécurisé par Stripe. Les pistons arrivent quelques secondes après le paiement.</div>' : '<div class="fine">Le paiement n\'est pas encore activé : aucun montant n\'est débité.</div>');
     const btn = '<button class="btn pro block" data-act="getpro">Obtenir Paddock Pro</button>';
-    const panel = window.IN_APP ? '<div style="color:var(--muted);font-size:13px">Les achats ne sont pas disponibles dans l\'application. Si vous êtes déjà membre Paddock Pro, tous vos avantages sont bien actifs ici.</div>' : CFG.paymentsEnabled ? subPanel() : '<div style="color:var(--dim);font-size:13px">L\'abonnement sera bientôt disponible.</div>';
+    const panel = window.IN_APP ? (window.PLAY ? playSubPanel() : '<div style="color:var(--muted);font-size:13px">Les achats ne sont pas disponibles dans l\'application. Si vous êtes déjà membre Paddock Pro, tous vos avantages sont bien actifs ici.</div>') : CFG.paymentsEnabled ? subPanel() : '<div style="color:var(--dim);font-size:13px">L\'abonnement sera bientôt disponible.</div>';
+    if (window.IN_APP && window.PLAY) {
+      h = h.replace('<div class="fine">Paiement sécurisé par Stripe. Les pistons arrivent quelques secondes après le paiement.</div>', '<div class="fine">Paiement sécurisé par Google Play. Les pistons arrivent quelques secondes après le paiement.</div>');
+      if (PLAY.price.pistons_2500) h = h.replace(' 4,99 €</button>', ' ' + PLAY.price.pistons_2500 + '</button>');
+      if (PLAY.price.pistons_5000) h = h.replace(' 8,99 €</button>', ' ' + PLAY.price.pistons_5000 + '</button>');
+    }
     if (h.includes(btn)) h = h.replace(btn, panel);
     else h = h.replace("<div class=\"stack noapp\"><h3", panel.replace(/^/, '<div class="panel stack" style="background:var(--pro-bg);border-color:var(--pro-line)">') + "</div><div class=\"stack noapp\"><h3");
     return h;
   };
+  // ---------- paiement Google Play (appli Android du Play Store) ----------
+  const PLAY_SKU = { pistons_2500: "pistons_2500", pistons_5000: "pistons_5000", pro_month: "pro_mensuel" };
+  window.PLAY = null;
+  function playSubPanel() {
+    const s = S.sub || {};
+    if (s.play && Date.parse(s.play) > Date.now()) return `<div style="color:var(--muted)">Abonnement Google Play actif · renouvellement automatique chaque mois.</div><a class="btn ghost block" style="text-align:center;text-decoration:none" href="https://play.google.com/store/account/subscriptions?sku=pro_mensuel&package=click.paddock.app" target="_blank" rel="noopener">Gérer ou résilier dans Google Play</a>`;
+    if (["active", "trialing"].includes(s.status)) return `<div style="color:var(--muted)">Votre abonnement Paddock Pro est actif. Tous vos avantages sont disponibles ici.</div>`;
+    if (S.acc[S.user.name] && S.acc[S.user.name].vip) return `<div style="color:var(--muted)">Paddock Pro est actif sur votre compte.</div>`;
+    const p = PLAY.price.pro_mensuel;
+    return `<button class="btn pro block" data-act="buypro">S'abonner${p ? " · " + p + " / mois" : ""}</button><div style="color:var(--dim);font-size:13px">Paiement par Google Play, renouvellement automatique chaque mois. Résiliable à tout moment dans Google Play, sans engagement.</div>`;
+  }
+  async function playVerify(sku, token) { await refresh(); return http("POST", "/functions/v1/play-verify", { sku, token }, true); }
+  async function playRestore() {
+    try {
+      const list = await PLAY.svc.listPurchases(); let n = 0;
+      for (const p of list) {
+        try { const r = await playVerify(p.itemId, p.purchaseToken); n++; if (r && r.consume) await PLAY.svc.consume(p.purchaseToken).catch(() => {}); } catch (e) {}
+      }
+      if (n && S && S.user) { await sync(); render(true); }
+    } catch (e) {}
+  }
+  async function playInit() {
+    if (!window.IN_APP || window.PLAY || !("getDigitalGoodsService" in window)) return;
+    try {
+      const svc = await window.getDigitalGoodsService("https://play.google.com/billing"); if (!svc) return;
+      const det = await svc.getDetails(Object.values(PLAY_SKU)); const price = {};
+      (det || []).forEach(d => { try { price[d.itemId] = new Intl.NumberFormat("fr-FR", { style: "currency", currency: d.price.currency }).format(+d.price.value); } catch (e) {} });
+      window.PLAY = { svc, price }; window.PLAYBILL = true; if (S && S.user) render(true);
+      if (S && S.user) playRestore();
+    } catch (e) { console.warn("Paiement Google Play indisponible :", e && e.message); }
+  }
+  window.playInit = playInit;
+  async function playBuy(product) {
+    const sku = PLAY_SKU[product]; if (!sku) throw new Error("Produit inconnu.");
+    if (!("PaymentRequest" in window)) throw new Error("Mettez à jour l'application pour acheter.");
+    const req = new PaymentRequest([{ supportedMethods: "https://play.google.com/billing", data: { sku } }], { total: { label: "Total", amount: { currency: "EUR", value: "0" } } });
+    let res;
+    try { res = await req.show(); } catch (e) { if (e && e.name === "AbortError") return; throw new Error("Le paiement n'a pas pu démarrer."); }
+    const token = res.details && res.details.purchaseToken;
+    try {
+      const r = await playVerify(sku, token);
+      await res.complete("success").catch(() => {});
+      if (r && r.consume) await PLAY.svc.consume(token).catch(() => {});
+      blip(990, .2); toast(product === "pro_month" ? "Bienvenue dans Paddock Pro !" : "Merci ! Vos pistons sont arrivés.");
+      await after();
+    } catch (e) {
+      try { await res.complete("fail"); } catch (_) {}
+      throw new Error((e && e.message ? e.message + " " : "") + "Si vous avez été débité, l'achat sera crédité automatiquement au prochain lancement.");
+    }
+  }
   async function checkout(product) {
-    if (window.IN_APP) { toast("Les achats ne sont pas disponibles dans l'application."); return; }
+    if (window.IN_APP) { if (window.PLAY) return playBuy(product); toast("Les achats ne sont pas disponibles dans l'application."); return; }
     if (!CFG.paymentsEnabled) { modal(`<h2>Paiement bientôt disponible</h2><p style="color:var(--muted)">Les paiements ne sont pas encore activés sur ce site. Aucun montant n'a été débité.</p><button class="btn ghost block" data-act="close">Compris</button>`, 1); return; }
     const j = await http("POST", "/functions/v1/create-checkout", { product, returnUrl: location.origin + location.pathname }, true);
     if (j && j.url) location.href = j.url; else throw new Error("Paiement indisponible pour le moment.");
@@ -710,6 +766,6 @@
     else if (location.hash === "#paiement-annule") { history.replaceState(null, "", location.pathname); setTimeout(() => toast("Paiement annulé. Aucun montant n'a été débité."), 300); }
     setInterval(() => { if (S && S.user) tick(); }, 1000);
   }
-  boot();
+  boot().then(() => playInit());
   if ("serviceWorker" in navigator && /^https:/.test(location.protocol)) navigator.serviceWorker.register("sw.js").catch(() => {});
 })();

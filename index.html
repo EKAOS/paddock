@@ -600,7 +600,7 @@ button,a,.card,input,select{touch-action:manipulation}
 .cbar{height:8px;border-radius:9px;background:var(--panel2);overflow:hidden;border:1px solid var(--line)}.cbar i{display:block;height:100%;background:linear-gradient(90deg,var(--green-d),var(--green));border-radius:9px}
 .mrow{display:grid;grid-template-columns:140px minmax(0,1fr);gap:14px;align-items:start}.mrow .card .c-desc{display:none}.mrow .card .c-title{font-size:13px}
 .rkn{width:26px;flex:0 0 auto;text-align:center;font-family:var(--f-head);font-weight:800;font-size:15px;color:var(--muted);font-variant-numeric:tabular-nums}.rkn.top{width:28px;height:28px;line-height:28px;border-radius:50%;color:#111;font-size:14px}.rkn.t0{background:#fde047}.rkn.t1{background:#e5e7eb}.rkn.t2{background:#fdba74}
-.inapp .noapp,.inapp .buy,.inapp [data-act="getpro"],.inapp [data-act="buypro"],.inapp [data-act="buy"]{display:none!important}
+.inapp:not(.playbill) .noapp,.inapp:not(.playbill) .buy,.inapp:not(.playbill) [data-act="getpro"],.inapp:not(.playbill) [data-act="buypro"],.inapp:not(.playbill) [data-act="buy"]{display:none!important}
 .instbar{display:flex;align-items:center;gap:10px;border:1px solid var(--green-d);background:linear-gradient(120deg,var(--green-soft),transparent 70%);border-radius:14px;padding:12px 10px 12px 14px;margin:8px 0 4px;text-align:left}.instbar b{display:block;font-family:var(--f-head);font-size:15px}.instbar span{display:block;color:var(--muted);font-size:13px;margin-top:2px}
 .lvbox{display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:linear-gradient(120deg,rgba(214,180,106,.08),transparent 60%)}
 .lvbox .bar{height:6px;margin-top:7px}.lvbox .bar i{background:linear-gradient(90deg,#8a7448,#e3c78b)}
@@ -1310,7 +1310,7 @@ function showTuto(i=0){const [ic,t,p]=TUTO[i];const last=i===TUTO.length-1;
  <div class="row" style="width:100%">${i?`<button class="btn ghost grow" data-act="tuto" data-i="${i-1}">Retour</button>`:`<button class="btn ghost grow" data-act="tutoend">Passer</button>`}<button class="btn green grow" data-act="${last?"tutoend":"tuto"}" data-i="${i+1}">${last?"C'est parti !":"Suivant"}</button></div></div>`,1)}
 function maybeTuto(){if(S&&S.user&&!tutoDone()&&!document.querySelector(".overlay"))setTimeout(()=>{if(!tutoDone()&&!document.querySelector(".overlay"))showTuto(0)},500)}
 function render(keep){
- document.body.classList.toggle("light",!!(S&&S.set.light));document.body.classList.toggle("inapp",IN_APP);
+ document.body.classList.toggle("light",!!(S&&S.set.light));document.body.classList.toggle("inapp",IN_APP);document.body.classList.toggle("playbill",!!window.PLAYBILL);
  {const d=new Date(),m=d.getMonth(),j=d.getDate();document.body.classList.toggle("halloween",(m===9&&j>=20)||(m===10&&j<=2));const xm=m===11||(m===0&&j<=6);document.body.classList.toggle("noel",xm);if(xm&&!document.getElementById("snow")){const sn=document.createElement("div");sn.id="snow";sn.setAttribute("aria-hidden","true");sn.innerHTML=Array.from({length:28},()=>`<i style="left:${(Math.random()*100).toFixed(1)}%;animation-duration:${(7+Math.random()*9).toFixed(1)}s;animation-delay:-${(Math.random()*12).toFixed(1)}s;width:${(3+Math.random()*4).toFixed(1)}px;height:${(3+Math.random()*4).toFixed(1)}px;opacity:${(.35+Math.random()*.5).toFixed(2)}"></i>`).join("");document.body.appendChild(sn)}}
  const app=$("#app"),nav=$("#nav");
  if(!S||!S.user){app.innerHTML=signupHTML();nav.classList.add("hidden");return}
