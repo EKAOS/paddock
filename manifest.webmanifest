@@ -35,28 +35,28 @@
   "prefer_related_applications": false,
   "screenshots": [
     {
-      "src": "screenshots/2-paquets.jpg",
+      "src": "2-paquets.jpg",
       "sizes": "1080x1920",
       "type": "image/jpeg",
       "form_factor": "narrow",
       "label": "Ouvrez des paquets de 5 voitures"
     },
     {
-      "src": "screenshots/3-legendaire.jpg",
+      "src": "3-legendaire.jpg",
       "sizes": "1080x1920",
       "type": "image/jpeg",
       "form_factor": "narrow",
       "label": "Tombez sur des cartes légendaires et brillantes"
     },
     {
-      "src": "screenshots/4-collection.jpg",
+      "src": "4-collection.jpg",
       "sizes": "1080x1920",
       "type": "image/jpeg",
       "form_factor": "narrow",
       "label": "Plus de 3 200 voitures à collectionner"
     },
     {
-      "src": "screenshots/5-marche.jpg",
+      "src": "5-marche.jpg",
       "sizes": "1080x1920",
       "type": "image/jpeg",
       "form_factor": "narrow",
