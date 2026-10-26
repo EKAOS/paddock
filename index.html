@@ -1047,6 +1047,8 @@ function adsLoad(){if(!ADS_ON||adsLoaded)return;adsLoaded=true;window.dataLayer=
 function adsOff(){if(window.gtag)gtag("consent","update",{ad_storage:"denied",ad_user_data:"denied",ad_personalization:"denied"});
  try{document.cookie.split(";").map(c=>c.trim().split("=")[0]).filter(n=>/^(_gcl|_gac|IDE|test_cookie)/.test(n)).forEach(n=>{document.cookie=n+"=; max-age=0; path=/; domain=.paddock.click";document.cookie=n+"=; max-age=0; path=/"})}catch(e){}}
 function adsEvent(name,params){if(adsLoaded&&window.gtag)gtag("event",name,params||{})}
+const ADS_SIGNUP=ADS_ID+"/tjDJCJj946odENT_jodF";
+function adsSignup(){adsEvent("conversion",{send_to:ADS_SIGNUP});adsEvent("sign_up")}
 function consentBar(){if(!ADS_ON||consentGet()||document.getElementById("ckbar"))return;const b=document.createElement("div");b.id="ckbar";b.setAttribute("role","dialog");b.setAttribute("aria-label","Cookies");
  b.innerHTML=`<div>Paddock aimerait utiliser un cookie de <b>Google Ads</b> pour savoir si ses publicités font venir des joueurs. Rien d'autre n'est suivi. <a href="confidentialite.html#cookies" target="_blank" rel="noopener">En savoir plus</a></div><div class="ckb"><button class="btn ghost" data-ck="no">Refuser</button><button class="btn green" data-ck="yes">Accepter</button></div>`;
  b.addEventListener("click",e=>{const k=e.target.closest("[data-ck]");if(k)consentSet(k.dataset.ck)});document.body.appendChild(b)}

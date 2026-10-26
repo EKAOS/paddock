@@ -224,7 +224,6 @@
   async function afterLogin(msg) {
     await sync(); U.view = "packs"; render(); window.scrollTo(0, 0); if (msg) toast(msg);
     if (window.PLAY) playRestore(); else playInit();
-    if (/inscri|bienvenue/i.test(msg || "")) { try { adsEvent("sign_up"); } catch (e) {} }
   }
 
   window.OS = {
@@ -245,6 +244,7 @@
         if (okDev === false) { set("ec", "Vous avez déjà créé 3 comptes sur cet appareil : c'est le maximum. Connectez-vous à l'un d'eux."); return; }
         const j = await http("POST", "/auth/v1/signup", { email: m, password: p, data: { username: u, invite: inv, device: dev } });
         try { sessionStorage.removeItem("paddock-invite"); } catch (x) {}
+        try { adsSignup(); } catch (x) {}
         if (j && j.access_token) { setSess(j); await afterLogin("Bienvenue au paddock ! 10 paquets vous attendent."); }
         else modal(`<h2>Vérifiez vos e-mails</h2><p style="color:var(--muted)">Nous avons envoyé un lien de confirmation à <b>${esc(m)}</b>. Cliquez dessus, puis revenez vous connecter.</p><button class="btn green block" data-act="close">Compris</button>`, 1);
       } catch (x) { set("ec", /Database error saving new user/i.test(x.message) ? "Inscription impossible : pseudo déjà pris ou limite de 3 comptes par appareil atteinte." : x.message); } finally { btn.disabled = false; }
