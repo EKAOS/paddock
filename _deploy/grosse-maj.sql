@@ -1,4 +1,4 @@
--- PADDOCK : la plus grosse mise à jour (hiver + vagues 1 à 4 + objectif commun).
+-- PADDOCK : la plus grosse mise à jour (hiver + vagues 1 à 4 + avantages Pro + objectif commun).
 -- À coller en une fois dans Supabase > SQL Editor > Run. Peut être relancé sans risque.
 
 -- objectif : 15 % de plus que les paquets réellement ouverts la semaine précédente (arrondi à la centaine, 500 minimum).
@@ -185,9 +185,16 @@ begin
     'last', (select jsonb_build_object('season', season, 'rank', rank, 'packs', packs) from season_results where user_id = u order by season desc limit 1));
 end $$;
 
--- ---------- Vitrine : 6 voitures ---------------------------------------------
+-- ---------- Vitrine : 6 voitures (9 avec Paddock Pro) ------------------------------
+create or replace function public._showcase_cap() returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if coalesce(array_length(new.showcase, 1), 0) > 6 and not _is_pro(new.id) then new.showcase := new.showcase[1:6]; end if;
+  return new;
+end $$;
+drop trigger if exists profiles_showcase_cap on public.profiles;
+create trigger profiles_showcase_cap before update of showcase on public.profiles for each row execute function public._showcase_cap();
 do $$ begin
-  alter table public.profiles add constraint showcase_max6 check (coalesce(array_length(showcase, 1), 0) <= 6) not valid;
+  alter table public.profiles add constraint showcase_max9 check (coalesce(array_length(showcase, 1), 0) <= 9) not valid;
 exception when duplicate_object then null; end $$;
 
 -- ---------- Droits ------------------------------------------------------------
@@ -247,7 +254,7 @@ begin
   update cotm set winner = w, settled_at = now() where month = m;
   if w is null then return; end if;
   for v in select user_id from cotm_votes where month = m loop
-    perform _give(v.user_id, w, false);
+    perform _give(v.user_id, w, _is_pro(v.user_id));   -- Paddock Pro : en version brillante
     perform _notify(v.user_id, 'Carte du mois : la ' || (select name from cards where id = w) || ' a gagné le vote ! Elle est dans votre collection.');
   end loop;
 end $$;
@@ -296,7 +303,7 @@ create table if not exists public.hunt (
   user_id uuid not null references public.profiles(id) on delete cascade,
   season text not null,
   day date not null,
-  slot int not null check (slot between 0 and 2),
+  slot int not null check (slot between 0 and 4),
   primary key (user_id, day, slot)
 );
 alter table public.hunt enable row level security;
@@ -304,7 +311,7 @@ create or replace function public.claim_hunt(s int) returns jsonb language plpgs
 declare u uuid := _uid(); se text := _hunt_season(); t date := (now() at time zone 'Europe/Paris')::date;
 begin
   if se is null then raise exception 'Aucune chasse en cours.'; end if;
-  if s not between 0 and 2 then raise exception 'Objet inconnu.'; end if;
+  if s < 0 or s > (case when _is_pro(u) then 4 else 2 end) then raise exception 'Objet inconnu.'; end if;
   insert into hunt(user_id, season, day, slot) values (u, se, t, s) on conflict do nothing;
   if not found then raise exception 'Déjà trouvé !'; end if;
   update wallets set coins = coins + 30 where user_id = u;
@@ -483,7 +490,7 @@ create or replace function public.set_seeking(ids int[]) returns void language p
 declare u uuid := _uid(); clean int[];
 begin
   select coalesce(array_agg(distinct x), '{}') into clean from unnest(coalesce(ids, '{}')) x where exists (select 1 from cards where id = x and rarity <> 'ED');
-  if cardinality(clean) > 3 then raise exception '3 voitures maximum.'; end if;
+  if cardinality(clean) > (case when _is_pro(u) then 6 else 3 end) then raise exception '% voitures maximum.', (case when _is_pro(u) then 6 else 3 end); end if;
   update profiles set seeking = clean where id = u;
 end $$;
 
@@ -650,7 +657,8 @@ begin
     'found', r.finder is not null,
     'card', case when r.finder is not null then r.card_id end,
     'finder', case when r.finder is not null then (select username from profiles where id = r.finder) end,
-    'hint', jsonb_build_object('r', c.rarity, 'decade', (c.y1 / 10) * 10, 'letter', left(c.brand, 1), 'body', c.body));
+    'hint', jsonb_build_object('r', c.rarity, 'decade', (c.y1 / 10) * 10, 'letter', left(c.brand, 1), 'body', c.body,
+      'm1', case when coalesce(_is_pro(auth.uid()), false) then left(ltrim(substr(c.name, length(c.brand) + 1)), 1) end));
 end $$;
 
 -- ---------- Combinaisons secrètes ------------------------------------------------------------
@@ -697,7 +705,7 @@ create or replace function public.open_loyalty() returns jsonb language plpgsql 
 declare u uuid := _uid(); l loyalty; c int; isnew boolean;
 begin
   select * into l from loyalty where user_id = u for update;
-  if l.user_id is null or l.days < 30 then raise exception 'Le coffre s''ouvre après 30 jours de présence.'; end if;
+  if l.user_id is null or l.days < (case when _is_pro(u) then 20 else 30 end) then raise exception 'Le coffre s''ouvre après % jours de présence.', (case when _is_pro(u) then 20 else 30 end); end if;
   update loyalty set days = 0, opened = opened + 1 where user_id = u;
   update wallets set packs = packs + 15, coins = coins + 500 where user_id = u;
   select id into c from cards where rarity = 'L' order by random() limit 1;
@@ -747,7 +755,7 @@ create table if not exists public.decor_owned (
 );
 alter table public.decor_owned enable row level security;
 create or replace function public._decor_price(k text) returns int language sql immutable as $$
-  select case k when 'box' then 0 when 'neige' then 400 when 'neon' then 500 when 'damier' then 600 when 'expo' then 800 when 'nuit' then 1000 when 'or' then 2500 end
+  select case k when 'box' then 0 when 'pro' then 0 when 'neige' then 400 when 'neon' then 500 when 'damier' then 600 when 'expo' then 800 when 'nuit' then 1000 when 'or' then 2500 end
 $$;
 create or replace function public.buy_decor(k text) returns int language plpgsql security definer set search_path = public as $$
 declare u uuid := _uid(); pr int := _decor_price(k); c int;
@@ -764,7 +772,8 @@ create or replace function public.set_decor(k text) returns void language plpgsq
 declare u uuid := _uid();
 begin
   if _decor_price(k) is null then raise exception 'Décor inconnu.'; end if;
-  if k <> 'box' and not exists (select 1 from decor_owned where user_id = u and decor_owned.k = set_decor.k) then raise exception 'Achetez d''abord ce décor.'; end if;
+  if k = 'pro' and not _is_pro(u) then raise exception 'Le Garage Pro est réservé aux membres Paddock Pro.'; end if;
+  if k not in ('box', 'pro') and not exists (select 1 from decor_owned where user_id = u and decor_owned.k = set_decor.k) then raise exception 'Achetez d''abord ce décor.'; end if;
   update profiles set decor = nullif(k, 'box') where id = u;
 end $$;
 
@@ -813,7 +822,7 @@ begin
     perform _notify(u, 'Restauration terminée : ' || (select name from cards where id = b.card_id) || ' brille comme neuve !');
     return _barn_json(u) || jsonb_build_object('done', b.card_id, 'new', isnew);
   end if;
-  update barns set step = step + 1, next_at = now() + interval '12 hours' where user_id = u;
+  update barns set step = step + 1, next_at = now() + case when _is_pro(u) then interval '6 hours' else interval '12 hours' end where user_id = u;
   return _barn_json(u);
 end $$;
 
