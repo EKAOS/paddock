@@ -1,4 +1,4 @@
--- PADDOCK : la plus grosse mise à jour (hiver + vagues 1 à 4 + avantages Pro + objectif commun).
+-- PADDOCK : la plus grosse mise à jour (hiver + vagues 1 à 4 + Paddock Pro + objectif commun).
 -- À coller en une fois dans Supabase > SQL Editor > Run. Peut être relancé sans risque.
 
 -- objectif : 15 % de plus que les paquets réellement ouverts la semaine précédente (arrondi à la centaine, 500 minimum).
@@ -830,6 +830,96 @@ end $$;
 revoke all on function public._decor_price(text), public._barn_cost(int), public._barn_json(uuid) from public, anon, authenticated;
 revoke all on function public.buy_decor(text), public.set_decor(text), public.barn_search(), public.barn_work() from public, anon;
 grant execute on function public.buy_decor(text), public.set_decor(text), public.barn_search(), public.barn_work() to authenticated;
+
+-- =====================================================================
+--  PADDOCK — pack Paddock Pro plus généreux :
+--    • 1re carte : ultra rare ou légendaire garantie (20 % de légendaire)
+--    • 9 autres cartes : 3,5 % de légendaire (1 % dans un paquet normal)
+--  Peut être relancé sans risque.
+-- =====================================================================
+create or replace function public._draw(pro boolean) returns int language plpgsql volatile security definer set search_path = public as $$
+declare x float := random() * 100; r text; cid int;
+begin
+  if pro then
+    r := case when x < 38 then 'C' when x < 63 then 'PC' when x < 80 then 'R' when x < 91 then 'SR' when x < 96.5 then 'UR' else 'L' end;
+  else
+    r := case when x < 50 then 'C' when x < 75 then 'PC' when x < 88 then 'R' when x < 95 then 'SR' when x < 99 then 'UR' else 'L' end;
+  end if;
+  select id into cid from cards where rarity = r order by random() limit 1;
+  if cid is null then select id into cid from cards where rarity <> 'ED' order by random() limit 1; end if;
+  return cid;
+end $$;
+create or replace function public._draw_pro_top() returns int language plpgsql volatile security definer set search_path = public as $$
+declare r text := case when random() < 0.2 then 'L' else 'UR' end; cid int;
+begin
+  select id into cid from cards where rarity = r order by random() limit 1;
+  return cid;
+end $$;
+revoke all on function public._draw(boolean), public._draw_pro_top() from public, anon, authenticated;
+
+create or replace function public.open_pack(kind text default 'normal') returns jsonb language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); w wallets; pro boolean := _is_pro(u); n int; ids int[] := '{}'; t int := _ev_theme();
+        c int; h boolean; i int; res jsonb := '[]'::jsonb; isnew boolean; got_holo boolean := false;
+begin
+  perform _sync_packs(u);
+  select * into w from wallets where user_id = u for update;
+  if kind = 'normal' then
+    if w.packs < 1 then raise exception 'Plus de paquet disponible. Le prochain arrive bientôt.'; end if;
+    update wallets set packs = packs - 1, pack_ts = case when w.packs >= 10 then now() else pack_ts end, full_notified = false where user_id = u;
+    n := 5;
+  elsif kind = 'pro' then
+    if not pro then raise exception 'Le pack Paddock Pro est réservé aux membres Paddock Pro.'; end if;
+    if w.pro_pack_ts is not null and w.pro_pack_ts > now() - interval '24 hours' then raise exception 'Votre prochain pack Paddock Pro n''est pas encore prêt.'; end if;
+    update wallets set pro_pack_ts = now(), pro_notified = false where user_id = u;
+    n := 10;
+  elsif kind = 'event' then
+    if w.ev_pack_ts is not null and w.ev_pack_ts > now() - interval '24 hours' then raise exception 'Votre prochain paquet d''événement n''est pas encore prêt.'; end if;
+    update wallets set ev_pack_ts = now() where user_id = u;
+    if t = 0 then
+      select id into c from cards where rarity = 'ED' order by random() limit 1;
+      if c is not null then ids := ids || c; end if;
+      n := 4;
+    else
+      ids := ids || _draw_ev(t, true);
+      for i in 1..4 loop ids := ids || _draw_ev(t, false); end loop;
+      n := 0;
+    end if;
+  else raise exception 'Type de paquet inconnu.'; end if;
+  -- pack Paddock Pro : la 1re carte est une ultra rare ou une légendaire garantie (20 % de légendaire)
+  if kind = 'pro' then ids := ids || _draw_pro_top(); n := n - 1; end if;
+  for i in 1..n loop ids := ids || _draw(kind = 'pro'); end loop;
+  foreach c in array ids loop
+    h := random() < case when kind = 'pro' then 0.05 else 0.03 end;
+    got_holo := got_holo or h;
+    isnew := _give(u, c, h);
+    res := res || jsonb_build_array(jsonb_build_object('id', c, 'holo', h, 'new', isnew));
+  end loop;
+  perform _stat_inc(u, 'packs'); perform _wk_inc(u, 'packs'); perform _comm_inc(u);
+  if got_holo then perform _notify(u, 'Vous avez obtenu une carte brillante !'); end if;
+  return res;
+end $$;
+revoke all on function public.open_pack(text) from public, anon;
+grant execute on function public.open_pack(text) to authenticated;
+
+-- ---------- Correction : paquet communautaire (ultra rare ou légendaire garantie) ----------
+create or replace function public.claim_community(wk text) returns jsonb language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); me community_contrib; ids int[] := '{}'; c int; i int; res jsonb := '[]'::jsonb; isnew boolean;
+begin
+  if wk not in (_week_id(), _week_prev()) then raise exception 'Cette récompense n''est plus disponible.'; end if;
+  if not exists (select 1 from community where week = wk and done_at is not null) then raise exception 'L''objectif commun n''est pas encore atteint.'; end if;
+  select * into me from community_contrib where week = wk and user_id = u for update;
+  if me.user_id is null then raise exception 'Ouvrez au moins un paquet cette semaine pour participer.'; end if;
+  if me.claimed then raise exception 'Vous avez déjà récupéré ce paquet.'; end if;
+  update community_contrib set claimed = true where week = wk and user_id = u;
+  c := _draw_pro_top();   -- 20 % de légendaire, comme annoncé (l'ancien tirage n'en donnait qu'environ 11 %)
+  ids := ids || c;
+  for i in 1..4 loop ids := ids || _draw(false); end loop;
+  foreach c in array ids loop
+    isnew := _give(u, c, false);
+    res := res || jsonb_build_array(jsonb_build_object('id', c, 'holo', false, 'new', isnew));
+  end loop;
+  return res;
+end $$;
 
 -- Séries (générées par wk/series.py)
 insert into public.series(k, name, emoji, packs, ids) values
