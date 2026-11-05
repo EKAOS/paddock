@@ -460,6 +460,7 @@ begin
   if exists (select 1 from season_results where user_id = u and rank <= 3) then t := array_append(t, 'podium'); end if;
   if exists (select 1 from season_results where user_id = u and rank = 1) then t := array_append(t, 'champion'); end if;
   if p.prestige >= 1 then t := array_append(t, 'prestige'); end if;
+  if _is_pro(u) then t := array_append(t, 'membrepro'); end if;
   if exists (select 1 from hunt where user_id = u and season like 'noel-%' group by season having count(*) >= 30) then t := array_append(t, 'lutin'); end if;
   t := t || array(select 'c_' || k from combo_claims where user_id = u order by created_at);
   return t;
@@ -786,12 +787,13 @@ create table if not exists public.barns (
   last_search date,
   restored int not null default 0
 );
+alter table public.barns add column if not exists searches int not null default 0;
 alter table public.barns enable row level security;
 create or replace function public._barn_cost(s int) returns int language sql immutable as $$ select (array[100, 150, 250])[s + 1] $$;
 create or replace function public._barn_json(u uuid) returns jsonb language sql stable security definer set search_path = public as $$
   select jsonb_build_object('card', b.card_id, 'step', coalesce(b.step, 0), 'next', b.next_at, 'restored', coalesce(b.restored, 0),
     'cost', case when b.card_id is not null then _barn_cost(b.step) end,
-    'can_search', b.card_id is null and b.last_search is distinct from (now() at time zone 'Europe/Paris')::date)
+    'can_search', b.card_id is null and (b.last_search is distinct from (now() at time zone 'Europe/Paris')::date or (_is_pro(u) and b.searches < 2)))
   from (select 1) x left join barns b on b.user_id = u
 $$;
 create or replace function public.barn_search() returns jsonb language plpgsql security definer set search_path = public as $$
@@ -800,11 +802,14 @@ begin
   insert into barns(user_id) values (u) on conflict do nothing;
   select * into b from barns where user_id = u for update;
   if b.card_id is not null then raise exception 'Restaurez d''abord la voiture en cours.'; end if;
-  if b.last_search = (now() at time zone 'Europe/Paris')::date then raise exception 'Une grange par jour : revenez demain !'; end if;
+  if b.last_search = (now() at time zone 'Europe/Paris')::date and (not _is_pro(u) or b.searches >= 2) then
+    raise exception '%', case when _is_pro(u) then 'Deux granges par jour : revenez demain !' else 'Une grange par jour : revenez demain ! (deux avec Paddock Pro)' end; end if;
   r := case when x < 50 then 'R' when x < 85 then 'SR' when x < 98 then 'UR' else 'L' end;
   select id into c from cards where rarity = r and coalesce(y1, 2000) < 1995 order by random() limit 1;
   if c is null then select id into c from cards where rarity = r order by random() limit 1; end if;
-  update barns set card_id = c, step = 0, next_at = now(), last_search = (now() at time zone 'Europe/Paris')::date where user_id = u;
+  update barns set card_id = c, step = 0, next_at = now(),
+    searches = case when last_search = (now() at time zone 'Europe/Paris')::date then searches + 1 else 1 end,
+    last_search = (now() at time zone 'Europe/Paris')::date where user_id = u;
   return _barn_json(u);
 end $$;
 create or replace function public.barn_work() returns jsonb language plpgsql security definer set search_path = public as $$
@@ -873,7 +878,7 @@ begin
     update wallets set pro_pack_ts = now(), pro_notified = false where user_id = u;
     n := 10;
   elsif kind = 'event' then
-    if w.ev_pack_ts is not null and w.ev_pack_ts > now() - interval '24 hours' then raise exception 'Votre prochain paquet d''événement n''est pas encore prêt.'; end if;
+    if w.ev_pack_ts is not null and w.ev_pack_ts > now() - (case when pro then interval '12 hours' else interval '24 hours' end) then raise exception 'Votre prochain paquet d''événement n''est pas encore prêt.'; end if;   -- Paddock Pro : 2 par jour
     update wallets set ev_pack_ts = now() where user_id = u;
     if t = 0 then
       select id into c from cards where rarity = 'ED' order by random() limit 1;
@@ -919,6 +924,41 @@ begin
     res := res || jsonb_build_array(jsonb_build_object('id', c, 'holo', false, 'new', isnew));
   end loop;
   return res;
+end $$;
+
+-- ---------- Paddock Pro : 15 ventes en même temps au marché ----------
+create or replace function public.create_listing(card int, price int, minutes int) returns void language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); inv inventory; use_holo boolean;
+begin
+  if minutes not in (5, 60, 360, 720) then raise exception 'Durée invalide.'; end if;
+  if price < 5 or price > 1000000 then raise exception 'Prix invalide.'; end if;
+  if (select count(*) from listings where seller_id = u and status = 'open') >= (case when _is_pro(u) then 15 else 10 end) then
+    raise exception 'Vous avez déjà % ventes en cours.', (case when _is_pro(u) then 15 else 10 end); end if;   -- Paddock Pro : 15
+  select * into inv from inventory where user_id = u and card_id = card for update;
+  if inv.n is null then raise exception 'Vous ne possédez pas cette carte.'; end if;
+  use_holo := inv.holo >= inv.n;
+  perform _take(u, card);
+  insert into listings(seller_id, card_id, holo, start_price, ends_at) values (u, card, use_holo, price, now() + make_interval(mins => minutes));
+end $$;
+
+-- ---------- Paddock Pro : réactions exclusives 💎 et 🏆 sur les vitrines ----------
+alter table public.show_reacts drop constraint if exists show_reacts_emoji_check;
+do $$ begin
+  alter table public.show_reacts add constraint show_reacts_emoji_ok check (emoji in ('🔥', '😍', '🤯', '👏', '💎', '🏆'));
+exception when duplicate_object then null; end $$;
+create or replace function public.react_show(name text, e text) returns jsonb language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); t uuid := _uid_by_name(name);
+begin
+  if t is null then raise exception 'Joueur introuvable.'; end if;
+  if t = u then raise exception 'Vous ne pouvez pas réagir à votre propre vitrine.'; end if;
+  if _blocked(u, t) then raise exception 'Action impossible.'; end if;
+  if e in ('💎', '🏆') and not _is_pro(u) then raise exception 'Cette réaction est réservée aux membres Paddock Pro.'; end if;
+  if coalesce(e, '') = '' then delete from show_reacts where target = t and user_id = u;
+  else
+    insert into show_reacts(target, user_id, emoji) values (t, u, e)
+    on conflict (target, user_id) do update set emoji = excluded.emoji, created_at = now();
+  end if;
+  return _reacts(t);
 end $$;
 
 -- Séries (générées par wk/series.py)
