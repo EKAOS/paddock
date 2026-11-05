@@ -858,14 +858,14 @@ on conflict (k) do update set name = excluded.name, emoji = excluded.emoji, pack
 delete from public.series where k not in ('groupeb', 'jdm', 'gt-r', '911', 'gti', 'golf', 'bmw-m', 'amg', 'ferrari', 'lambo', 'bugatti', 'hyper', 'lemans', 'f1', 'muscle', 'mustang', 'citroen', 'alpine', 'populaires', 'records', 'electrique');
 -- Combinaisons secrètes
 insert into public.combos(k, name, coins, ids) values
-('agent', 'Agent secret', 400, '{339,367,148,408}'),
-('rue', 'Pilote de rue', 500, '{415,430,453,505,3551,444}'),
-('miami', 'Années 80 à Miami', 350, '{286,284,285}'),
-('temps', 'Voyageur du temps', 300, '{383,92}'),
-('gendarme', 'Gendarme de Saint-Tropez', 250, '{69,65}'),
-('braquage', 'Braquage à l''italienne', 350, '{155,239,303}'),
-('poster', 'Poster de chambre', 500, '{305,288,193,286}'),
-('poursuite', 'Course-poursuite', 300, '{217,505}')
+('agent', 'Agent secret', 120, '{339,367,148,408}'),
+('rue', 'Pilote de rue', 150, '{415,430,453,505,3551,444}'),
+('miami', 'Années 80 à Miami', 100, '{286,284,285}'),
+('temps', 'Voyageur du temps', 80, '{383,92}'),
+('gendarme', 'Gendarme de Saint-Tropez', 60, '{69,65}'),
+('braquage', 'Braquage à l''italienne', 100, '{155,239,303}'),
+('poster', 'Poster de chambre', 150, '{305,288,193,286}'),
+('poursuite', 'Course-poursuite', 80, '{217,505}')
 on conflict (k) do update set name = excluded.name, coins = excluded.coins, ids = excluded.ids;
 
 -- =====================================================================
