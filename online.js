@@ -57,7 +57,7 @@
   function blank() {
     const p = prefs();
     return { user: null, coins: 0, packs: 0, packTs: now(), proTs: 0, evPackTs: 0, evUntil: 0, col: {}, holo: {}, seen: {}, fav: p.fav || [], wish: p.wish || [],
-      show: [null, null, null], stats: {}, claimed: [], offers: [], history: [], listings: [], sales: [], guild: null, friends: [], chats: {}, notifs: [], fc: {},
+      show: [null, null, null, null, null, null, null, null, null], stats: {}, claimed: [], offers: [], history: [], listings: [], sales: [], guild: null, friends: [], chats: {}, notifs: [], fc: {},
       set: Object.assign({ sound: true, notif: true, light: false, pub: true }, p.set || {}), acc: {}, ref: { count: 0, draws: 0, wins: 0 }, brandsClaimed: [],
       daily: { last: "", streak: 0 }, week: null, pendIn: 0, v3: true, v4: true };
   }
@@ -69,6 +69,7 @@
     if ("seen" in u) a.seen = T(u.seen);
     if ("ai" in u) a.ai = u.ai || null;
     if ("lv" in u) a.lv = u.lv;
+    if ("pr" in u) a.pr = u.pr || 0;
     if ("pro_perm" in u) { a.vip = !!u.pro_perm; a.proUntil = T(u.pro_until); }
     return u.u;
   }
@@ -88,7 +89,7 @@
     for (const [id, n, h] of s.inventory || []) { if (!CARS[id]) continue; S.col[id] = n; if (h) S.holo[id] = h; }
     S.notifs = (s.notifs || []).map(n => ({ t: T(n.t), txt: n.txt, read: n.read }));
     S.evUntil = T(s.event_until);
-    const sc = (me.showcase || []).slice(0, 3); while (sc.length < 3) sc.push(null); S.show = sc;
+    const sc = (me.showcase || []).slice(0, 9); while (sc.length < 9) sc.push(null); S.show = sc;
     S.set.pub = me.public; S.pendIn = s.pending_in || 0; S.unreadMsgs = s.unread_msgs || 0;
   }
   async function sync() {
@@ -98,7 +99,7 @@
       const res = await Promise.all([rpc("get_state"), rpc("get_sub").catch(() => null), rpc("get_levels").catch(() => []),
         rpc("get_event").catch(() => null), vis ? rpc("ping").catch(() => null) : null,
         rpc("get_community").catch(() => null), rpc("get_wish").catch(() => null), rpc("get_level").catch(() => null),
-        rpc("get_secrets").catch(() => null), rpc("get_poll").catch(() => undefined)]);
+        rpc("get_secrets").catch(() => null), rpc("get_poll").catch(() => undefined), rpc("get_extras").catch(() => null)]);
       applyAll(res, true);
       try { localStorage.setItem(OKEY, JSON.stringify({ t: Date.now(), r: res.slice(0, 8) })); } catch (e) {}
       if (window.OFFLINE) { window.OFFLINE = false; setTimeout(() => toast("De retour en ligne."), 200); }
@@ -107,9 +108,10 @@
   // applique les réponses du serveur (ou la dernière copie gardée pour le mode hors ligne)
   function applyAll(res, live) {
     {
-      const [st, sub, lv, ev, , cm, wl, lvl, sec, poll] = res;
+      const [st, sub, lv, ev, , cm, wl, lvl, sec, poll, ext] = res;
       apply(st); S.sub = sub || {}; S.evSrv = ev && ev.until ? { t: ev.theme, until: T(ev.until) } : null;
       if (cm) S.comm = cm;
+      if (ext) { S.seriesClaimed = ext.series || []; S.adv = ext.advent || null; S.mySeasons = ext.seasons || []; S.cotm = ext.cotm || null; S.hunt = ext.hunt || null; S.me = ext.me || {}; S.loyal = ext.loyalty || null; S.myst = ext.mystery || null; S.combos = ext.combos || []; S.barn = ext.barn || null; S.signed = {}; for (const [id, n] of ext.signed || []) S.signed[id] = n; }
       if (lvl) { const before = S.lvInfo && S.lvInfo.lv; S.lvInfo = lvl; if (before && lvl.lv > before) setTimeout(() => { blip(990, .25); toast(`Niveau ${lvl.lv} atteint ! Récompense dans vos notifications.`); }, 400); }
       if (S.user.av && S.user.av.t === "img" && thumbFor !== S.user.av.d.length) { thumbFor = S.user.av.d.length; makeThumb(S.user.av.d).then(t => rpc("set_avatar_thumb", { val: t })).catch(() => {}); }
       if (wl) { if (!wl.length && S.wish.length && !S.wishUp) { S.wishUp = true; rpc("set_wishes", { ids: S.wish }).catch(() => {}); } else S.wish = wl; } S.lvl = {}; for (const [id, l] of lv || []) S.lvl[id] = l;
@@ -166,8 +168,13 @@
         const l = await rpc("get_trades");
         const m = l.map(x => ({ id: String(x.id), dir: x.dir, who: absorb(x.who), give: x.give, want: x.want, status: x.status, t: T(x.t) }));
         S.offers = m.filter(x => x.status === "pending"); S.history = m.filter(x => x.status !== "pending");
+      } else if (v === "packs") {
+        const [fd, gg] = await Promise.all([rpc("get_feed").catch(() => []), rpc("get_garages").catch(() => null)]);
+        U.feed = (fd || []).map(f => Object.assign({}, f, { u: absorb(f), t: T(f.t) })); U.garages = gg;
+        if (gg) { if (gg.day) absorb(gg.day); if (gg.best) absorb(gg.best); }
       } else if (v === "friends" || v === "battle") {
         S.friends = (await rpc("get_friends")).map(absorb);
+        if (v === "friends") { const [lg, fd] = await Promise.all([rpc("get_league").catch(() => []), rpc("get_feed").catch(() => [])]); U.league = (lg || []).map(p => ({ u: absorb(p), n: p.n, xp: p.xp, pr: p.pr || 0, pts: p.pts, me: p.me })); U.feed = (fd || []).map(f => Object.assign({}, f, { u: absorb(f), t: T(f.t) })); }
         if (v === "battle") await liveList(true);
         else { const r = await rpc("get_refs").catch(() => null); if (r) { r.parrain = r.parrain ? { n: absorb(r.parrain) } : null; r.kids = (r.kids || []).map(k => ({ n: absorb(k), lv: k.lv, done: k.done })); } window.REFS = r; }
       } else if (v === "messages") {
@@ -183,7 +190,9 @@
         S.guild = g.mine ? { name: g.mine.name, owner: g.mine.owner, members: (g.mine.members || []).map(absorb), goal: g.mine.goal, wk: Object.fromEntries((g.mine.members || []).map(m => [m.u || m.name || absorb(m), m.wk || 0])) } : null;
         U.guildRank = g.ranking || []; U.guildWeek = g.week || []; U.gchamp = g.champ || null;
       } else if (v === "ranking") {
-        const [rk, lr] = await Promise.all([rpc("get_ranking"), rpc("get_live_ranking").catch(() => [])]);
+        const [rk, lr, ss, vr] = await Promise.all([rpc("get_ranking"), rpc("get_live_ranking").catch(() => []), rpc("get_season").catch(() => null), rpc("get_value_ranking").catch(() => [])]);
+        U.vrank = (vr || []).map(p => ({ u: absorb(p), val: p.val, me: p.me }));
+        U.season = ss ? Object.assign({}, ss, { until: T(ss.until), top: (ss.top || []).map(p => ({ u: absorb(p), pts: p.pts, w: p.w, g: p.g, r: p.r, me: p.me })) }) : null;
         U.rank = rk.map(p => { absorb(p); return p; });
         U.lrank = (lr || []).map(p => ({ u: absorb(p), w: p.w, g: p.g, me: p.me }));
       } else if (v === "mod") {
@@ -191,6 +200,8 @@
         U.modNames = ml.map(absorb); U.reports = (rp || []).map(r => Object.assign({}, r, { t: T(r.t) }));
       } else if (v === "settings") {
         U.blocks = await rpc("get_blocks");
+      } else if (v === "wrapped") {
+        U.wrap = await rpc("get_wrapped");
       } else return;
       if (U.view === v || (v === "market" && U.view === "listing")) render(true);
     } catch (e) { toast(e.message); }
@@ -223,7 +234,7 @@
   function signedOut() { try { localStorage.removeItem(OKEY); } catch (e) {} window.OFFLINE = false; S = null; U.view = "packs"; render(); }
 
   async function afterLogin(msg) {
-    await sync(); U.view = "packs"; render(); window.scrollTo(0, 0); if (msg) toast(msg);
+    await sync(); U.view = "packs"; render(); window.scrollTo(0, 0); if (msg) toast(msg); loadFor("packs");
     if (window.PLAY) playRestore(); else playInit();
   }
 
@@ -441,11 +452,13 @@
       modal(profileHTML(Object.assign({}, r, { name, seen: T(r.seen), show: r.show || [] })));
     } catch (x) { closeModal(); toast(x.message); }
   };
+  { const _cm = window.cardModal; window.cardModal = function (id, mode) { _cm(id, mode); if (!U.prices || !(id in U.prices)) window.OPRICES([id]); }; }
   window.OPRICES = async ids => {
     try {
       const r = await rpc("get_prices", { cards: ids }); U.prices = Object.assign(U.prices || {}, r);
       ids.forEach(id => { if (!r[id]) U.prices[id] = null; });
       const el = document.getElementById("sellpx"); if (el && ids.length === 1) el.innerHTML = priceBox(ids[0]);
+      const cb = document.getElementById("cotebox"); if (cb && ids.length === 1) cb.innerHTML = coteHTML(ids[0]);
     } catch (x) {}
   };
   window.OPCOL = async n => {
@@ -507,6 +520,51 @@
     pubhave: () => { U.auth = "login"; render(); window.scrollTo(0, 0); },
     mbuy: act(async () => {
       const r = await rpc("merchant_buy"); U.merch = r; blip(880); toast(`${CARS[r.card].n} rejoint votre collection !`); await after("shop");
+    }),
+    serclaim: act(async (el, d) => {
+      const n = await rpc("claim_series", { sk: d.k }); blip(880); toast(`Série complétée : +${n} paquets !`); await after();
+    }),
+    updup: act(async (el, d) => {
+      const id = +d.id; const r = await rpc("upgrade_dup", { cid: id });
+      S.lvl[id] = r.lvl; S.col[id] = r.n; blip(880); toast(`${CARS[id].n} passe au niveau ${r.lvl} !`); cardModal(id); render(true); sync().catch(() => {});
+    }),
+    advopen: act(async () => {
+      const r = await rpc("claim_advent"); blip(880);
+      if (r.card != null && CARS[r.card]) { U.reveal = packOrder([{ id: r.card, new: r.new, holo: false }]); _go("reveal"); sync().catch(() => {}); return; }
+      toast(r.coins ? `Case du ${r.day} décembre : +${r.coins} pistons !` : `Case du ${r.day} décembre : +${r.packs} paquet${r.packs > 1 ? "s" : ""} !`); await after();
+    }),
+    cotmvote: act(async (el, d) => {
+      S.cotm = await rpc("vote_cotm", { c: +d.id }); blip(700); toast(`Vote enregistré pour la ${CARS[+d.id].n} !`); render(true);
+    }),
+    hunt: act(async (el, d) => {
+      const s = +d.s; el.remove(); const r = await rpc("claim_hunt", { s });
+      if (S.hunt) { S.hunt.today = (S.hunt.today || []).concat(s); S.hunt.total = r.total; } S.coins += r.coins;
+      blip(990, .2); toast(`${HUNT_E[huntKey(S.hunt)] || "🎁"} Trouvé ! +${r.coins} pistons`); render(true);
+    }),
+    livery: act(async (el, d) => { await rpc("set_livery", { k: d.k }); toast(`Livrée ${livOf(d.k).n} appliquée.`); await after(); }),
+    plateset: act(async () => { const v = ($("#platein").value || "").trim(); const r = await rpc("set_plate", { v }); toast(r ? `Plaque ${r} enregistrée.` : "Plaque retirée."); await after(); }),
+    seekadd: act(async (el) => { const sk = ((S.me && S.me.seeking) || []).concat(+el.dataset.card).slice(0, seekN()); await rpc("set_seeking", { ids: sk }); closeModal(); await after(); }),
+    seekrm: act(async (el, d) => { const sk = ((S.me && S.me.seeking) || []).filter(x => x !== +d.id); await rpc("set_seeking", { ids: sk }); await after(); }),
+    prestigego: act(async () => {
+      const r = await rpc("do_prestige"); closeModal(); blip(990, .3);
+      U.reveal = packOrder([{ id: r.card, new: !S.col[r.card], holo: false }]); _go("reveal"); sync().catch(() => {});
+    }),
+    react: act(async (el, d) => {
+      const cur = el.classList.contains("on"); const r = await rpc("react_show", { name: d.f, e: cur ? "" : d.e }); blip(700, .1);
+      if (U.garages && U.garages.day && U.garages.day.u === d.f) U.garages.day.reacts = r;
+      if ($(".modal") && window.openProfile) openProfile(d.f); else render(true);
+    }),
+    loyalopen: act(async () => {
+      const r = await rpc("open_loyalty"); blip(990, .3);
+      U.reveal = packOrder([{ id: r.card, new: r.new, holo: false }]); _go("reveal"); sync().catch(() => {});
+    }),
+    decorbuy: act(async (el, d) => { await rpc("buy_decor", { k: d.k }); blip(880); toast(`Décor « ${DECORS.find(x => x.k === d.k).n} » installé !`); await after(); }),
+    decorset: act(async (el, d) => { await rpc("set_decor", { k: d.k }); toast("Décor installé."); await after(); }),
+    barnsearch: act(async () => { S.barn = await rpc("barn_search"); toast(`Une ${CARS[S.barn.card].n} dort sous la poussière…`); render(true); }),
+    barnwork: act(async () => {
+      const r = await rpc("barn_work"); S.barn = r; blip(880);
+      if (r.done != null && CARS[r.done]) { U.reveal = packOrder([{ id: r.done, new: r.new, holo: true }]); _go("reveal"); sync().catch(() => {}); return; }
+      toast("Étape terminée ! Prochaine étape dans 12 heures."); await after();
     }),
     commclaim: act(async (el, d) => {
       const res = await rpc("claim_community", { wk: d.w });
@@ -662,7 +720,7 @@
       await after();
     }),
     saveinv: act(async () => { const v = $("#sinv").value.trim(); await rpc("set_profile", { field: "invite", val: v }); toast(v ? "Lien d'invitation personnalisé enregistré." : "Code par défaut rétabli."); await after(); }),
-    setavcard: act(async (el, d) => { await rpc("set_profile", { field: "avatar_card", val: String(d.id) }); closeModal(); toast("Photo de profil mise à jour."); await after(); }),
+    setavcard: act(async (el, d) => { await rpc("set_avatar_card", { c: +d.id }); closeModal(); toast("Photo de profil mise à jour."); await after(); }),
     rmav: act(async () => { await rpc("set_profile", { field: "avatar_card", val: "" }); closeModal(); await after(); }),
     rmbanner: act(async () => { await rpc("set_profile", { field: "banner_img", val: "" }); closeModal(); await after(); }),
     set: act(async (el, d) => {
@@ -710,6 +768,7 @@
 
   // import de photo et de bannière
   window.OC = e => {
+    if (e.target.id === "titsel") { const k = e.target.value; rpc("set_title", { k }).then(() => { toast(k ? `Titre « ${TITLES[k][0]} » affiché.` : "Titre retiré."); return after(); }).catch(x => toast(x.message)); return true; }
     if ((e.target.id === "avfile" || e.target.id === "bnfile") && e.target.files[0]) {
       const isAv = e.target.id === "avfile";
       shrinkImage(e.target.files[0], isAv ? 256 : 1200, isAv ? 256 : 400, async data => {
