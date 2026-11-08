@@ -206,6 +206,12 @@
       if (U.view === v || (v === "market" && U.view === "listing")) render(true);
     } catch (e) { toast(e.message); }
   }
+  // compteur anonyme : combien de fois chaque écran est ouvert (envoyé groupé, sans identifiant)
+  const VC = {};
+  window.OVIEW = v => { VC[v] = (VC[v] || 0) + 1; };
+  const flushViews = () => { const k = Object.keys(VC); if (!k.length || !S || !S.user) return; const v = {}; k.forEach(x => { v[x] = Math.min(50, VC[x]); delete VC[x]; }); rpc("log_views", { v }).catch(() => {}); };
+  setInterval(flushViews, 60000); window.paddockFlushViews = flushViews;
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flushViews(); });
   const _go = window.go;
   window.go = function (v) { _go(v); if (S && S.user) loadFor(v); };
 
