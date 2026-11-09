@@ -289,11 +289,28 @@
     list.sort((a, b) => rk(b.id) - rk(a.id));
     return { ids: list.map(x => x.id), fresh: list.map(x => x.new), holo: list.map(x => x.holo), i: 0 };
   };
+  let opening = false, preImgs = [];
+  function preload(ids) {
+    if (typeof IMGMODE === "undefined" || IMGMODE !== "url") return Promise.resolve();
+    const ps = ids.map(id => new Promise(r => {
+      const c = CARS[id]; if (!c || !c.th) return r();
+      const im = new Image(); im.referrerPolicy = "no-referrer"; im.onload = im.onerror = () => r(); im.src = c.th; preImgs.push(im);
+    }));
+    preImgs = preImgs.slice(-12);
+    return ps[0] || Promise.resolve();   // on n'attend que la première carte, les autres arrivent derrière
+  }
   async function openKind(kind) {
-    const p = $("#packbtn"); if (p) p.classList.add("shake"); blip(kind === "pro" ? 500 : 380, .15);
-    const [res] = await Promise.all([rpc("open_pack", { kind }), new Promise(r => setTimeout(r, 650))]);
-    U.reveal = packOrder(res.filter(x => CARS[x.id]));
-    blip(700, .12); _go("reveal"); sync().then(() => {}).catch(() => {});
+    if (opening) return; opening = true;   // glisser + toucher, ou double toucher : une seule ouverture
+    try {
+      const p = $("#packbtn"); if (p) p.classList.add("shake"); blip(kind === "pro" ? 500 : 380, .15);
+      const t0 = Date.now(), wait = ms => new Promise(r => setTimeout(r, ms));
+      const res = await rpc("open_pack", { kind });
+      const rv = packOrder(res.filter(x => CARS[x.id]));
+      // les photos se chargent pendant que le paquet s'ouvre : plus de carte vide au moment de la découvrir
+      await Promise.all([Promise.race([preload(rv.ids), wait(700)]), wait(Math.max(0, 650 - (Date.now() - t0)))]);
+      U.reveal = rv;
+      blip(700, .12); _go("reveal"); sync().then(() => {}).catch(() => {});
+    } finally { opening = false; const p = $("#packbtn"); if (p) p.classList.remove("shake"); }
   }
   async function portal() {
     const j = await http("POST", "/functions/v1/create-portal", { returnUrl: location.origin + location.pathname }, true);
@@ -570,7 +587,7 @@
     barnwork: act(async () => {
       const r = await rpc("barn_work"); S.barn = r; blip(880);
       if (r.done != null && CARS[r.done]) { U.reveal = packOrder([{ id: r.done, new: r.new, holo: true }]); _go("reveal"); sync().catch(() => {}); return; }
-      toast("Étape terminée ! Prochaine étape dans 12 heures."); await after();
+      toast(`Étape terminée ! Prochaine étape dans ${meVip() ? 6 : 12} heures.`); await after();
     }),
     commclaim: act(async (el, d) => {
       const res = await rpc("claim_community", { wk: d.w });
@@ -615,7 +632,7 @@
     lvgo: act(async () => { const L = U.lv; L.busy = true; try { await rpc("live_pick", { bid: L.id, picks: L.pick }); await livePoll(true); } finally { L.busy = false; } }),
     lvmove: act(async (el, d) => { const L = U.lv; if (L.busy) return; L.busy = true; try { await rpc("live_move", { bid: L.id, stat: d.s }); await livePoll(true); } finally { L.busy = false; } }),
     lvquit: () => { U.lv = null; U.btab = "live"; window.go("battle"); },
-    open: act(async () => { if (!S.packs) return toast("Plus de paquet disponible pour l'instant."); await openKind("normal"); }),
+    open: act(async () => { if (opening) return; if (!S.packs) return toast("Plus de paquet disponible pour l'instant."); await openKind("normal"); }),
     openpro: act(async () => { await openKind("pro"); }),
     openev: act(async () => { await openKind("event"); }),
     daily: act(async () => { const r = await rpc("claim_daily"); blip(780); toast(`Jour ${r.day} : ${dailyTxt({ c: r.coins, p: r.packs })}`); await after(); }),
@@ -787,6 +804,15 @@
   };
 
   // ---------- horloge ----------
+  // un minuteur vient de tomber à zéro : on redemande l'état au serveur sans attendre les 30 secondes
+  let tuLast = 0, tuN = [];
+  window.OTIMEUP = function () {
+    const t = Date.now(), typing = document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName);
+    if (typing || syncing || t - tuLast < 4500) return;
+    tuN = tuN.filter(x => t - x < 60000); if (tuN.length >= 2) return;
+    tuLast = t; tuN.push(t);
+    sync().then(() => render(true)).catch(() => {});
+  };
   window.onlineTick = function () {
     if (!S || !S.user) return;
     updateTimers();

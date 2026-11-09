@@ -764,6 +764,37 @@ svg.pbdg{width:1em;height:1em;flex:0 0 auto;padding:0;border:0;background:none;b
 .pacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .pacts .btn{min-width:0;padding:11px 6px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pacts .pwide{grid-column:1/-1}
+
+/* ---- confort (9 nov. 2026) : menu en grille, filtres repliés, défilement continu ---- */
+.mnu{display:grid}.mgt{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:16px 2px 8px}.mgt:first-child{margin-top:0}
+.mgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mtile{position:relative;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px 4px 10px;min-height:74px;display:grid;justify-items:center;align-content:center;gap:6px;color:var(--text);font-size:13px;font-weight:600;line-height:1.15;text-align:center;transition:transform .12s,border-color .12s}
+.mtile svg{width:24px;height:24px;color:var(--green)}.mtile:hover{border-color:var(--line2)}.mtile:active{transform:scale(.96)}
+.mtile.hot{border-color:rgba(207,178,122,.42);background:linear-gradient(180deg,rgba(207,178,122,.10),rgba(207,178,122,.02)),var(--panel2)}
+.mtile.hot svg{color:#f1dcab;animation:mshine 2.8s ease-in-out infinite}
+@keyframes mshine{0%,100%{filter:drop-shadow(0 0 2px rgba(241,220,171,.35))}50%{filter:drop-shadow(0 0 7px rgba(241,220,171,.95))}}
+@media (prefers-reduced-motion:reduce){.mtile.hot svg{animation:none;filter:drop-shadow(0 0 5px rgba(241,220,171,.7))}}
+body.light .mtile.hot{border-color:rgba(138,109,54,.5);background:linear-gradient(180deg,rgba(138,109,54,.12),rgba(138,109,54,.03)),var(--panel2)}body.light .mtile.hot svg{color:var(--green)}
+.mtile.lk{opacity:.5}.mtile .lockt{font-size:10.5px;font-weight:500;color:var(--dim)}
+.mtile .menubadge{position:absolute;top:6px;right:6px;margin:0;font-size:11px;padding:1px 7px;line-height:1.5}
+.srow{display:flex;gap:8px;align-items:stretch}.srow .input{flex:1;min-width:0}
+.fbtn{flex:none;display:inline-flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:0 13px;color:var(--muted);font-size:14px;font-weight:600}
+.fbtn svg{width:18px;height:18px}.fbtn.on{border-color:var(--green-d);color:var(--text)}.fbtn.on svg{color:var(--green)}
+.fbtn b{background:var(--green);color:#111;border-radius:999px;min-width:18px;height:18px;padding:0 5px;font-size:11px;display:inline-grid;place-items:center}
+.rchips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}.rchips::-webkit-scrollbar{display:none}.rchips>*{flex:none;white-space:nowrap}
+.lmorew{margin:18px 0 4px;text-align:center}.lmorew.end{color:var(--dim);font-size:13px}
+.ttlh{width:100%;background:none;border:0;padding:0;display:flex;align-items:center;gap:10px;color:var(--text);text-align:left}.ttlh b{font-family:var(--f-head);font-size:18px;margin-right:auto}
+.ttlh .chev{width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 4px 4px 2px;transition:transform .15s}.ttlh .chev.up{transform:rotate(-135deg);margin-bottom:-4px}
+
+/* ---- suite du confort (9 nov. 2026) : Musée, carte du mois, statistiques ---- */
+.mushead{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;max-width:360px;text-align:center}
+.musbt{flex:none;width:48px;height:48px;border-radius:50%;background:var(--panel2);border:1px solid var(--line2);color:var(--text);display:grid;place-items:center;transition:transform .12s}
+.musbt svg{width:22px;height:22px}.musbt:active{transform:scale(.94)}.musbt:disabled{opacity:.3}
+.musc{color:var(--dim);font-size:13px;text-align:center}.mus .card{touch-action:pan-y}
+.cotmg{align-items:stretch}.cotmc{grid-template-rows:1fr;align-content:stretch}.cotmc>.card{height:100%}.cotmc .btn{border:1px solid transparent}.cotmc .btn.ghost{border-color:var(--line2)}
+.rbar{grid-template-columns:112px minmax(0,1fr) 84px}.rbar span{white-space:nowrap;font-size:12.5px;letter-spacing:.02em}.rbar b{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rtrk{height:10px;border-radius:5px;background:var(--line);overflow:hidden}.rbar .rtrk i{height:10px;border-radius:5px}
+.pmore.pmcol div{display:grid;gap:2px;justify-content:stretch}.pmore.pmcol span{font-size:12.5px}.pmore.pmcol b{font-size:14.5px}
 </style>
 </head>
 <body>
@@ -824,6 +855,9 @@ const I={
  chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5a8.5 8.5 0 0 0-7.4 12.7L3.5 20.5l4.4-1.1A8.5 8.5 0 1 0 12 3.5z"/></svg>',
  swords:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4l11 11M20 4 9 15M4 20l3-3M20 20l-3-3M13.5 17.5l4-4M10.5 17.5l-4-4"/></svg>',
  trophy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 4h10v4a5 5 0 0 1-10 0zM7 6H4v1.5A3.5 3.5 0 0 0 7.5 11M17 6h3v1.5A3.5 3.5 0 0 1 16.5 11M12 13v4M8 21h8M9 17h6v4H9z"/></svg>',
+ chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M6.5 20v-7M12 20V5M17.5 20v-10"/></svg>',
+ tool:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z"/></svg>',
+ filter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>',
  medal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 3h10l-2.5 6h-5zM9 3l3 6 3-6"/><circle cx="12" cy="15" r="5.5"/><path d="M12 13v4"/></svg>',
  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>',
  search:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
@@ -900,7 +934,7 @@ function fresh(user){
   offers:[],history:[],listings:[],sales:[],guild:null,friends:[],chats:{},notifs:[],fc,
   set:{sound:true,notif:true,light:false,pub:true},offerSeeded:false};
 }
-const U={view:"packs",col:{q:"",r:"",sort:"rar",p:0},all:{q:"",r:"",wish:false,p:0},mk:{tab:"browse",q:"",r:"",sort:"recent"},tr:"in",gtab:"g",reveal:null};
+const U={fo:{},lst:{},view:"packs",col:{q:"",r:"",sort:"rar",p:0},all:{q:"",r:"",wish:false,p:0},mk:{tab:"browse",q:"",r:"",sort:"recent"},tr:"in",gtab:"g",reveal:null};
 
 /* ---------- game logic ---------- */
 const ODDS=[["C",50],["PC",25],["R",13],["SR",7],["UR",4],["L",1]];
@@ -923,7 +957,7 @@ const uniq=()=>Object.keys(S.col).length;
 const total=()=>Object.values(S.col).reduce((a,b)=>a+b,0);
 
 /* ---------- notes de mise à jour ---------- */
-const PATCHES=[{"title": "La plus grosse mise à jour de Paddock", "items": ["21 séries à compléter (Groupe B, Légendes JDM, Records du monde…) et 8 combinaisons secrètes à découvrir : paquets, pistons, badges et titres", "Saisons classées : le classement des batailles repart à zéro chaque mois, avec des paquets pour les 50 premiers et une carte signée pour le podium", "Noël du 1er décembre au 6 janvier : calendrier de l'Avent, chasse aux cadeaux cachés dans les menus, et votre Paddock Wrapped 2026 à partager", "Votez chaque mois pour la carte du mois suivant : tous les votants la reçoivent", "Voiture mystère chaque semaine : le premier qui la trouve gagne 5 paquets", "Profil : livrées, titres de pilote, plaque d'immatriculation, avatar avec cadre de rareté, vitrine de 6 voitures avec décor, « Je cherche »", "Prestige au niveau 30 : une étoile, 10 paquets et une légendaire signée", "Améliorez vos voitures avec leurs doublons : au niveau 5, la carte évolue", "Amis : ligue entre amis, fil d'actualité, réactions sur les vitrines et garage du jour", "Atelier : restaurez une épave trouvée dans une grange pour obtenir une carte brillante", "Musée, Encyclopédie des marques, cote des voitures et valeur de votre collection", "Coffre de fidélité : 30 jours de présence = 15 paquets, 500 pistons et une légendaire", "Pack Paddock Pro : vos 10 cartes se rechargent maintenant chaque jour à minuit, au lieu de 24 heures après votre dernière ouverture", "Jeu plus simple : la page des paquets va à l'essentiel, le reste est rangé dans « Aujourd'hui »", "Collections, Musée et Palmarès regroupent les écrans qui se ressemblaient", "Correctifs d'affichage : badges des pseudos, profil, boutons et iPhone"], "v": "e02e13b603"}];
+const PATCHES=[{"title": "La plus grosse mise à jour de Paddock", "items": ["21 séries à compléter (Groupe B, Légendes JDM, Records du monde…) et 8 combinaisons secrètes à découvrir : paquets, pistons, badges et titres", "Saisons classées : le classement des batailles repart à zéro chaque mois, avec des paquets pour les 50 premiers et une carte signée pour le podium", "Noël du 1er décembre au 6 janvier : calendrier de l'Avent, chasse aux cadeaux cachés dans les menus, et votre Paddock Wrapped 2026 à partager", "Votez chaque mois pour la carte du mois suivant : tous les votants la reçoivent", "Voiture mystère chaque semaine : le premier qui la trouve gagne 5 paquets", "Profil : livrées, titres de pilote, plaque d'immatriculation, avatar avec cadre de rareté, vitrine de 6 voitures avec décor, « Je cherche »", "Prestige au niveau 30 : une étoile, 10 paquets et une légendaire signée", "Améliorez vos voitures avec leurs doublons : au niveau 5, la carte évolue", "Amis : ligue entre amis, fil d'actualité, réactions sur les vitrines et garage du jour", "Atelier : restaurez une épave trouvée dans une grange pour obtenir une carte brillante", "Musée, Encyclopédie des marques, cote des voitures et valeur de votre collection", "Coffre de fidélité : 30 jours de présence = 15 paquets, 500 pistons et une légendaire", "Pack Paddock Pro : vos 10 cartes se rechargent maintenant chaque jour à minuit, au lieu de 24 heures après votre dernière ouverture", "Jeu plus simple : la page des paquets va à l'essentiel, le reste est rangé dans « Aujourd'hui »", "Collections, Musée et Palmarès regroupent les écrans qui se ressemblaient", "Correctifs d'affichage : badges des pseudos, profil, boutons et iPhone", "Confort : menu « Plus » en grille, filtres repliés sous un bouton, et les cartes défilent sans changer de page"], "v": "3c1dd0f09c"}];
 const PKEY_SEEN="paddock-patch-seen";
 function patchSeen(){try{return localStorage.getItem(PKEY_SEEN)===PATCHES[0].v}catch(e){return true}}
 function markPatchSeen(){try{localStorage.setItem(PKEY_SEEN,PATCHES[0].v)}catch(e){}}
@@ -1173,8 +1207,9 @@ function museumView(){const F=U.mus||(U.mus={b:"",i:0});let ids=Object.keys(S.co
  F.i=Math.max(0,Math.min(F.i,ids.length-1));const id=ids[F.i],c=CARS[id];
  return`<div class="pagehead"><h1>Musée</h1><p>Votre collection, de la plus ancienne à la plus récente</p></div>${musSeg("museum")}
  <select class="select" id="musb" style="margin-bottom:14px"><option value="">Toutes les marques (${ids.length})</option>${brands.map(b=>`<option ${F.b===b?"selected":""}>${esc(b)}</option>`).join("")}</select>
- <div class="mus"><div class="musy">${c.y1}</div>${cardHTML(id,{big:true,own:true})}${RECORDS[id]?`<div class="recline">🏆 ${esc(RECORDS[id])}</div>`:""}<div class="mustxt">${esc(c.long||c.desc)}</div>
- <input type="range" id="musr" min="0" max="${ids.length-1}" value="${F.i}" style="width:100%;max-width:360px"><div class="musnav"><button class="btn ghost" data-act="musp" ${F.i?"":"disabled"}>← Plus ancienne</button><button class="btn ghost" data-act="musn" ${F.i<ids.length-1?"":"disabled"}>Plus récente →</button></div><div style="color:var(--dim);font-size:13px">${F.i+1} / ${ids.length}</div></div>`}
+ <div class="mus"><div class="mushead"><button class="musbt" data-act="musp" aria-label="Voiture plus ancienne" ${F.i?"":"disabled"}>${I.left}</button><div><div class="musy">${c.y1}</div><div class="musc">${F.i+1} / ${ids.length}</div></div><button class="musbt" data-act="musn" aria-label="Voiture plus récente" ${F.i<ids.length-1?"":"disabled"}>${I.right}</button></div>
+ ${ids.length>1?`<input type="range" id="musr" min="0" max="${ids.length-1}" value="${F.i}" aria-label="Voyager dans le temps" style="width:100%;max-width:360px">`:""}
+ ${cardHTML(id,{big:true,own:true})}${RECORDS[id]?`<div class="recline">🏆 ${esc(RECORDS[id])}</div>`:""}${ids.length>1?'<div class="musc">Glissez la carte pour passer à la voiture suivante</div>':""}</div>`}
 const COUNTRY={jdm:"Japon",fr:"France",it:"Italie",de:"Allemagne",us:"États-Unis",uk:"Royaume-Uni"};
 const brandCountry=b=>{for(const k in EVB)if(EVB[k].includes(b))return COUNTRY[k]||"";return""};
 function encycloView(){const B=U.encB;if(B){const e=BRANDS.find(x=>x[0]===B);if(e)return brandPage(B,e[1])}const q=(U.encq||"").toLowerCase();const L=BRANDS.filter(([b])=>!q||b.toLowerCase().includes(q));
@@ -1196,10 +1231,10 @@ function statsView(){if(!meVip())return`<div class="pagehead"><h1>Statistiques</
  const best=ids.slice().sort((a,b)=>CARS[b].hp-CARS[a].hp)[0],fast=ids.slice().sort((a,b)=>CARS[b].v-CARS[a].v)[0],old=ids.slice().sort((a,b)=>CARS[a].y1-CARS[b].y1)[0];
  const wr=st.battles?Math.round(100*(st.wins||0)/st.battles):0,dup=Object.values(S.col).reduce((a,n)=>a+Math.max(0,n-1),0),lvl5=ids.filter(id=>lvOf(id)>=LVMAX).length;
  return`<div class="pagehead"><h1>Statistiques ${BADGE.vip}</h1><p>Vos chiffres, en détail</p></div><div class="stack">
- <div class="stg"><div><b>${fmt(st.packs||0)}</b><span>paquets ouverts</span></div><div><b>${(uniq()/CARS.length*100).toFixed(1).replace(".",",")} %</b><span>du catalogue</span></div><div><b>${fmt(total())}</b><span>cartes au total</span></div><div><b>${fmt(dup)}</b><span>doublons</span></div><div><b>${wr} %</b><span>victoires (${fmt(st.wins||0)} / ${fmt(st.battles||0)})</span></div><div><b>${lvl5}</b><span>voitures évoluées</span></div></div>
- <div class="panel stack"><b style="font-family:var(--f-head);font-size:16px">Par rareté</b>${["ED","L","UR","SR","R","PC","C"].map(r=>`<div class="rbar"><span>${RSHORT[r]}</span><i style="--c:var(--c${r});width:${(by[r]||0)/Math.max(1,(BYR[r]||[]).length)*100}%"></i><b style="text-align:right">${by[r]||0} / ${(BYR[r]||[]).length}</b></div>`).join("")}</div>
+ <div class="stg"><div><b>${fmt(st.packs||0)}</b><span>paquets ouverts</span></div><div><b>${(uniq()/CARS.length*100).toFixed(1).replace(".",",")} %</b><span>du catalogue</span></div><div><b>${fmt(total())}</b><span>cartes au total</span></div><div><b>${fmt(dup)}</b><span>doublons</span></div><div><b>${wr} %</b><span>victoires (${fmt(st.wins||0)} / ${fmt(st.battles||0)})</span></div><div><b>${lvl5}</b><span>voiture${lvl5>1?"s":""} évoluée${lvl5>1?"s":""}</span></div></div>
+ <div class="panel stack"><b style="font-family:var(--f-head);font-size:16px">Par rareté</b>${["ED","L","UR","SR","R","PC","C"].map(r=>`<div class="rbar"><span>${RSHORT[r]}</span><div class="rtrk"><i style="--c:var(--c${r});width:${(by[r]||0)/Math.max(1,(BYR[r]||[]).length)*100}%"></i></div><b>${fmt(by[r]||0)} / ${fmt((BYR[r]||[]).length)}</b></div>`).join("")}</div>
  <div class="panel stack"><b style="font-family:var(--f-head);font-size:16px">Marques préférées</b>${topB.map(([b,n],i)=>`<div class="kv" style="font-size:14px"><span>${i+1}. ${esc(b)}</span><b>${n} voiture${n>1?"s":""}</b></div>`).join("")||'<div style="color:var(--muted)">Ouvrez des paquets !</div>'}</div>
- ${best!=null?`<div class="panel"><div class="pmore"><div><span>La plus puissante</span><b>${esc(CARS[best].n)} · ${fmt(CARS[best].hp)} ch</b></div><div><span>La plus rapide</span><b>${esc(CARS[fast].n)} · ${fmt(CARS[fast].v)} km/h</b></div><div><span>La plus ancienne</span><b>${esc(CARS[old].n)} · ${CARS[old].y1}</b></div>${topD?`<div><span>Décennie préférée</span><b>Années ${topD[0]} (${topD[1]})</b></div>`:""}<div><span>Cartes brillantes</span><b>${fmt(Object.values(S.holo||{}).reduce((a,b)=>a+b,0))}</b></div></div></div>`:""}</div>`}
+ ${best!=null?`<div class="panel"><div class="pmore pmcol"><div><span>La plus puissante</span><b>${esc(CARS[best].n)} · ${fmt(CARS[best].hp)} ch</b></div><div><span>La plus rapide</span><b>${esc(CARS[fast].n)} · ${fmt(CARS[fast].v)} km/h</b></div><div><span>La plus ancienne</span><b>${esc(CARS[old].n)} · ${CARS[old].y1}</b></div>${topD?`<div><span>Décennie préférée</span><b>Années ${topD[0]} (${topD[1]})</b></div>`:""}<div><span>Cartes brillantes</span><b>${fmt(Object.values(S.holo||{}).reduce((a,b)=>a+b,0))}</b></div></div></div>`:""}</div>`}
 // ---------- simplification ----------
 const LOCKS={trades:2,market:2,atelier:3,museum:3,encyclo:3,guild:4},LOCKN={trades:"Échanges",market:"Marché",atelier:"Atelier",museum:"Musée",encyclo:"Encyclopédie",guild:"Écuries"};
 const NEWRULES=Date.parse("2026-11-09T00:00:00Z");
@@ -1215,8 +1250,10 @@ function todayHTML(){const parts=[advPanel(),huntPanel(),mysteryPanel(),cotmPane
  let pref=null;try{pref=localStorage.getItem("pd-today")}catch(e){}const open=U.todayOpen!=null?U.todayOpen:pref!=null?pref==="1":myLevel().lv>=3;
  return`<details class="today" data-today ${open?"open":""}><summary><b>Aujourd'hui</b>${n?`<span class="tbadge">${n} à faire</span>`:'<span class="tdim">Événements et communauté</span>'}<i class="chev"></i></summary><div class="stack" style="margin-top:14px">${parts.join("")}</div></details>`}
 addEventListener("toggle",e=>{const d=e.target;if(d&&d.matches&&d.matches("details[data-today]")){U.todayOpen=d.open;try{localStorage.setItem("pd-today",d.open?"1":"0")}catch(x){}}},true);
-function palmaresTop(){const tl=myTitles();const b=badgesHTML({series:serClaimed(),seasons:S.mySeasons||[],advent:advDays().length,hunts:(()=>{const h=huntState();return h&&h.total>=HUNT_BADGE?[h.season]:[]})()});
- return`${b}<div class="panel stack" style="margin-bottom:14px"><div class="headrow"><b style="font-family:var(--f-head);font-size:18px">Titres de pilote</b><span class="pill">${tl.length} / ${Object.keys(TITLES).length}</span></div><div>${Object.entries(TITLES).map(([k,[n,d]])=>{const ok=tl.includes(k),hid=!ok&&k.startsWith("c_");return`<div class="ttl ${ok?"":"no"}"><span>${ok?"✓ ":"🔒 "}${hid?"???":esc(n)}</span><small>${esc(d)}</small></div>`}).join("")}</div><div style="color:var(--dim);font-size:12.5px">Choisissez le titre affiché sous votre pseudo dans Profil › Personnalisation.</div></div>`}
+function palmaresTop(){return badgesHTML({series:serClaimed(),seasons:S.mySeasons||[],advent:advDays().length,hunts:(()=>{const h=huntState();return h&&h.total>=HUNT_BADGE?[h.season]:[]})()})}
+function titlesPanel(){const tl=myTitles();const hd=`<button class="ttlh" data-act="ttltog" aria-expanded="${!!U.ttlo}"><b>Titres de pilote</b><span class="pill">${tl.length} / ${Object.keys(TITLES).length}</span><i class="chev ${U.ttlo?"up":""}"></i></button>`;
+ if(!U.ttlo)return`<div class="panel" style="margin-bottom:22px">${hd}</div>`;
+ return`<div class="panel stack" style="margin-bottom:22px">${hd}<div>${Object.entries(TITLES).map(([k,[n,d]])=>{const ok=tl.includes(k),hid=!ok&&k.startsWith("c_");return`<div class="ttl ${ok?"":"no"}"><span>${ok?"✓ ":"🔒 "}${hid?"???":esc(n)}</span><small>${esc(d)}</small></div>`}).join("")}</div><div style="color:var(--dim);font-size:12.5px">Choisissez le titre affiché sous votre pseudo dans Profil › Personnalisation.</div></div>`}
 const musSeg=k=>`<div class="seg" style="margin-bottom:14px"><button class="${k==="museum"?"on":""}" data-act="go" data-v="museum">Ma collection</button><button class="${k==="encyclo"?"on":""}" data-act="go" data-v="encyclo">Encyclopédie</button></div>`;
 function evNext(){const t=evInfo().t;return EVS[t===9?0:(t+1)%9]}
 // ---------- objectif commun de la semaine ----------
@@ -1306,7 +1343,8 @@ function tick(){
  for(const k in S.chats){const c=S.chats[k];if(c.pending&&now()>c.pending){c.msgs.push({me:false,txt:rnd(["Grave ! 😄","Je regarde ma collection et je te dis.","T'as vu la nouvelle légendaire au marché ?","Ok pour un duel ce soir ?","J'ai enfin eu ma F40 !","Haha bien joué"]),t:now()});c.pending=0;c.unread=true;ch=true}}
  if(ch){save();render(true)}else updateTimers();
 }
-function updateTimers(){document.querySelectorAll("[data-end]").forEach(e=>e.textContent=fmtLeft(+e.dataset.end-now()));const pc=$("#packnext");if(pc&&S.packs<10)pc.textContent=`Prochain paquet dans ${fmtLeft(S.packTs+packStep()-now())}`}
+function packNextTxt(){const l=S.packTs+packStep()-now();return l<=0?"Nouveau paquet en route…":`Prochain paquet dans ${fmtLeft(l)}`}
+function updateTimers(){let due=false;const hit=l=>{if(l<=-500&&l>-20000)due=true};document.querySelectorAll("[data-end]").forEach(e=>{const l=+e.dataset.end-now();hit(l);e.textContent=fmtLeft(l)});const pc=$("#packnext");if(pc&&S.packs<10){hit(S.packTs+packStep()-now());pc.textContent=packNextTxt()}if(due&&window.OTIMEUP)OTIMEUP()}
 
 /* ---------- card render ---------- */
 
@@ -1382,7 +1420,7 @@ V.packs=()=>{refillPacks();const ds=dailyState();return`${installBar()}<div clas
  ${S.packs?'<div class="swipehint">Glissez pour ouvrir</div>':""}
  <button class="openbtn" data-act="open" ${S.packs?"":"disabled"}>Ouvrir</button>
  <div class="packcount"><b>${S.packs} <span>/ 10</span></b><div>paquets disponibles</div></div>
- <div class="pronote" id="packnext">${S.packs<10?`Prochain paquet dans ${fmtLeft(S.packTs+packStep()-now())}`:(meVip()?"Paddock Pro : un paquet toutes les 3 minutes":"Un paquet toutes les 10 minutes · 3 minutes avec Paddock Pro")}</div>
+ <div class="pronote" id="packnext">${S.packs<10?packNextTxt():(meVip()?"Paddock Pro : un paquet toutes les 3 minutes":"Un paquet toutes les 10 minutes · 3 minutes avec Paddock Pro")}</div>
 
 
  <div class="panel" style="width:100%;display:flex;align-items:center;gap:12px;text-align:left;margin-top:18px"><div class="grow"><b style="font-family:var(--f-head);font-size:17px">Récompense du jour</b><div style="color:var(--muted);font-size:14px">${ds.done?`Jour ${ds.day} récupéré · revenez demain`:`Jour ${ds.day}/7 : ${dailyTxt(DAILY[ds.day-1])}`}</div><div class="dots" style="gap:6px;margin-top:18px">${DAILY.map((_,k)=>`<i class="${k<(ds.done?ds.day:ds.day-1)?"on":""}" style="width:10px;height:10px"></i>`).join("")}</div></div>${ds.done?'<span class="pill">Récupéré</span>':'<button class="btn green" data-act="daily" style="padding:10px 14px">Récupérer</button>'}</div>
@@ -1417,7 +1455,15 @@ function filterBar(F,pre,ids,extraSort=""){const brands=[...new Set(ids.map(id=>
 
 const norm=s=>s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 function matchQ(c,q){if(!q)return true;q=norm(q);return norm(c.n+" "+c.desc).includes(q)}
-const PER=20;
+const PER=40,AUTOMAX=400;
+// recherche + bouton « Filtres » sur une seule ligne ; le tri et les filtres se déplient à la demande
+function fcount(F){return(F.b?1:0)+(F.t?1:0)+(F.nw?1:0)+(F.sort&&F.sort!=="rar"?1:0)}
+function searchRow(F,pre,id,ph,n=fcount(F)){const op=!!U.fo[pre];return`<div class="srow"><input class="input" id="${id}" placeholder="${ph}" value="${esc(F.q)}" autocomplete="off"><button class="fbtn ${op?"on":""}" data-act="ftog" data-p="${pre}" aria-expanded="${op}">${I.filter}<span>Filtres</span>${n?`<b>${n}</b>`:""}</button></div>`}
+// les cartes s'ajoutent au fil du défilement, sans changer de page
+function moreBtn(pre,n,tot){return n<tot?`<div class="lmorew" id="${pre}more"><button class="btn outline-green block" data-act="lmore" data-p="${pre}">Afficher plus · ${fmt(n)} / ${fmt(tot)}</button></div>`:tot>PER?`<div class="lmorew end" id="${pre}more">${fmt(tot)} voitures affichées</div>`:""}
+function gridMore(pre,F,ids,fn){const n=Math.min(ids.length,(F.p+1)*PER);U.lst[pre]={F,ids,fn};return`<div class="grid" id="${pre}grid">${ids.slice(0,n).map(fn).join("")}</div>${moreBtn(pre,n,ids.length)}`}
+function loadMore(pre){const L=U.lst[pre],g=document.getElementById(pre+"grid");if(!L||!g)return;const a=(L.F.p+1)*PER;if(a>=L.ids.length)return;g.insertAdjacentHTML("beforeend",L.ids.slice(a,a+PER).map(L.fn).join(""));L.F.p++;const m=document.getElementById(pre+"more");if(m)m.outerHTML=moreBtn(pre,Math.min(L.ids.length,a+PER),L.ids.length)}
+{let lmT=0;addEventListener("scroll",()=>{if(lmT)return;lmT=requestAnimationFrame(()=>{lmT=0;const b=document.querySelector(".lmorew button");if(!b||document.querySelector("#layer .overlay"))return;const L=U.lst[b.dataset.p];if(!L||(L.F.p+1)*PER>=AUTOMAX)return;if(b.getBoundingClientRect().top<innerHeight+900)loadMore(b.dataset.p)})},{passive:true})}
 function pager(p,pages,act){return pages>1?`<div class="pager"><button data-act="${act}" data-d="-1" ${p?"":"disabled"}>← Précédent</button><span>Page ${p+1} / ${pages}</span><button data-act="${act}" data-d="1" ${p<pages-1?"":"disabled"}>Suivant →</button></div>`:""}
 V.collection=()=>{const F=U.col;const own=Object.keys(S.col).map(Number);let ids=own.filter(id=>(!F.r||CARS[id].r===F.r)&&matchQ(CARS[id],F.q)&&passF(id,F));
  if(F.sort==="fav")ids=ids.filter(id=>S.fav.includes(id));sortIds(ids,F.sort==="fav"?"rar":F.sort);
@@ -1425,18 +1471,18 @@ V.collection=()=>{const F=U.col;const own=Object.keys(S.col).map(Number);let ids
  return`<div class="pagehead headrow"><div><h1>Collection</h1><p>${fmt(uniq())} voitures uniques · ${fmt(total())} cartes sur ${fmt(CARS.length)}${Object.keys(S.holo||{}).length?` · ${Object.keys(S.holo).length} brillante${Object.keys(S.holo).length>1?"s":""}`:""}</p></div><button class="btn outline-green" data-act="fuse">Fusion</button></div>
  <div class="seg"><button class="${U.ctab!=="brands"&&U.ctab!=="series"?"on":""}" data-act="ctab" data-t="cards">Cartes</button><button class="${U.ctab==="series"||U.ctab==="brands"?"on":""}" data-act="ctab" data-t="series">Collections</button></div>
  ${U.ctab==="series"||U.ctab==="brands"?seriesHTML()+combosHTML()+`<div class="label" style="font-weight:600;margin:22px 0 10px">Marques</div>`+brandsHTML():`
- <div class="stack" style="gap:12px"><input class="input" id="cq" placeholder="Rechercher par marque ou modèle…" value="${esc(F.q)}">
- ${filterBar(F,"c",own,`<option value="fav" ${F.sort==="fav"?"selected":""}>Favorites uniquement</option>`)}</div>
+ <div class="stack" style="gap:12px">${searchRow(F,"c","cq","Rechercher une voiture…")}
+ ${U.fo.c?filterBar(F,"c",own,`<option value="fav" ${F.sort==="fav"?"selected":""}>Favorites uniquement</option>`):""}</div>
  ${rchips(F.r,"cr")}
- ${ids.length?pager(F.p,pages,"cp")+`<div class="grid">${ids.slice(F.p*PER,F.p*PER+PER).map(id=>cardHTML(id,{star:true,count:true,act:"cardinfo"})).join("")}</div>`+pager(F.p,pages,"cp")
+ ${ids.length?gridMore("c",F,ids,id=>cardHTML(id,{star:true,count:true,act:"cardinfo"}))
  :`<div class="panel empty">${I.book}<b>${uniq()?"Aucune carte ne correspond":"Votre garage est vide"}</b>${uniq()?"Essayez une autre recherche ou rareté.":"Ouvrez votre premier paquet pour démarrer la collection."}${uniq()?"":'<div style="margin-top:16px"><button class="btn green" data-act="go" data-v="packs">Ouvrir un paquet</button></div>'}</div>`}`}`};
 V.all=()=>{const F=U.all;const allIds=CARS.map(c=>c.id);let ids=allIds.filter(id=>(!F.r||CARS[id].r===F.r)&&(!F.wish||S.wish.includes(id))&&matchQ(CARS[id],F.q)&&passF(id,F));sortIds(ids,F.sort||"rar");
  const pages=Math.max(1,Math.ceil(ids.length/PER));F.p=Math.min(F.p,pages-1);const cnt=r=>BYR[r].length;
  return`<div class="pagehead"><h1>Collection globale</h1><p>Toutes les voitures existantes dans le jeu</p></div>
  <div class="panel"><div class="rcount">${RAR.map(r=>`<span><i style="background:var(--c${r})"></i>${r}: <b>${cnt(r)}</b></span>`).join("")}</div><div style="color:var(--muted);margin-top:12px">${fmt(CARS.length)} voitures au total · vous en possédez ${fmt(uniq())}</div></div>
- <div class="stack" style="margin-top:16px;gap:12px"><input class="input grow" id="aq" placeholder="Rechercher une voiture…" value="${esc(F.q)}">${filterBar(F,"a",allIds)}</div>
+ <div class="stack" style="margin-top:16px;gap:12px">${searchRow(F,"a","aq","Rechercher une voiture…")}${U.fo.a?filterBar(F,"a",allIds):""}</div>
  <div class="rchips"><button class="wishchip ${F.wish?"on":""}" data-act="awish">${I.bookmark} Liste de souhaits</button>${RAR.map(r=>`<button class="rchip ${r} ${F.r===r?"on":""}" data-act="ar" data-r="${r}">${r}</button>`).join("")}</div>
- ${ids.length?pager(F.p,pages,"ap")+`<div class="grid">${ids.slice(F.p*PER,F.p*PER+PER).map(id=>cardHTML(id,{owned:true,act:"allinfo",cls:S.col[id]?"":""})).join("")}</div>`+pager(F.p,pages,"ap"):`<div class="panel empty">${I.globe}<b>Aucune voiture trouvée</b>${F.wish?"Ajoutez des voitures à votre liste de souhaits depuis leur fiche.":"Essayez un autre nom."}</div>`}`};
+ ${ids.length?gridMore("a",F,ids,id=>cardHTML(id,{owned:true,act:"allinfo"})):`<div class="panel empty">${I.globe}<b>Aucune voiture trouvée</b>${F.wish?"Ajoutez des voitures à votre liste de souhaits depuis leur fiche.":"Essayez un autre nom."}</div>`}`};
 V.trades=()=>{const list=U.tr==="in"?S.offers.filter(o=>o.dir==="in"):U.tr==="out"?S.offers.filter(o=>o.dir==="out"):S.history;
  const empt={in:["Aucune offre reçue en attente.","Vous recevrez une notification lors d'une nouvelle offre."],out:["Aucune offre envoyée en attente.","Proposez un échange à un ami avec le bouton Échanger."],hist:["Aucun échange pour l'instant.","Vos échanges acceptés et refusés apparaîtront ici."]}[U.tr];
  return`<div class="pagehead headrow"><div><h1>Échanges</h1><p>Gérez vos offres d'échange avec vos amis</p></div><button class="btn green" data-act="newtrade">+ Échanger</button></div>
@@ -1453,9 +1499,9 @@ V.market=()=>{const F=U.mk;const me=S.user.name;let L=S.listings.filter(l=>!l.mi
  const so={recent:(a,b)=>b.t-a.t,end:(a,b)=>a.end-b.end,cheap:(a,b)=>curPrice(a)-curPrice(b),rar:(a,b)=>RAR.indexOf(CARS[a.card].r)-RAR.indexOf(CARS[b.card].r)};L.sort(so[F.sort]);
  const nm=S.listings.filter(l=>l.mine).length;
  return`<div class="pagehead"><h1 style="display:flex;gap:10px;align-items:center"><span style="color:var(--green);width:30px;display:inline-flex">${I.gavel}</span>Marché</h1><p>Enchérissez sur des voitures ou vendez les vôtres contre des pistons</p></div>
- <div class="tabs"><button class="tab ${F.tab==="browse"?"on":""}" data-act="mktab" data-t="browse">Parcourir</button><button class="tab ${F.tab==="mine"?"on":""}" data-act="mktab" data-t="mine">Mes ventes (${nm}/10)</button><button class="tab ${F.tab==="bids"?"on":""}" data-act="mktab" data-t="bids">Mes enchères</button></div>
- ${F.tab==="mine"?`<button class="btn green block" data-act="sell" ${nm>=10?"disabled":""} style="margin-bottom:14px">+ Mettre une carte en vente</button>`:""}
- <div class="stack" style="gap:12px"><input class="input" id="mq" placeholder="Rechercher une carte…" value="${esc(F.q)}"><select class="select" id="msort"><option value="recent">Récemment listées</option><option value="end">Se terminent bientôt</option><option value="cheap">Prix le plus bas</option><option value="rar">Rareté</option></select></div>
+ <div class="tabs"><button class="tab ${F.tab==="browse"?"on":""}" data-act="mktab" data-t="browse">Parcourir</button><button class="tab ${F.tab==="mine"?"on":""}" data-act="mktab" data-t="mine">Mes ventes (${nm}/${meVip()?15:10})</button><button class="tab ${F.tab==="bids"?"on":""}" data-act="mktab" data-t="bids">Mes enchères</button></div>
+ ${F.tab==="mine"?`<button class="btn green block" data-act="sell" ${nm>=(meVip()?15:10)?"disabled":""} style="margin-bottom:14px">+ Mettre une carte en vente</button>`:""}
+ <div class="stack" style="gap:12px">${searchRow(F,"m","mq","Rechercher une carte…",F.sort!=="recent"?1:0)}${U.fo.m?`<select class="select" id="msort" aria-label="Trier"><option value="recent">Récemment listées</option><option value="end">Se terminent bientôt</option><option value="cheap">Prix le plus bas</option><option value="rar">Rareté</option></select>`:""}</div>
  ${rchips(F.r,"mr")}
  ${L.length?`<div class="lgrid">${L.map(l=>{const lead=leader(l)===me;return`<div class="lcard" data-act="listing" data-id="${l.id}" role="button" tabindex="0">${cardHTML(l.card)}<div class="lmeta"><div><div class="label">${l.bids.length?"Enchère":"Mise de départ"}</div><b>${coinIc}${fmt(curPrice(l))}</b></div><div class="dur"><div class="label">Durée</div><b data-end="${l.end}">${fmtLeft(l.end-now())}</b></div></div>${lead?'<div class="lead">● Vous menez</div>':priceVerdict(l.card,curPrice(l))==="good"?'<div class="lead pxgood">● Bonne affaire</div>':""}</div>`}).join("")}</div>`
  :`<div class="panel empty">${I.gavel}<b>${F.tab==="mine"?"Aucune vente en cours":F.tab==="bids"?"Aucune enchère":"Aucune carte trouvée"}</b>${F.tab==="mine"?"Mettez en vente un doublon pour gagner des pistons.":F.tab==="bids"?"Misez sur une carte depuis l'onglet Parcourir.":"Essayez une autre recherche."}</div>`}`};
@@ -1572,9 +1618,9 @@ function secretsHTML(){const g=secretGot();const n=SECRETS.filter(s=>g[s[0]]).le
  <div style="color:var(--muted);font-size:13.5px;margin-bottom:12px">Ils se débloquent tout seuls, au hasard de vos parties. Chacun rapporte 25 pistons.</div>
  <div class="secgrid">${SECRETS.map(([k,t,d,e])=>g[k]?`<div class="sec on"><span class="se">${e}</span><b>${t}</b><small>${d}</small></div>`:`<div class="sec"><span class="se">?</span><b>Secret</b><small>À découvrir</small></div>`).join("")}</div>`}
 V.achievements=()=>{secretScanDemo();const w=wk();return`<div class="pagehead"><h1>Palmarès</h1><p>Badges, titres et ${S.claimed.length} / ${ACH.length} succès</p></div>${palmaresTop()}
- <div class="headrow" style="margin-bottom:10px"><b style="font-family:var(--f-head);font-size:19px">Défis de la semaine</b><span style="color:var(--muted);font-size:13px">Nouveaux défis dans <span data-end="${weekEnd()}">${fmtLeft(weekEnd()-now())}</span></span></div>
+ <div class="headrow" style="margin-bottom:10px"><b style="font-family:var(--f-head);font-size:19px;white-space:nowrap">Défis de la semaine</b><span style="color:var(--muted);font-size:13px;white-space:nowrap">Fin dans <span data-end="${weekEnd()}">${fmtLeft(weekEnd()-now())}</span></span></div>
  <div class="stack" style="margin-bottom:22px">${CH.map(([tt,k,goal,rw],i)=>{const v=Math.min(goal,w[k]||0),done=v>=goal,cl=w.claimed.includes(i);return`<div class="panel ach ${done?"done":""}"><div class="ai">${done?I.check:I.flag.replace("<svg",'<svg width="22" height="22"')}</div><div class="grow"><b>${tt}</b><div style="color:var(--muted);font-size:14px">${v}/${goal}</div><div class="bar"><i style="width:${v/goal*100}%"></i></div></div>${done&&!cl?`<button class="btn green" data-act="wkclaim" data-i="${i}" style="padding:8px 12px">+${rw}</button>`:cl?'<span class="pill">Réclamé</span>':`<span style="color:var(--muted);font-size:13px">+${rw}</span>`}</div>`}).join("")}</div>
- <b style="font-family:var(--f-head);font-size:19px;display:block;margin-bottom:10px">Succès permanents</b><div class="stack">${ACH.map(([t,d,f,goal,rw],i)=>{const v=Math.min(goal,f());const done=v>=goal;const cl=S.claimed.includes(i);return`<div class="panel ach ${done?"done":""}"><div class="ai">${done?I.check:I.trophy.replace("<svg",'<svg width="22" height="22"')}</div><div class="grow"><b>${t}</b><div style="color:var(--muted);font-size:14px">${d} · ${fmt(v)}/${fmt(goal)}</div><div class="bar"><i style="width:${v/goal*100}%"></i></div></div>${done&&!cl?`<button class="btn green" data-act="claim" data-i="${i}" style="padding:8px 12px">+${rw}</button>`:cl?'<span class="pill">Réclamé</span>':`<span style="color:var(--muted);font-size:13px;white-space:nowrap">+${rw}</span>`}</div>`}).join("")}</div>${secretsHTML()}`}
+ ${titlesPanel()}<b style="font-family:var(--f-head);font-size:19px;display:block;margin-bottom:10px">Succès permanents</b><div class="stack">${ACH.map(([t,d,f,goal,rw],i)=>{const v=Math.min(goal,f());const done=v>=goal;const cl=S.claimed.includes(i);return`<div class="panel ach ${done?"done":""}"><div class="ai">${done?I.check:I.trophy.replace("<svg",'<svg width="22" height="22"')}</div><div class="grow"><b>${t}</b><div style="color:var(--muted);font-size:14px">${d} · ${fmt(v)}/${fmt(goal)}</div><div class="bar"><i style="width:${v/goal*100}%"></i></div></div>${done&&!cl?`<button class="btn green" data-act="claim" data-i="${i}" style="padding:8px 12px">+${rw}</button>`:cl?'<span class="pill">Réclamé</span>':`<span style="color:var(--muted);font-size:13px;white-space:nowrap">+${rw}</span>`}</div>`}).join("")}</div>${secretsHTML()}`}
 const seasonName=(s,o)=>new Date(s+"-15T12:00:00").toLocaleDateString("fr-FR",o||{month:"long",year:"numeric"});
 const SPRIZE=[["1er","15 paquets"],["2e","10 paquets"],["3e","8 paquets"],["4e à 10e","5 paquets"],["11e à 25e","3 paquets"],["26e à 50e","2 paquets"]];
 function seasonHTML(){if(!window.ONLINE)return`<div class="panel empty">${I.trophy}<b>Saisons classées</b>Les saisons sont disponibles sur paddock.click.</div>`;
@@ -1682,7 +1728,7 @@ function render(keep){
  $("#navin").innerHTML=NAV.map(([v,l,ic])=>`<button class="${act===v?"on":""}" data-act="${v==="more"?"more":"go"}" data-v="${v}" style="position:relative;${isLocked(v)?"opacity:.45":""}">${ic}<span>${l}</span>${isLocked(v)?'<span class="navlock">🔒</span>':""}${v==="trades"&&pendIn?'<span style="position:absolute;top:8px;right:28%;width:9px;height:9px;border-radius:50%;background:var(--red)"></span>':""}${v==="more"&&unreadCount()?`<span class="navbadge">${Math.min(9,unreadCount())}${unreadCount()>9?"+":""}</span>`:""}</button>`).join("");
  const focus=document.activeElement&&document.activeElement.id;const pos=focus&&document.activeElement.selectionStart;
  if(keep&&(focus==="encq"||focus==="sinv"||focus==="modq"||focus==="modnew"||focus==="chatin"||focus==="bidin"||focus==="gname"||focus==="semail"||focus==="suser"||focus==="fq"))return; // ne pas écraser une saisie en cours
- if(isLocked(U.view))U.view="packs";unlockCheck();app.innerHTML=topbar()+V[U.view]();{let hz=document.getElementById("huntz");if(!hz){hz=document.createElement("div");hz.id="huntz";document.body.appendChild(hz)}hz.innerHTML=huntHTML()}
+ if(isLocked(U.view))U.view="packs";unlockCheck();{const h=topbar()+V[U.view]();if(!keep||h!==app._h||app.firstChild!==app._n){app.innerHTML=h;app._h=h;app._n=app.firstChild}}{const on=app.querySelector(".rchips .on");if(on){const p=on.parentNode;p.scrollLeft+=on.getBoundingClientRect().left-p.getBoundingClientRect().left-(p.clientWidth-on.offsetWidth)/2}}{let hz=document.getElementById("huntz");if(!hz){hz=document.createElement("div");hz.id="huntz";document.body.appendChild(hz)}hz.innerHTML=huntHTML()}
  if(U.view==="packs")maybeTuto();
  const s1=$("#csort");if(s1)s1.value=U.col.sort;const s2=$("#msort");if(s2)s2.value=U.mk.sort;
  if(focus&&!keep){const el=document.getElementById(focus);if(el&&el.tagName==="INPUT"){el.focus();try{el.setSelectionRange(pos,pos)}catch(e){}}}
@@ -1691,14 +1737,14 @@ function render(keep){
 
 /* ---------- glisser pour ouvrir / changer de carte ---------- */
 (function(){let sx=0,sy=0,el=null,mode="";
- document.addEventListener("touchstart",e=>{const t=e.touches[0];const p=e.target.closest("#packbtn");const r=e.target.closest(".reveal .card");
+ document.addEventListener("touchstart",e=>{const t=e.touches[0];const p=e.target.closest("#packbtn");const r=e.target.closest(".reveal .card,.mus .card");
   el=p&&!p.disabled?p:r;mode=p&&!p.disabled?"pack":r?"card":"";sx=t.clientX;sy=t.clientY},{passive:true});
  document.addEventListener("touchmove",e=>{if(mode!=="pack"||!el)return;const dx=e.touches[0].clientX-sx,dy=e.touches[0].clientY-sy;if(Math.abs(dx)>Math.abs(dy)){el.classList.add("drag");el.style.transform=`translateX(${dx*.6}px) rotate(${dx/18}deg)`}},{passive:true});
  document.addEventListener("touchend",e=>{if(!mode||!el)return;const t=e.changedTouches[0];const dx=t.clientX-sx,dy=t.clientY-sy;const m=mode,node=el;mode="";el=null;
   if(m==="pack"){node.classList.remove("drag");node.style.transform="";if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.3){const b=document.querySelector(".openbtn");if(b&&!b.disabled)b.click()}}
-  else if(m==="card"&&Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.3){const b=document.querySelector(dx<0?'[data-act="rnext"]':'[data-act="rprev"]');if(b&&!b.disabled)b.click()}},{passive:true});
+  else if(m==="card"&&Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.3){const mu=node.closest(".mus");const b=document.querySelector(mu?(dx<0?'[data-act="musn"]':'[data-act="musp"]'):(dx<0?'[data-act="rnext"]':'[data-act="rprev"]'));if(b&&!b.disabled)b.click()}},{passive:true});
 })();
-function go(v){if(isLocked(v))return lockToast(v);if(window.OVIEW)OVIEW(v);U.view=v;U.bid=0;render();window.scrollTo(0,0)}
+function go(v){if(isLocked(v))return lockToast(v);if(window.OVIEW)OVIEW(v);U.col.p=U.all.p=0;if(U.pcol)U.pcol.p=0;U.view=v;U.bid=0;render();window.scrollTo(0,0)}
 
 /* ---------- modal ---------- */
 function modal(html,center){$("#layer").innerHTML=`<div class="overlay ${center?"center":""}" data-act="closebg"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`}
@@ -1771,9 +1817,9 @@ V.pcol=()=>{const P=U.pcol;if(!P)return"";const F=P;const own=Object.keys(P.card
  return`<button class="linkbtn" data-act="who" data-n="${esc(P.name)}" style="color:var(--muted)">← Profil de ${esc(P.name)}</button>
  <div class="pagehead headrow"><div><h1>Collection de ${esc(P.name)}</h1><p>${fmt(own.length)} voitures uniques · <b style="color:var(--green)">${fmt(miss)}</b> que vous n'avez pas</p></div>${S.friends.includes(P.name)?`<button class="btn outline-green" data-act="newtrade" data-f="${esc(P.name)}">Échanger</button>`:""}</div>
  <div class="seg seg4">${[["","Toutes"],["miss","Il me les faut"],["dup","Ses doubles ("+dups+")"],["both","En commun"]].map(([k,l])=>`<button class="${F.mode===k?"on":""}" data-act="pcmode" data-m="${k}">${l}</button>`).join("")}</div>
- <div class="stack" style="gap:12px;margin-top:12px"><input class="input" id="pq" placeholder="Rechercher dans sa collection…" value="${esc(F.q)}">${filterBar(F,"p",own)}</div>
+ <div class="stack" style="gap:12px;margin-top:12px">${searchRow(F,"p","pq","Rechercher dans sa collection…")}${U.fo.p?filterBar(F,"p",own):""}</div>
  ${rchips(F.r,"pr")}
- ${ids.length?pager(F.p,pages,"pp")+`<div class="grid">${ids.slice(F.p*PER,F.p*PER+PER).map(id=>`<div class="pcw">${cardHTML(id,{owned:true,act:"allinfo",holo:P.cards[id][1]>0})}${P.cards[id][0]>1?`<span class="pcn">×${P.cards[id][0]}</span>`:""}</div>`).join("")}</div>`+pager(F.p,pages,"pp")
+ ${ids.length?gridMore("p",F,ids,id=>`<div class="pcw">${cardHTML(id,{owned:true,act:"allinfo",holo:P.cards[id][1]>0})}${P.cards[id][0]>1?`<span class="pcn">×${P.cards[id][0]}</span>`:""}</div>`)
  :`<div class="panel empty">${I.book}<b>Aucune carte ne correspond</b>Essayez un autre filtre.</div>`}`};
 function openProfile(n){if(!n)return;if(S.user&&n===S.user.name){closeModal();go("profile");return}
  if(window.OP)return OP(n);if(!S.fc[n])S.fc[n]=Array.from({length:40},()=>drawId(0));modal(profileHTML(demoProfile(n)))}
@@ -1865,7 +1911,8 @@ document.addEventListener("click",e=>{
  const H={
  go:()=>{closeModal();go(d.v)},
  close:closeModal,closebg:closeModal,
- more:()=>modal(`<ul class="menu">${[["profile","Profil",I.user],["all","Toutes les cartes",I.globe],["guild","Écurie",I.garage],["friends","Amis",I.users],["messages","Messages",I.chat],["battle","Bataille",I.swords],["achievements","Palmarès",I.trophy],["atelier","Atelier",I.garage],["museum","Musée",I.book],["stats","Statistiques",I.medal],["shop","Boutique",I.coins],["ranking","Classement",I.medal],["settings","Paramètres",I.gear],...(isMod(S.user.name)?[["mod","Modération",I.shield]]:[])].map(([v,l,ic])=>`<li><button data-act="go" data-v="${v}" ${isLocked(v)?'style="opacity:.5"':""}>${ic}${l}${isLocked(v)?`<span class="lockt">🔒 niveau ${lockLv(v)}</span>`:""}${v==="messages"&&unreadCount()?`<span class="menubadge">${unreadCount()} nouveau${unreadCount()>1?"x":""}</span>`:""}</button></li>`).join("")}</ul>`),
+ more:()=>{const G=[["Moi",[["profile","Profil",I.user],["shop","Boutique",I.coins],["stats","Statistiques",I.chart]]],["Social",[["friends","Amis",I.users],["messages","Messages",I.chat],["guild","Écurie",I.flag]]],["Jeu",[["battle","Bataille",I.swords],["atelier","Atelier",I.tool],["museum","Musée",I.book],["all","Toutes les cartes",I.globe],["ranking","Classement",I.medal],["achievements","Palmarès",I.trophy]]],["Réglages",[["settings","Paramètres",I.gear],...(isMod(S.user.name)?[["mod","Modération",I.shield]]:[])]]];
+  modal(`<div class="mnu">${G.map(([g,L])=>`<div class="mgt">${g}</div><div class="mgrid">${L.map(([v,l,ic])=>`<button class="mtile ${isLocked(v)?"lk":""} ${v==="shop"?"hot":""}" data-act="go" data-v="${v}">${ic}<span>${l}</span>${isLocked(v)?`<span class="lockt">🔒 niveau ${lockLv(v)}</span>`:""}${v==="messages"&&unreadCount()?`<span class="menubadge" aria-label="${unreadCount()} nouveau${unreadCount()>1?"x":""}">${Math.min(99,unreadCount())}</span>`:""}</button>`).join("")}</div>`).join("")}</div>`)},
  how:()=>showTuto(0),
  tuto:()=>showTuto(+d.i),
  tutoend:()=>{try{localStorage.setItem(tutoKey(),"1")}catch(e){}closeModal()},
@@ -1906,7 +1953,7 @@ document.addEventListener("click",e=>{
  openpro:()=>{if(!meVip())return toast("Le pack Paddock Pro est réservé aux membres Paddock Pro.");if(!proReady())return toast(`Prochain pack Paddock Pro dans ${fmtLeft(proNext()-now())}.`);const p=$("#packbtn");p.classList.add("shake");blip(500,.2);setTimeout(()=>{openPack(true);go("reveal")},650)},
  rnext:()=>{if(U.reveal.i<U.reveal.ids.length-1){U.reveal.i++;blip(520+U.reveal.i*80);render()}},
  rprev:()=>{if(U.reveal.i>0){U.reveal.i--;render()}},
- fav:()=>{const id=+d.id;S.fav=S.fav.includes(id)?S.fav.filter(x=>x!==id):[...S.fav,id];save();render()},
+ fav:()=>{const id=+d.id,on=!S.fav.includes(id);S.fav=on?[...S.fav,id]:S.fav.filter(x=>x!==id);save();if(U.view==="collection"&&U.col.sort==="fav")return render();document.querySelectorAll(`.star[data-id="${id}"]`).forEach(s=>{s.classList.toggle("on",on);s.innerHTML=on?I.starf:I.star});const a=$("#app");if(a)a._h=null},
  favm:()=>{H.fav();cardModal(+d.id)},
  sharec:()=>shareCard(+d.id),
  sharedl:()=>{const a=document.createElement("a");a.href=U.shareUrl;a.download=U.shareName;document.body.appendChild(a);a.click();a.remove()},
@@ -1957,6 +2004,7 @@ document.addEventListener("click",e=>{
  autoon:()=>{const l=S.listings.find(x=>x.id===U.lid);if(!l)return;const m=parseInt(($("#autoin")||{}).value)||0;const mb=minBid(l);if(m<mb)return toast(`Le maximum doit être d'au moins ${fmt(mb)} pistons.`);if(m>S.coins+(leader(l)===S.user.name?curPrice(l):0))return toast("Votre maximum dépasse votre solde.");
   S.autos=S.autos||{};S.autos[l.id]=m;if(leader(l)!==S.user.name){S.coins-=mb;l.bids.push({who:S.user.name,amt:mb,t:now()})}save();blip(660);toast(`Enchère automatique activée jusqu'à ${fmt(m)} pistons.`);render()},
  autooff:()=>{const l=S.listings.find(x=>x.id===U.lid);if(!l||!S.autos)return;delete S.autos[l.id];save();toast("Enchère automatique arrêtée.");render()},
+ ttltog:()=>{U.ttlo=!U.ttlo;render()},ftog:()=>{U.fo[d.p]=!U.fo[d.p];render()},lmore:()=>loadMore(d.p),
  fnew:()=>{const F=d.p==="a"?U.all:d.p==="p"?U.pcol:U.col;F.nw=!F.nw;F.p=0;render()},
  freset:()=>{const F=d.p==="a"?U.all:d.p==="p"?U.pcol:U.col;F.b="";F.t="";F.nw=false;F.p=0;render()},
  modpro:()=>{if(!isMod(S.user.name))return;const a=A(d.n),days=+d.d;a.proUntil=days?Math.max(now(),a.proUntil||0)+days*86400000:0;save();toast(days?`Paddock Pro offert à ${d.n} pour ${days} jours.`:`Paddock Pro retiré à ${d.n}.`);render()},
