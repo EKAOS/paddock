@@ -590,7 +590,8 @@
     react: act(async (el, d) => {
       const cur = el.classList.contains("on"); const r = await rpc("react_show", { name: d.f, e: cur ? "" : d.e }); blip(700, .1);
       if (U.garages && U.garages.day && U.garages.day.u === d.f) U.garages.day.reacts = r;
-      if ($(".modal") && window.openProfile) openProfile(d.f); else render(true);
+      if ($("#layer .tdym")) { render(true); tdyRefresh(); }   // réaction depuis la fiche « Garage du jour » : on reste dessus
+      else if ($(".modal") && window.openProfile) openProfile(d.f); else render(true);
     }),
     loyalopen: act(async () => {
       const r = await rpc("open_loyalty"); blip(990, .3);
