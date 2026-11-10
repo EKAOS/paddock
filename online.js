@@ -289,7 +289,7 @@
     list.sort((a, b) => rk(b.id) - rk(a.id));
     return { ids: list.map(x => x.id), fresh: list.map(x => x.new), holo: list.map(x => x.holo), i: 0 };
   };
-  let opening = false, preImgs = [];
+  let preImgs = [];
   function preload(ids) {
     if (typeof IMGMODE === "undefined" || IMGMODE !== "url") return Promise.resolve();
     const ps = ids.map(id => new Promise(r => {
@@ -299,18 +299,33 @@
     preImgs = preImgs.slice(-12);
     return ps[0] || Promise.resolve();   // on n'attend que la première carte, les autres arrivent derrière
   }
+  // Toucher « Ouvrir » plusieurs fois de suite ouvre plusieurs paquets : les réponses sont regroupées
+  // et toutes les cartes sont montrées d'un coup (avant, seules celles du dernier paquet s'affichaient).
+  let burst = null, lastOpen = 0;
+  const wait = ms => new Promise(r => setTimeout(r, ms));
   async function openKind(kind) {
-    if (opening) return; opening = true;   // glisser + toucher, ou double toucher : une seule ouverture
-    try {
-      const p = $("#packbtn"); if (p) p.classList.add("shake"); blip(kind === "pro" ? 500 : 380, .15);
-      const t0 = Date.now(), wait = ms => new Promise(r => setTimeout(r, ms));
-      const res = await rpc("open_pack", { kind });
-      const rv = packOrder(res.filter(x => CARS[x.id]));
-      // les photos se chargent pendant que le paquet s'ouvre : plus de carte vide au moment de la découvrir
-      await Promise.all([Promise.race([preload(rv.ids), wait(700)]), wait(Math.max(0, 650 - (Date.now() - t0)))]);
-      U.reveal = rv;
-      blip(700, .12); _go("reveal"); sync().then(() => {}).catch(() => {});
-    } finally { opening = false; const p = $("#packbtn"); if (p) p.classList.remove("shake"); }
+    const t = Date.now();
+    if (t - lastOpen < 120) return;                                      // glisser + toucher : un seul geste, une seule ouverture
+    if (burst && (kind !== "normal" || burst.kind !== "normal")) return; // seuls les paquets normaux s'enchaînent
+    if (burst && (burst.n >= Math.min(S.packs, 10) || burst.closed)) return;
+    lastOpen = t;
+    const b = burst || (burst = { kind, n: 0, done: 0, cards: [], err: null, last: t });
+    b.n++; b.last = t;
+    const p = $("#packbtn"); if (p) { p.classList.remove("shake"); void p.offsetWidth; p.classList.add("shake"); }
+    blip((kind === "pro" ? 500 : 380) + (b.n - 1) * 40, .15);
+    try { const res = await rpc("open_pack", { kind }); b.cards.push(...res.filter(x => CARS[x.id])); }
+    catch (x) { b.err = b.err || x; }
+    b.done++;
+    if (b.done < b.n) return;                                            // d'autres paquets sont encore en route
+    const rv = b.cards.length ? packOrder(b.cards) : null;
+    // les photos se chargent pendant que le paquet s'ouvre : plus de carte vide au moment de la découvrir
+    if (rv) await Promise.all([Promise.race([preload(rv.ids.slice(0, 10)), wait(700)]), wait(Math.max(0, 650 - (Date.now() - b.last)))]);
+    if (b.done < b.n) return;                                            // un toucher de plus est arrivé entre-temps : il terminera
+    b.closed = true; burst = null;
+    const q = $("#packbtn"); if (q) q.classList.remove("shake");
+    if (!rv) throw b.err || new Error("Ouverture impossible pour l'instant.");
+    U.reveal = rv; U.reveal.packs = b.n;
+    blip(700, .12); _go("reveal"); sync().then(() => {}).catch(() => {});
   }
   async function portal() {
     const j = await http("POST", "/functions/v1/create-portal", { returnUrl: location.origin + location.pathname }, true);
@@ -632,7 +647,7 @@
     lvgo: act(async () => { const L = U.lv; L.busy = true; try { await rpc("live_pick", { bid: L.id, picks: L.pick }); await livePoll(true); } finally { L.busy = false; } }),
     lvmove: act(async (el, d) => { const L = U.lv; if (L.busy) return; L.busy = true; try { await rpc("live_move", { bid: L.id, stat: d.s }); await livePoll(true); } finally { L.busy = false; } }),
     lvquit: () => { U.lv = null; U.btab = "live"; window.go("battle"); },
-    open: act(async () => { if (opening) return; if (!S.packs) return toast("Plus de paquet disponible pour l'instant."); await openKind("normal"); }),
+    open: act(async () => { if (!S.packs) return toast("Plus de paquet disponible pour l'instant."); await openKind("normal"); }),
     openpro: act(async () => { await openKind("pro"); }),
     openev: act(async () => { await openKind("event"); }),
     daily: act(async () => { const r = await rpc("claim_daily"); blip(780); toast(`Jour ${r.day} : ${dailyTxt({ c: r.coins, p: r.packs })}`); await after(); }),

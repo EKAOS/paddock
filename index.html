@@ -795,6 +795,7 @@ body.light .mtile.hot{border-color:rgba(138,109,54,.5);background:linear-gradien
 .rbar{grid-template-columns:112px minmax(0,1fr) 84px}.rbar span{white-space:nowrap;font-size:12.5px;letter-spacing:.02em}.rbar b{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 .rtrk{height:10px;border-radius:5px;background:var(--line);overflow:hidden}.rbar .rtrk i{height:10px;border-radius:5px}
 .pmore.pmcol div{display:grid;gap:2px;justify-content:stretch}.pmore.pmcol span{font-size:12.5px}.pmore.pmcol b{font-size:14.5px}
+.rprog{flex:1;min-width:120px;max-width:200px;height:6px;border-radius:3px;background:var(--line2);overflow:hidden}.rprog i{display:block;height:100%;width:auto;border-radius:3px;background:var(--green)}
 </style>
 </head>
 <body>
@@ -1438,8 +1439,9 @@ function revealFx(r,holo){const big=r==="L"||r==="ED";if(!big&&r!=="UR"&&!holo)r
 V.reveal=()=>{const R=U.reveal;const id=R.ids[R.i];const left=R.ids.length-1-R.i;const rr=CARS[id].r,hh=R.holo&&R.holo[R.i];R.fx=R.fx||{};if(!R.fx[R.i]){R.fx[R.i]=1;setTimeout(()=>revealFx(rr,hh),60)}return`<div class="reveal ${rr==="L"||rr==="ED"?"rv-legend":rr==="UR"?"rv-ur":""}">
  <div class="ctr">Carte <b>${R.i+1}</b> / ${R.ids.length}</div>
  ${cardHTML(id,{big:true,star:true,isnew:R.fresh[R.i],holo:R.holo&&R.holo[R.i]})}
- <div class="dots"><button class="arrow" data-act="rprev" ${R.i?"":"disabled"} aria-label="Précédente">${I.left}</button>${R.ids.map((_,k)=>`<i class="${k===R.i?"on":""}"></i>`).join("")}<button class="arrow" data-act="rnext" ${left?"":"disabled"} aria-label="Suivante">${I.right}</button></div>
- ${left?`<button class="btn dark" style="padding-inline:40px" data-act="rnext">Encore ${left} carte${left>1?"s":""}</button>`:`<div class="row"><button class="btn ghost" data-act="go" data-v="collection">Voir ma collection</button><button class="btn green" data-act="go" data-v="packs">Terminé</button></div>`}</div>`};
+ <div class="dots"><button class="arrow" data-act="rprev" ${R.i?"":"disabled"} aria-label="Précédente">${I.left}</button>${R.ids.length>12?`<div class="rprog"><i style="width:${(R.i+1)/R.ids.length*100}%"></i></div>`:R.ids.map((_,k)=>`<i class="${k===R.i?"on":""}"></i>`).join("")}<button class="arrow" data-act="rnext" ${left?"":"disabled"} aria-label="Suivante">${I.right}</button></div>
+ ${left?`<button class="btn dark" style="padding-inline:40px" data-act="rnext">Encore ${left} carte${left>1?"s":""}</button>`:`<div class="row"><button class="btn ghost" data-act="go" data-v="collection">Voir ma collection</button><button class="btn green" data-act="go" data-v="packs">Terminé</button></div>`}
+ ${R.ids.length>5?`<button class="linkbtn" data-act="rall">Tout afficher (${R.ids.length} cartes)</button>`:""}</div>`};
 
 function sortIds(ids,s){const by={rar:(a,b)=>RAR.indexOf(CARS[a].r)-RAR.indexOf(CARS[b].r)||CARS[a].n.localeCompare(CARS[b].n),atk:(a,b)=>CARS[b].hp-CARS[a].hp,def:(a,b)=>CARS[b].v-CARS[a].v,name:(a,b)=>CARS[a].n.localeCompare(CARS[b].n),year:(a,b)=>CARS[a].y1-CARS[b].y1,yearn:(a,b)=>CARS[b].y1-CARS[a].y1,brand:(a,b)=>CARS[a].b.localeCompare(CARS[b].b)||CARS[a].y1-CARS[b].y1,recent:(a,b)=>b-a};return ids.sort(by[s]||by.rar)}
 // nouveautés : voitures ajoutées depuis la dernière grosse mise à jour du catalogue
@@ -1911,7 +1913,7 @@ document.addEventListener("click",e=>{
  const H={
  go:()=>{closeModal();go(d.v)},
  close:closeModal,closebg:closeModal,
- more:()=>{const G=[["Moi",[["profile","Profil",I.user],["shop","Boutique",I.coins],["stats","Statistiques",I.chart]]],["Social",[["friends","Amis",I.users],["messages","Messages",I.chat],["guild","Écurie",I.flag]]],["Jeu",[["battle","Bataille",I.swords],["atelier","Atelier",I.tool],["museum","Musée",I.book],["all","Toutes les cartes",I.globe],["ranking","Classement",I.medal],["achievements","Palmarès",I.trophy]]],["Réglages",[["settings","Paramètres",I.gear],...(isMod(S.user.name)?[["mod","Modération",I.shield]]:[])]]];
+ more:()=>{const G=[["Moi",[["profile","Profil",I.user],["shop","Boutique",I.coins],["ranking","Classement",I.medal]]],["Social",[["friends","Amis",I.users],["messages","Messages",I.chat],["guild","Écurie",I.flag]]],["Jeu",[["battle","Bataille",I.swords],["atelier","Atelier",I.tool],["museum","Musée",I.book],["all","Toutes les cartes",I.globe],["stats","Statistiques",I.chart],["achievements","Palmarès",I.trophy]]],["Réglages",[["settings","Paramètres",I.gear],...(isMod(S.user.name)?[["mod","Modération",I.shield]]:[])]]];
   modal(`<div class="mnu">${G.map(([g,L])=>`<div class="mgt">${g}</div><div class="mgrid">${L.map(([v,l,ic])=>`<button class="mtile ${isLocked(v)?"lk":""} ${v==="shop"?"hot":""}" data-act="go" data-v="${v}">${ic}<span>${l}</span>${isLocked(v)?`<span class="lockt">🔒 niveau ${lockLv(v)}</span>`:""}${v==="messages"&&unreadCount()?`<span class="menubadge" aria-label="${unreadCount()} nouveau${unreadCount()>1?"x":""}">${Math.min(99,unreadCount())}</span>`:""}</button>`).join("")}</div>`).join("")}</div>`)},
  how:()=>showTuto(0),
  tuto:()=>showTuto(+d.i),
@@ -1953,6 +1955,7 @@ document.addEventListener("click",e=>{
  openpro:()=>{if(!meVip())return toast("Le pack Paddock Pro est réservé aux membres Paddock Pro.");if(!proReady())return toast(`Prochain pack Paddock Pro dans ${fmtLeft(proNext()-now())}.`);const p=$("#packbtn");p.classList.add("shake");blip(500,.2);setTimeout(()=>{openPack(true);go("reveal")},650)},
  rnext:()=>{if(U.reveal.i<U.reveal.ids.length-1){U.reveal.i++;blip(520+U.reveal.i*80);render()}},
  rprev:()=>{if(U.reveal.i>0){U.reveal.i--;render()}},
+ rall:()=>{const R=U.reveal;if(!R)return;const nw=R.fresh.filter(Boolean).length;modal(`<h2><span>Vos ${R.ids.length} cartes</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2><p style="color:var(--muted);margin:-6px 0 14px">${nw?`${nw} nouvelle${nw>1?"s":""} voiture${nw>1?"s":""} dans votre collection`:"Que des voitures que vous aviez déjà"}</p><div class="grid">${R.ids.map((id,k)=>cardHTML(id,{isnew:R.fresh[k],holo:R.holo&&R.holo[k]})).reverse().join("")}</div><div class="actions" style="margin-top:16px"><button class="btn green block" data-act="go" data-v="packs">Terminé</button></div>`)},
  fav:()=>{const id=+d.id,on=!S.fav.includes(id);S.fav=on?[...S.fav,id]:S.fav.filter(x=>x!==id);save();if(U.view==="collection"&&U.col.sort==="fav")return render();document.querySelectorAll(`.star[data-id="${id}"]`).forEach(s=>{s.classList.toggle("on",on);s.innerHTML=on?I.starf:I.star});const a=$("#app");if(a)a._h=null},
  favm:()=>{H.fav();cardModal(+d.id)},
  sharec:()=>shareCard(+d.id),
