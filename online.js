@@ -196,7 +196,8 @@
         U.rank = rk.map(p => { absorb(p); return p; });
         U.lrank = (lr || []).map(p => ({ u: absorb(p), w: p.w, g: p.g, me: p.me }));
       } else if (v === "mod") {
-        const [ml, rp] = await Promise.all([rpc("mod_list", { q: "" }), rpc("get_reports").catch(() => [])]);
+        const [ml, rp, ch] = await Promise.all([rpc("mod_list", { q: "" }), rpc("get_reports").catch(() => []), isAdminMe() ? rpc("cheat_list").catch(() => null) : null]);
+        if (ch) U.cheats = ch;
         U.modNames = ml.map(absorb); U.reports = (rp || []).map(r => Object.assign({}, r, { t: T(r.t) }));
       } else if (v === "settings") {
         U.blocks = await rpc("get_blocks");
@@ -303,6 +304,15 @@
   // et toutes les cartes sont montrées d'un coup (avant, seules celles du dernier paquet s'affichaient).
   let burst = null, lastOpen = 0;
   const wait = ms => new Promise(r => setTimeout(r, ms));
+  const isAdminMe = () => !!(S && S.user && A(S.user.name).admin);
+  async function redeem(code) {
+    const r = await rpc("redeem_cheat", { c: code }); if (r.err) throw new Error(r.err);
+    S.packs += r.packs || 0; S.coins += r.coins || 0;
+    [660, 880, 1100, 1320].forEach((f, i) => setTimeout(() => blip(f, .1), i * 110));
+    const parts = [r.packs ? `+${r.packs} paquet${r.packs > 1 ? "s" : ""}` : "", r.coins ? `+${fmt(r.coins)} pistons` : ""].filter(Boolean);
+    modal(`<div class="chwin"><div class="che">🎮</div><h2>${r.secret ? "CODE SECRET !" : "CODE ACTIVÉ"}</h2><div style="color:var(--muted)">${r.secret ? "Vous avez trouvé le code Konami. Respect." : "Bien joué, le cadeau est dans votre garage."}</div><div class="chr">${parts.map(p => `<span>${p}</span>`).join("")}</div><button class="btn green block" data-act="close">Super !</button></div>`, true);
+    sync().then(() => render(true)).catch(() => {});
+  }
   async function openKind(kind) {
     const t = Date.now();
     if (t - lastOpen < 120) return;                                      // glisser + toucher : un seul geste, une seule ouverture
@@ -565,6 +575,23 @@
     updup: act(async (el, d) => {
       const id = +d.id; const r = await rpc("upgrade_dup", { cid: id });
       S.lvl[id] = r.lvl; S.col[id] = r.n; blip(880); toast(`${CARS[id].n} passe au niveau ${r.lvl} !`); cardModal(id); render(true); sync().catch(() => {});
+    }),
+    chpad: (el, d) => {
+      const KON = "HHBBGDGDXA"; U.chq = ((U.chq || "") + d.k).slice(-10); blip(KON.startsWith(U.chq) ? 640 + U.chq.length * 60 : 300, .05);
+      const s = document.getElementById("chseq"); if (s) s.textContent = U.chq.split("").map(k => PADK[k]).join(" ");
+      if (U.chq.length === 10) { const c = U.chq.replace(/X/g, "B"); U.chq = ""; redeem(c).catch(x => { toast(x.message); if (s) s.textContent = "· · · · · · · · · ·"; }); }
+    },
+    chok: act(async () => { const i = document.getElementById("chcode"); const c = (i && i.value || "").trim(); if (!c) return toast("Entrez un code."); await redeem(c); }),
+    chsave: act(async () => {
+      const v = id => (document.getElementById(id) || {}).value || "";
+      const code = v("cc_code").trim(); if (!code) return toast("Choisissez un code.");
+      U.cheats = await rpc("cheat_save", { c: code, p: +v("cc_p") || 0, co: +v("cc_c") || 0, days: +v("cc_d") || null, mx: +v("cc_m") || null, on_: true });
+      toast(`Code ${(U.cheats[0] || {}).code || code} enregistré.`); render(true);
+    }),
+    chtog: act(async (el, d) => {
+      const c = (U.cheats || []).find(x => x.code === d.c); if (!c) return;
+      const days = c.ends ? Math.max(1, Math.ceil((T(c.ends) - Date.now()) / 864e5)) : null;
+      U.cheats = await rpc("cheat_save", { c: c.code, p: c.packs, co: c.coins, days, mx: c.max, on_: !c.active }); render(true);
     }),
     advopen: act(async () => {
       const r = await rpc("claim_advent"); blip(880);

@@ -902,6 +902,22 @@ body.light .mtile.tg.on svg,body.light .dwal .wi svg,body.light .dpt.best>svg{co
 @media (max-height:760px){.packview.hx .heye{display:none}.packview.hx h1{font-size:21px;margin-top:0}.hdash{margin-top:10px}.hd{padding:9px 4px 8px}.hd .hi,.ring{width:34px;height:34px}.stage{--sh:clamp(190px,calc(100vh - 404px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)),372px)}}
 @supports (height:100dvh){@media (max-height:760px){.stage{--sh:clamp(190px,calc(100dvh - 404px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)),372px)}}}
 .probox{grid-template-columns:minmax(0,1fr)}.probox .btn{white-space:normal;line-height:1.25}
+
+/* ---- codes de triche ---- */
+.cht .chscr{background:#06090a;border:1px solid #23302a;border-radius:14px;padding:14px 16px;font-family:ui-monospace,"SF Mono",Menlo,monospace;color:#9be8b0;box-shadow:inset 0 0 30px rgba(80,220,140,.08);text-shadow:0 0 6px rgba(120,255,170,.45)}
+.cht .chl{font-size:13px;letter-spacing:.06em;opacity:.85}.cht .chcur{animation:chb 1s steps(2) infinite}@keyframes chb{50%{opacity:0}}
+.cht .chseq{margin-top:10px;font-size:20px;letter-spacing:.04em;white-space:nowrap;overflow:hidden;min-height:32px;color:#d6ffe2}
+.cht .pad{display:flex;align-items:center;justify-content:space-between;margin-top:18px;padding:0 6px}
+.dpad{display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:2px}
+.dpad button,.abtn button{background:var(--panel2);border:1px solid var(--line2);color:var(--text);font-size:18px;display:grid;place-items:center;transition:transform .08s}
+.dpad button:active,.abtn button:active{transform:scale(.92);background:var(--line2)}
+.dpad .pu{grid-area:1/2;border-radius:12px 12px 4px 4px}.dpad .pl{grid-area:2/1;border-radius:12px 4px 4px 12px}.dpad .pr{grid-area:2/3;border-radius:4px 12px 12px 4px}.dpad .pd{grid-area:3/2;border-radius:4px 4px 12px 12px}.dpad i{grid-area:2/2;background:var(--panel2);border:1px solid var(--line2)}
+.abtn{display:flex;gap:14px;transform:rotate(-18deg)}.abtn button{width:62px;height:62px;border-radius:50%;font-weight:900;font-size:20px;color:var(--green)}
+.chwin{text-align:center;padding:10px 4px}.chwin .che{font-size:64px;line-height:1;animation:chpop .5s cubic-bezier(.2,1.6,.4,1)}@keyframes chpop{from{transform:scale(.2) rotate(-20deg)}}
+.chwin h2{font-family:var(--f-head);font-stretch:125%;font-size:26px;letter-spacing:.08em;margin:14px 0 6px}.chwin .chr{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
+.chwin .chr span{background:linear-gradient(180deg,rgba(207,178,122,.16),rgba(207,178,122,.04));border:1px solid rgba(207,178,122,.45);border-radius:999px;padding:8px 16px;font-weight:700}
+.chrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}.chrow div{flex:1;min-width:0}.chrow b{display:block}.chrow span{color:var(--muted);font-size:12.5px}.chrow.off{opacity:.55}
+.chform{display:grid;grid-template-columns:1fr 1fr;gap:8px}.chform #cc_code,.chform .btn{grid-column:1/-1}
 </style>
 </head>
 <body>
@@ -1410,7 +1426,13 @@ function tdyList(){const L=[];
  L.push({k:"cal",n:"Événements",a:"#a5b4fc",ic:I.cal,sub:"Le programme à venir",tag:"CALENDRIER",todo:false,act:"evcal"});
  return L}
 function ttTile(x){return`<button class="tt ${x.todo?"todo":""}" data-act="${x.act||"tdy"}" data-k="${x.k}" style="--a:${x.a}"><span class="st">${x.tag}</span><div class="tic">${x.ic}</div><b>${x.n}</b><small>${x.sub}</small>${x.pips?`<div class="pp">${Array.from({length:x.pips[1]},(_,k)=>`<i class="${k<x.pips[0]?"on":""}"></i>`).join("")}</div>`:x.bar!=null?`<div class="bar"><i style="width:${(x.bar*100).toFixed(0)}%;background:${x.a}"></i></div>`:""}</button>`}
-const TDYH={sacc:()=>accPanel(),sinv:()=>invPanel(),sblk:()=>blocksHTML(),liv:()=>livPanel(),tit:()=>titPanel(),plate:()=>platePanel(),seek:()=>seekPanel(),adv:()=>advPanel(),hunt:()=>huntPanel(),cotm:()=>cotmPanel(),mys:()=>mysteryPanel(),loy:()=>loyaltyPanel(),poll:()=>pollPanel(),gar:()=>garagePanel(),comm:()=>commPanel(),pro:()=>proPanel(),
+const PADK={H:"↑",B:"↓",G:"←",D:"→",X:"B",A:"A"};
+function cheatPanel(){const q=U.chq||"";return`<div class="cht"><div class="chscr" aria-live="polite"><div class="chl">PADDOCK OS · v2.0</div><div class="chl">&gt; MODE TRICHE<span class="chcur">_</span></div><div class="chseq" id="chseq">${q?q.split("").map(k=>PADK[k]).join(" "):"· · · · · · · · · ·"}</div></div>
+ <div class="srow" style="margin-top:14px"><input class="input" id="chcode" placeholder="Entrez un code" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24"><button class="btn green" data-act="chok">Valider</button></div>
+ <div class="pad"><div class="dpad"><button data-act="chpad" data-k="H" class="pu" aria-label="Haut">▲</button><button data-act="chpad" data-k="G" class="pl" aria-label="Gauche">◀</button><i></i><button data-act="chpad" data-k="D" class="pr" aria-label="Droite">▶</button><button data-act="chpad" data-k="B" class="pd" aria-label="Bas">▼</button></div>
+ <div class="abtn"><button data-act="chpad" data-k="X" aria-label="Bouton B">B</button><button data-act="chpad" data-k="A" aria-label="Bouton A">A</button></div></div>
+ <p class="fine" style="text-align:center;margin-top:12px">Un code vu sur nos réseaux ? Tapez-le au-dessus.<br>Chaque code ne marche qu'une fois par compte.</p></div>`}
+const TDYH={cheat:()=>cheatPanel(),sacc:()=>accPanel(),sinv:()=>invPanel(),sblk:()=>blocksHTML(),liv:()=>livPanel(),tit:()=>titPanel(),plate:()=>platePanel(),seek:()=>seekPanel(),adv:()=>advPanel(),hunt:()=>huntPanel(),cotm:()=>cotmPanel(),mys:()=>mysteryPanel(),loy:()=>loyaltyPanel(),poll:()=>pollPanel(),gar:()=>garagePanel(),comm:()=>commPanel(),pro:()=>proPanel(),
  ev:()=>evPanel()+'<button class="linkbtn" data-act="evcal" style="display:block;margin:12px auto 0">Voir le calendrier des événements</button>'};
 function openTdy(k){const f=TDYH[k],h=f?f():"";if(!h)return;modal(`<div class="tdym" data-k="${k}">${h}</div><button class="btn ghost block" data-act="close" style="margin-top:12px">Fermer</button>`);const m=document.querySelector("#layer .tdym");if(m){m._h=h;m.parentNode.classList.add("sheet")}}
 // la fiche ouverte suit les changements (vote enregistré, case ouverte, paquet récupéré…)
@@ -1835,13 +1857,17 @@ V.settings=()=>{const tg=(act,k,icn,l,on,t1,t0)=>`<button class="mtile tg ${on?"
  <div class="mgrid ${ADS_ON?"g2":""}">${tg("set","sound",I.sound,"Sons",S.set.sound,"Activés","Coupés")}${tg("set","notif",I.bell,"Notifications",S.set.notif,"Activées","Coupées")}${tg("theme","",I.moon,"Mode sombre",!S.set.light,"Activé","Désactivé")}${ADS_ON?tg("ckset","",I.chart,"Mesure des pubs",consentGet()==="yes","Acceptée","Refusée"):""}</div>
  ${window.PUSH?`<div class="panel pushp">${PUSH.row()}</div>`:""}
  <div class="mgt">Compte</div>
- <div class="dlst">${setRow(I.mail,"Adresse e-mail",esc(S.user.email||""),"sacc")}${setRow(I.user,"Nom d'utilisateur",esc(S.user.name)+(meVip()?"":" · modifiable avec Paddock Pro"),"sacc")}${setRow(I.link,"Lien d'invitation",meVip()?esc(myInvite()):"Personnalisable avec Paddock Pro","sinv")}${setRow(I.shield,"Joueurs bloqués",BL.length?`${BL.length} joueur${BL.length>1?"s":""} bloqué${BL.length>1?"s":""}`:"Aucun joueur bloqué","sblk")}</div>
+ <div class="dlst">${setRow(I.mail,"Adresse e-mail",esc(S.user.email||""),"sacc")}${setRow(I.user,"Nom d'utilisateur",esc(S.user.name)+(meVip()?"":" · modifiable avec Paddock Pro"),"sacc")}${setRow(I.link,"Lien d'invitation",meVip()?esc(myInvite()):"Personnalisable avec Paddock Pro","sinv")}${setRow(I.spark,"Codes de triche","Un code vu sur nos réseaux ? Entrez-le ici","cheat")}${setRow(I.shield,"Joueurs bloqués",BL.length?`${BL.length} joueur${BL.length>1?"s":""} bloqué${BL.length>1?"s":""}`:"Aucun joueur bloqué","sblk")}</div>
  <div class="mgt">À propos</div>
  <div class="dlst">${window.ONLINE?[["mentions-legales.html","Mentions légales"],["cgu.html","Conditions d'utilisation"],["confidentialite.html","Confidentialité"]].map(([h,l])=>`<a class="dlr" href="${h}">${I.doc}<div><b>${l}</b></div><i class="chv">${I.right}</i></a>`).join(""):""}<div class="dlr">${I.flag}<div><b>Membre depuis</b><span>le ${new Date(S.user.since).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</span></div></div></div>
  <div class="mgt">Session</div>
  <div class="mgrid g2"><button class="mtile" data-act="logout">${I.out}<span>Déconnexion</span></button><button class="mtile dg" data-act="wipe">${I.trash}<span>Supprimer mon compte</span></button></div>
  <div class="fine" style="margin-top:18px">Paddock${window.ONLINE?"":" · démo de jeu"}. Caractéristiques des voitures approximatives. Photos issues de Wikimedia Commons sous licences libres, crédits sur chaque fiche. Vues : statistiques Wikimedia des 60 derniers jours.</div></div>`};
 
+function cheatAdminHTML(){const L=U.cheats;return`<div class="panel stack" style="margin-top:14px"><div class="headrow"><b>Codes de triche</b><span class="pill">${L?L.length:"…"}</span></div>
+ ${L?L.map(c=>`<div class="chrow ${c.active?"":"off"}"><div><b>${esc(c.code==="HHBBGDGDBA"?"Konami ↑↑↓↓←→←→BA":c.code)}</b><span>${[c.packs?`${c.packs} paquet${c.packs>1?"s":""}`:"",c.coins?`${fmt(c.coins)} pistons`:""].filter(Boolean).join(" + ")} · ${fmt(c.uses)} utilisation${c.uses>1?"s":""}${c.max?` / ${fmt(c.max)}`:""}${c.ends?` · jusqu'au ${new Date(c.ends).toLocaleDateString("fr-FR")}`:""}</span></div><button class="tg ${c.active?"on":""}" data-act="chtog" data-c="${esc(c.code)}">${c.active?"Actif":"Coupé"}</button></div>`).join(""):""}
+ <div class="chform"><input class="input" id="cc_code" placeholder="NOUVEAUCODE" maxlength="24" autocapitalize="characters"><input class="input" id="cc_p" type="number" min="0" max="20" placeholder="Paquets"><input class="input" id="cc_c" type="number" min="0" max="5000" placeholder="Pistons"><input class="input" id="cc_d" type="number" min="0" placeholder="Durée (jours)"><input class="input" id="cc_m" type="number" min="0" placeholder="Max joueurs"><button class="btn green" data-act="chsave">Créer le code</button></div>
+ <div class="fine">Laissez la durée ou le maximum vides pour un code sans limite. Chaque joueur ne peut l'utiliser qu'une fois.</div></div>`}
 V.mod=()=>{if(!isMod(S.user.name))return`<div class="panel empty"><b>Accès réservé</b>Seuls les modérateurs peuvent ouvrir ce panel.</div>`;
  const me=S.user.name,admin=!!A(me).admin;const q=(U.modq||"").toLowerCase();const f=U.modf||"all";
  let names=(window.ONLINE?(U.modNames||[]).slice():Object.keys(S.acc)).sort((a,b)=>(b===me)-(a===me)||a.localeCompare(b));
@@ -1849,7 +1875,7 @@ V.mod=()=>{if(!isMod(S.user.name))return`<div class="panel empty"><b>Accès rés
  names=names.filter(n=>n.toLowerCase().includes(q)&&(f==="all"||(f==="mod"?isMod(n):A(n)[f])));
  return`<div class="pagehead"><h1 style="display:flex;gap:10px;align-items:center"><span style="color:var(--green);width:30px;display:inline-flex">${I.shield}</span>Modération</h1><p>Gérez les comptes, les modérateurs, les certifications et Paddock Pro</p></div>
  <div class="panel"><div class="rcount"><span>Comptes <b>${Object.keys(S.acc).length}</b></span><span>${BADGE.cert} <b>${cnt("cert")}</b></span><span>${BADGE.vip} <b>${cnt("vip")}</b></span><span>${BADGE.mod} <b>${cnt("mod")}</b></span><span style="color:var(--red)">Suspendus <b>${cnt("ban")}</b></span></div></div>
- ${reportsModHTML()}${pollModHTML()}
+ ${reportsModHTML()}${pollModHTML()}${admin?cheatAdminHTML():""}
  <div class="stack" style="gap:12px;margin-top:16px"><input class="input" id="modq" placeholder="Rechercher un compte…" value="${esc(U.modq||"")}">
  <div class="modbtns">${[["all","Tous"],["cert","Certifiés"],["vip","Paddock Pro"],["mod","Modérateurs"],["ban","Suspendus"]].map(([k,l])=>`<button class="tg ${f===k?"on mod":""}" data-act="modf" data-f="${k}">${l}</button>`).join("")}</div>
  ${admin?`<div class="panel stack"><div class="headrow"><b>Événement automatique</b><span class="pill">EN COURS</span></div><div style="font-size:14px">${EV().n} · nouvel événement dans <span data-end="${evInfo().until}">${fmtLeft(evInfo().until-now())}</span></div><div style="color:var(--muted);font-size:13px">Il change tout seul chaque lundi à minuit. Semaine prochaine : ${evNext().n}.</div></div>`:""}
@@ -2078,6 +2104,7 @@ function drawTrade(){const mine=sortIds(Object.keys(S.col).map(Number),"rar");co
  const sel=$("#trwho");sel.addEventListener("change",()=>{if(window.onTradeWho)return onTradeWho(sel.value);TR.who=sel.value;TR.want=null;drawTrade()})}
 
 /* ---------- events ---------- */
+{let lt=[];document.addEventListener("click",e=>{const tb=e.target.closest&&e.target.closest(".topbar");if(!tb||e.target!==tb||!S||!S.user)return;if(e.clientX>tb.getBoundingClientRect().left+190)return;const n=Date.now();lt=lt.filter(x=>n-x<2500);lt.push(n);blip(500+lt.length*90,.05);if(lt.length>=5){lt=[];U.chq="";blip(1200,.12);toast("🎮 Manette secrète débloquée !");openTdy("cheat")}})}
 document.addEventListener("click",e=>{
  const el0=e.target.closest("[data-act]");
  if(!el0||(el0.dataset.act==="closebg"&&e.target!==el0)){const nmEl=e.target.closest(".nm[data-name]")||(e.target.closest(".lrow .av")&&e.target.closest(".lrow").querySelector(".nm[data-name]"));if(nmEl&&S&&S.user){e.stopPropagation();openProfile(nmEl.dataset.name);return}}
