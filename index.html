@@ -1882,6 +1882,8 @@ V.settings=()=>{const tg=(act,k,icn,l,on,t1,t0)=>`<button class="mtile tg ${on?"
  ${window.PUSH?`<div class="panel pushp">${PUSH.row()}</div>`:""}
  <div class="mgt">Compte</div>
  <div class="dlst">${setRow(I.mail,"Adresse e-mail",esc(S.user.email||""),"sacc")}${setRow(I.user,"Nom d'utilisateur",esc(S.user.name)+(meVip()?"":" · modifiable avec Paddock Pro"),"sacc")}${setRow(I.link,"Lien d'invitation",meVip()?esc(myInvite()):"Personnalisable avec Paddock Pro","sinv")}${setRow(I.spark,"Codes de triche","Un code vu sur nos réseaux ? Entrez-le ici","cheat")}${setRow(I.shield,"Joueurs bloqués",BL.length?`${BL.length} joueur${BL.length>1?"s":""} bloqué${BL.length>1?"s":""}`:"Aucun joueur bloqué","sblk")}</div>
+ <div class="mgt">Communauté</div>
+ <div class="dlst"><a class="dlr" href="https://discord.gg/y9gnffGVMh" target="_blank" rel="noopener">${I.chat}<div><b>Discord officiel</b><span>Codes cadeaux, échanges, annonces et entraide</span></div><i class="chv">${I.right}</i></a></div>
  <div class="mgt">À propos</div>
  <div class="dlst">${window.ONLINE?[["mentions-legales.html","Mentions légales"],["cgu.html","Conditions d'utilisation"],["confidentialite.html","Confidentialité"]].map(([h,l])=>`<a class="dlr" href="${h}">${I.doc}<div><b>${l}</b></div><i class="chv">${I.right}</i></a>`).join(""):""}<div class="dlr">${I.flag}<div><b>Membre depuis</b><span>le ${new Date(S.user.since).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</span></div></div></div>
  <div class="mgt">Session</div>
