@@ -593,6 +593,19 @@
       const days = c.ends ? Math.max(1, Math.ceil((T(c.ends) - Date.now()) / 864e5)) : null;
       U.cheats = await rpc("cheat_save", { c: c.code, p: c.packs, co: c.coins, days, mx: c.max, on_: !c.active }); render(true);
     }),
+    oauth: (el, d) => {
+      const back = location.origin + location.pathname;
+      try { sessionStorage.setItem("paddock-oauth", d.p); } catch (x) {}
+      location.href = SB + "/auth/v1/authorize?provider=" + encodeURIComponent(d.p) + "&redirect_to=" + encodeURIComponent(back);
+    },
+    pickname: act(async () => {
+      const i = $("#pnu"), e = $("#pne"), u = (i && i.value || "").trim();
+      if (!/^[A-Za-z0-9_.-]{3,20}$/.test(u)) { if (e) e.textContent = "3 à 20 caractères : lettres, chiffres, _ . -"; return; }
+      const inv = (() => { try { return sessionStorage.getItem("paddock-invite") || ""; } catch (x) { return ""; } })();
+      try { await rpc("pick_username", { u, inv }); } catch (x) { if (e) e.textContent = x.message; return; }
+      try { sessionStorage.removeItem("paddock-invite"); } catch (x) {}
+      closeModal(); await afterLogin(`Bienvenue au paddock, ${u} ! 10 paquets vous attendent.`);
+    }),
     advopen: act(async () => {
       const r = await rpc("claim_advent"); blip(880);
       if (r.card != null && CARS[r.card]) { U.reveal = packOrder([{ id: r.card, new: r.new, holo: false }]); _go("reveal"); sync().catch(() => {}); return; }
@@ -870,6 +883,18 @@
   };
 
   // ---------- démarrage ----------
+  // services de connexion activés (Google, Apple, Discord)
+  window.OAUTHP = {};
+  fetch(SB + "/auth/v1/settings", { headers: { apikey: KEY } }).then(r => r.json()).then(j => { window.OAUTHP = (j && j.external) || {}; if (!S || !S.user) render(); }).catch(() => {});
+  async function namePending() {
+    try {
+      const np = await rpc("name_pending"); if (!np || !np.pending) return;
+      try { adsSignup(); } catch (x) {}
+      modal(`<div class="pickn"><div style="font-size:46px">🏁</div><h2>Choisissez votre pseudo</h2><p>C'est le nom que les autres pilotes verront. Vous ne pourrez plus le changer gratuitement ensuite.</p>
+        <div class="stack"><input class="input" id="pnu" maxlength="20" value="${esc(np.name || "")}" autocomplete="username"><div class="err" id="pne"></div><button class="btn green block" data-act="pickname">C'est parti</button></div></div>`, true);
+      const ov = document.querySelector("#layer .overlay"); if (ov) ov.dataset.act = "";
+    } catch (x) {}
+  }
   async function boot() {
     const m = location.hash.match(/^#invite-([A-Za-z0-9_.-]{3,20})$/);
     if (m) { try { sessionStorage.setItem("paddock-invite", m[1]); } catch (e) {} }
@@ -886,6 +911,7 @@
     S = null;
     if (sess) { try { await sync(); } catch (e) { if (!sess || !offlineBoot()) { if (!sess) S = null; } } }
     render();
+    if (S && S.user) namePending();
     const pm = location.hash.match(/^#profil-(.+)$/);
     if (pm) {
       const who = decodeURIComponent(pm[1]); history.replaceState(null, "", location.pathname);
