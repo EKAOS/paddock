@@ -180,7 +180,7 @@
         if (gg) { if (gg.day) absorb(gg.day); if (gg.best) absorb(gg.best); }
       } else if (v === "friends" || v === "battle") {
         S.friends = (await rpc("get_friends")).map(absorb);
-        if (v === "friends") { const [lg, fd] = await Promise.all([rpc("get_league").catch(() => []), rpc("get_feed").catch(() => [])]); U.league = (lg || []).map(p => ({ u: absorb(p), n: p.n, xp: p.xp, pr: p.pr || 0, pts: p.pts, me: p.me })); U.feed = (fd || []).map(f => Object.assign({}, f, { u: absorb(f), t: T(f.t) })); }
+        if (v === "friends") { const [lg, fd] = await Promise.all([rpc("get_league").catch(() => []), Promise.resolve([])]); U.league = (lg || []).map(p => ({ u: absorb(p), n: p.n, xp: p.xp, pr: p.pr || 0, pts: p.pts, me: p.me })); U.feed = (fd || []).map(f => Object.assign({}, f, { u: absorb(f), t: T(f.t) })); }
         if (v === "battle") await liveList(true);
         else { const r = await rpc("get_refs").catch(() => null); if (r) { r.parrain = r.parrain ? { n: absorb(r.parrain) } : null; r.kids = (r.kids || []).map(k => ({ n: absorb(k), lv: k.lv, done: k.done })); } window.REFS = r; }
       } else if (v === "messages") {
