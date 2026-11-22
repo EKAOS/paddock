@@ -1750,7 +1750,7 @@ function wheelPanel(){const b=bonusState();const done=b&&b.wheel;
  ${done?`<button class="btn ghost block" disabled>Revenez demain pour un nouveau tour</button>`:`<button class="cta whgo" data-act="wheelspin" ${U.whBusy?"disabled":""}>Tourner la roue</button>`}
  <div style="color:var(--dim);font-size:12px">Pistons, paquets, et parfois une super rare ou une ultra rare.</div></div>`}
 function wheelLocal(){const x=Math.random()*100,seg=x<25?0:x<45?1:x<63?2:x<75?3:x<85?4:x<93?5:x<98?6:7;const co=[25,50,0,100,0,0,250,0][seg],pk=[0,0,1,0,2,0,0,0][seg];let card=null,isnew=false;
- if(seg===5||seg===7){card=rnd(BYR[seg===5?"SR":"UR"]);isnew=!S.col[card];own(card)}S.coins+=co;S.packs+=pk;S.bonusL=S.bonusL||{};S.bonusL.wd=parisDay(now());save();return{seg,coins:co,packs:pk,card,new:isnew}}
+ if(seg===5||seg===7){card=rnd(BYR[seg===5?"SR":"UR"]);isnew=!S.col[card];own(card)}S.coins+=co;S.packs+=pk;S.bonusL=S.bonusL||{};S.bonusL.wd=parisDay(now());if(S.bonus)S.bonus.wheel=true;save();return{seg,coins:co,packs:pk,card,new:isnew}}
 async function wheelSpin(){const b=bonusState();if(!b||b.wheel||U.whBusy)return;U.whBusy=true;const btn=$(".whgo");if(btn)btn.disabled=true;
  let r;try{r=window.BONUS_API?await BONUS_API.spin():wheelLocal()}catch(x){U.whBusy=false;if(btn)btn.disabled=false;return toast(x.message)}
  const base=Math.ceil((U.whRot||0)/360)*360,target=base+360*6-r.seg*45+(Math.random()*24-12);U.whRot=target;const el=$("#whl");
@@ -1770,7 +1770,7 @@ function surprisePanel(){const s=surpriseInfo();if(!s)return"";const hh=t=>new D
   :`<div class="surp"><div class="sbox">💨</div><b>Livraison ratée</b><span>Le livreur est passé à ${hh(s.b.sat)}. Revenez demain, il passera à une autre heure !</span></div>`;
  return`<div class="stack" style="text-align:center"><div class="heye">Chaque jour</div><b style="font-family:var(--f-head);font-size:21px;text-transform:uppercase;letter-spacing:.03em">Livraison surprise</b>${body}</div>`}
 async function surpriseClaim(){const s=surpriseInfo();if(!s||s.st!=="here")return toast("Pas de livraison à récupérer pour l'instant.");
- try{if(window.BONUS_API){await BONUS_API.claim();if(S.bonus)S.bonus.sgot=true}else{S.packs+=2;S.coins+=50;S.bonusL=S.bonusL||{};S.bonusL.sd=parisDay(now());save()}}catch(x){return toast(x.message)}
+ try{if(window.BONUS_API){await BONUS_API.claim();if(S.bonus)S.bonus.sgot=true}else{S.packs+=2;S.coins+=50;S.bonusL=S.bonusL||{};S.bonusL.sd=parisDay(now());if(S.bonus)S.bonus.sgot=true;save()}}catch(x){return toast(x.message)}
  blip(660,.1);setTimeout(()=>blip(990,.18),120);toast("Livraison récupérée : 2 paquets + 50 pistons !");closeModal();render(true);if(window.BONUS_API)BONUS_API.after().catch(()=>{})}
 let surpToasted="";setInterval(()=>{try{if(!S||!S.user)return;const s=surpriseInfo();if(s&&s.st==="here"&&surpToasted!==parisDay(now())){surpToasted=parisDay(now());toast("📦 Livraison surprise arrivée ! Vous avez 1 heure pour la récupérer.");blip(880,.12);if(U.view==="packs"||!U.view)render(true)}}catch(e){}},20000);
 // sons de moteur : montée en régime synthétisée
@@ -2512,6 +2512,11 @@ document.addEventListener("click",e=>{
  notifs:()=>{const h=S.notifs.length?`<div class="stack">${S.notifs.map(n=>`<div class="lrow" style="${n.read?"":"border:1px solid var(--green-d)"}"><div class="grow"><div>${esc(n.txt)}</div><div class="sub">${new Date(n.t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</div></div></div>`).join("")}</div>`:'<div class="empty">Aucune notification.</div>';S.notifs.forEach(n=>n.read=true);save();const ph=patchHTML();markPatchSeen();render();modal(`<h2><span>Notifications</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2><div class="stack">${ph}${h}</div>`)},
  set:()=>{S.set[d.k]=!S.set[d.k];save();render()},
  g3d:()=>garage3D(S.show.slice(0,showN()).filter(id=>id!==null&&S.col[id]),"Mon garage"),
+ giftsend:()=>{const g=S.social;if(!g||g.gift)return;g.gift=d.f;toast(`Paquet offert à ${d.f} !`);blip(880,.12);closeModal();openTdy("gift");render(true)},
+ duelnew:()=>{const g=S.social;if(!g)return;if(g.made>=3)return toast("Trois défis par jour au maximum.");g.made++;g.duels.unshift({id:Date.now(),foe:d.f,me_a:true,done:false,mine:null,ms:null,theirs:null,ts:null,opened:false,ends:new Date(now()+172800000).toISOString()});toast(`Défi lancé contre ${d.f} !`);closeModal();openTdy("duel");render(true)},
+ duelopen:()=>{const g=S.social;const x=g&&g.duels.find(z=>String(z.id)===String(d.id));if(!x||x.mine)return;const ids=Array.from({length:5},()=>drawId(false));const fresh=revealPack(ids.slice());ids.forEach(id=>own(id));x.mine=ids;x.ms=ids.reduce((a,id)=>a+RPTS[CARS[id].r],0);
+  if(x.opened){x.theirs=Array.from({length:5},()=>drawId(false));x.ts=x.theirs.reduce((a,id)=>a+RPTS[CARS[id].r],0);x.done=true;x.win=x.ms>x.ts?1:x.ms<x.ts?-1:0;if(x.win===1)S.coins+=100;else if(x.win===0)S.coins+=30}
+  save();closeModal();const rv=ids.slice().sort((a,b)=>RAR.indexOf(CARS[a].r)-RAR.indexOf(CARS[b].r));U.reveal={ids:rv,fresh:rv.map(id=>(S.col[id]||0)<=1),holo:rv.map(()=>false),i:0};go("reveal");toast(`Votre score : ${x.ms} points`)},
  supshop:()=>{closeModal();go("shop");const k=d.s||"";setTimeout(()=>{const h=[...document.querySelectorAll("#app .mgt,#app .label,#app h3,#app h2")].find(x=>x.textContent.trim().toUpperCase()===k);if(h)h.scrollIntoView({behavior:"smooth",block:"start"});else window.scrollTo(0,0)},120)},
  theme:()=>{S.set.light=!S.set.light;save();render()},
  accent:()=>{try{localStorage.setItem("paddock-accent",d.k)}catch(e){}applyAccent(d.k);render(true)},
