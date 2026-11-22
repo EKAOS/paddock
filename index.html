@@ -1188,11 +1188,36 @@ const EVS=[
  {n:"Semaine des Ancêtres",k:"Ancêtres",d:"5 voitures d'avant 1950, dont une super rare ou mieux",bg:"#1c160f",bd:"#78583a",ac:"#a16207",tx:"#f5e6c8",t2:"#d6bc8f",f:c=>c.y1<1950},
  {n:"Semaine des États-Unis",k:"USA",d:"5 voitures américaines, dont une super rare ou mieux",bg:"#111a2e",bd:"#991b1b",ac:"#dc2626",tx:"#e0e7ff",t2:"#fca5a5",b:"us"},
  {n:"Semaine du Royaume-Uni",k:"Royaume-Uni",d:"5 voitures britanniques, dont une super rare ou mieux",bg:"#0d1f1a",bd:"#14532d",ac:"#15803d",tx:"#d1fae5",t2:"#a7f3d0",b:"uk"},
- {n:"Spécial Noël",k:"Noël",d:"5 voitures, dont une ultra rare ou légendaire garantie",bg:"#1f0d10",bd:"#991b1b",ac:"#16a34a",tx:"#fee2e2",t2:"#fca5a5",f:()=>true}];
+ {n:"Spécial Noël",k:"Noël",d:"5 voitures, dont une ultra rare ou légendaire garantie",bg:"#1f0d10",bd:"#991b1b",ac:"#16a34a",tx:"#fee2e2",t2:"#fca5a5",f:()=>true},
+ {n:"Semaine Ferrari",k:"Ferrari",d:"5 Ferrari, dont une super rare ou mieux",bg:"#2a0d0d",bd:"#b91c1c",ac:"#ef4444",tx:"#fee2e2",t2:"#fca5a5",f:c=>["Ferrari"].includes(c.b)},
+ {n:"Semaine Porsche",k:"Porsche",d:"5 Porsche, dont une super rare ou mieux",bg:"#1c1a12",bd:"#a16207",ac:"#eab308",tx:"#fef9c3",t2:"#fde68a",f:c=>["Porsche"].includes(c.b)},
+ {n:"Semaine BMW",k:"BMW",d:"5 BMW, dont une super rare ou mieux",bg:"#0d1a2e",bd:"#1d4ed8",ac:"#3b82f6",tx:"#dbeafe",t2:"#93c5fd",f:c=>["BMW"].includes(c.b)},
+ {n:"Semaine Mercedes-Benz",k:"Mercedes",d:"5 Mercedes-Benz, dont une super rare ou mieux",bg:"#15171a",bd:"#64748b",ac:"#94a3b8",tx:"#f1f5f9",t2:"#cbd5e1",f:c=>["Mercedes-Benz"].includes(c.b)},
+ {n:"Semaine Lamborghini",k:"Lamborghini",d:"5 Lamborghini, dont une super rare ou mieux",bg:"#1a1a08",bd:"#a3a30b",ac:"#facc15",tx:"#fefce8",t2:"#fde047",f:c=>["Lamborghini"].includes(c.b)},
+ {n:"Semaine des Roadsters",k:"Roadsters",d:"5 roadsters et cabriolets, dont une super rare ou mieux",bg:"#0b1f24",bd:"#0e7490",ac:"#06b6d4",tx:"#cffafe",t2:"#67e8f9",f:c=>c.t==="r"},
+ {n:"Semaine des SUV et 4×4",k:"Tout-terrain",d:"5 SUV, 4×4 et pick-up, dont une super rare ou mieux",bg:"#1a1a0e",bd:"#4d7c0f",ac:"#65a30d",tx:"#ecfccb",t2:"#bef264",f:c=>c.t==="v"||c.t==="p"},
+ {n:"Semaine des Citadines",k:"Citadines",d:"5 citadines, dont une super rare ou mieux",bg:"#24101f",bd:"#a21caf",ac:"#d946ef",tx:"#fae8ff",t2:"#f0abfc",f:c=>c.t==="c"},
+ {n:"Semaine des Compactes",k:"Compactes",d:"5 compactes et GTI, dont une super rare ou mieux",bg:"#101828",bd:"#4338ca",ac:"#6366f1",tx:"#e0e7ff",t2:"#a5b4fc",f:c=>c.t==="h"},
+ {n:"Semaine des Années 50-60",k:"Années 50-60",d:"5 voitures de 1950 à 1969, dont une super rare ou mieux",bg:"#1f1a10",bd:"#92702a",ac:"#d4a72c",tx:"#fdf3d7",t2:"#e9cf8a",f:c=>c.y1>=1950&&c.y1<1970},
+ {n:"Semaine des Années 70-80",k:"Années 70-80",d:"5 voitures de 1970 à 1989, dont une super rare ou mieux",bg:"#22140a",bd:"#c2410c",ac:"#f97316",tx:"#ffedd5",t2:"#fdba74",f:c=>c.y1>=1970&&c.y1<1990},
+ {n:"Semaine des Youngtimers",k:"Youngtimers",d:"5 voitures de 1990 à 2009, dont une super rare ou mieux",bg:"#0f1d1d",bd:"#0f766e",ac:"#14b8a6",tx:"#ccfbf1",t2:"#5eead4",f:c=>c.y1>=1990&&c.y1<2010},
+ {n:"Semaine des Nouveautés",k:"Récentes",d:"5 voitures sorties depuis 2015, dont une super rare ou mieux",bg:"#0d1424",bd:"#0369a1",ac:"#0ea5e9",tx:"#e0f2fe",t2:"#7dd3fc",f:c=>c.y1>=2015},
+ {n:"Semaine des 300 km/h",k:"300 km/h",d:"5 voitures qui dépassent 300 km/h, dont une super rare ou mieux",bg:"#200b0b",bd:"#9f1239",ac:"#f43f5e",tx:"#ffe4e6",t2:"#fda4af",f:c=>c.v>=300},
+ {n:"Semaine de la Scandinavie",k:"Scandinavie",d:"5 Volvo, Saab, Koenigsegg ou Polestar, dont une super rare ou mieux",bg:"#0c1828",bd:"#1e40af",ac:"#facc15",tx:"#dbeafe",t2:"#fde68a",f:c=>["Volvo", "Saab", "Koenigsegg", "Polestar"].includes(c.b)},
+ {n:"Semaine de la Corée",k:"Corée",d:"5 voitures coréennes, dont une super rare ou mieux",bg:"#14121f",bd:"#6d28d9",ac:"#ef4444",tx:"#ede9fe",t2:"#c4b5fd",f:c=>["Hyundai", "Kia", "Genesis", "Daewoo", "SsangYong"].includes(c.b)},
+ {n:"Semaine des Coupés",k:"Coupés",d:"5 coupés, dont une super rare ou mieux",bg:"#1a0f1f",bd:"#7e22ce",ac:"#a855f7",tx:"#f3e8ff",t2:"#d8b4fe",f:c=>c.t==="k"},
+ {n:"Semaine des Familiales",k:"Familiales",d:"5 breaks et monospaces, dont une super rare ou mieux",bg:"#0e1a14",bd:"#15803d",ac:"#22c55e",tx:"#dcfce7",t2:"#86efac",f:c=>c.t==="b"||c.t==="m"},
+ {n:"Semaine des Petits Moteurs",k:"Petits moteurs",d:"5 voitures de 80 ch ou moins, dont une super rare ou mieux",bg:"#1a1712",bd:"#78716c",ac:"#a8a29e",tx:"#f5f5f4",t2:"#d6d3d1",f:c=>c.hp<=80},
+ {n:"Semaine Audi",k:"Audi",d:"5 Audi, dont une super rare ou mieux",bg:"#161616",bd:"#991b1b",ac:"#d4d4d8",tx:"#f4f4f5",t2:"#d4d4d8",f:c=>["Audi"].includes(c.b)},
+ {n:"Semaine Ford",k:"Ford",d:"5 Ford, dont une super rare ou mieux",bg:"#0c1530",bd:"#1e3a8a",ac:"#60a5fa",tx:"#dbeafe",t2:"#93c5fd",f:c=>["Ford"].includes(c.b)},
+ {n:"Semaine Volkswagen",k:"Volkswagen",d:"5 Volkswagen, dont une super rare ou mieux",bg:"#0b1626",bd:"#075985",ac:"#38bdf8",tx:"#e0f2fe",t2:"#bae6fd",f:c=>["Volkswagen"].includes(c.b)},
+ {n:"Semaine des Berlines",k:"Berlines",d:"5 berlines, dont une super rare ou mieux",bg:"#121a1f",bd:"#334155",ac:"#64748b",tx:"#e2e8f0",t2:"#cbd5e1",f:c=>c.t==="s"}];
+const EVC=[10, 15, 20, 2, 23, 17, 12, 25, 6, 26, 1, 19, 28, 11, 16, 4, 22, 14, 27, 7, 21, 0, 13, 24, 18, 5, 29, 32, 3, 30, 8, 31],EVW0=45;
+const evTheme=w=>w<EVW0?((w%9)+9)%9:EVC[(((w-EVW0)%EVC.length)+EVC.length)%EVC.length];
 const EV0=Date.UTC(2026,0,12),WK=604800000;
 function evLocal(){const f=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Paris",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date());const g=k=>+f.find(x=>x.type===k).value;
  const loc=Date.UTC(g("year"),g("month")-1,g("day"),g("hour"),g("minute")),off=Math.round((loc-Date.now())/60000)*60000,day=Date.UTC(g("year"),g("month")-1,g("day")),mon=day-((new Date(day).getUTCDay()+6)%7)*86400000;
- const w=Math.round((mon-EV0)/WK),mo=g("month"),dy=g("day");if(mo===12||(mo===1&&dy<=6)){const y=g("year")+(mo===12?1:0);return{t:9,until:Date.UTC(y,0,7)-off}}return{t:((w%9)+9)%9,until:mon+WK-off}}
+ const w=Math.round((mon-EV0)/WK),mo=g("month"),dy=g("day");if(mo===12||(mo===1&&dy<=6)){const y=g("year")+(mo===12?1:0);return{t:9,until:Date.UTC(y,0,7)-off}}return{t:evTheme(w),until:mon+WK-off}}
 function evInfo(){if(S.evSrv&&S.evSrv.until>now())return S.evSrv;return evLocal()}
 const EV=()=>EVS[evInfo().t];
 const EV_NAME="Événement de la semaine";
@@ -1224,9 +1249,9 @@ function advPanel(){const t=advToday();if(!t)return"";const got=advDays(),ok=got
 function evSchedule(n){const f=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Paris",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());const g=k=>+f.find(x=>x.type===k).value;
  const day=Date.UTC(g("year"),g("month")-1,g("day")),mon=day-((new Date(day).getUTCDay()+6)%7)*86400000,w=Math.round((mon-EV0)/WK),out=[];
  for(let k=0;k<n;k++){const m=mon+k*WK;let xm=false;for(let j=0;j<7;j++){const d=new Date(m+j*86400000);if(d.getUTCMonth()===11||(d.getUTCMonth()===0&&d.getUTCDate()<=6))xm=true}
-  out.push({m,t:k===0?evInfo().t:xm?9:(((w+k)%9)+9)%9})}
+  out.push({m,t:k===0?evInfo().t:xm?9:evTheme(w+k)})}
  return out}
-function evCalModal(){const L=evSchedule(6);modal(`<h2><span>Calendrier des événements</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2><div style="color:var(--muted);font-size:14px;margin-bottom:12px">Chaque semaine, un paquet à thème gratuit par jour. Préparez vos paquets !</div><div class="stack">${L.map((x,k)=>{const e=EVS[x.t];return`<div class="lrow" style="background:linear-gradient(135deg,${e.bg},#0b0b0c);border:1px solid ${e.bd}"><div class="grow" style="min-width:0"><b style="color:${e.tx}">${esc(e.n)}</b><div style="font-size:13px;color:${e.t2}">${k===0?"En ce moment":"Semaine du "+new Date(x.m).toLocaleDateString("fr-FR",{day:"numeric",month:"long",timeZone:"UTC"})}</div></div><span class="pill" style="color:${e.t2};border-color:${e.bd};background:${e.bg}">${esc(e.k)}</span></div>`}).join("")}</div>`)}
+function evCalModal(){const L=evSchedule(10);modal(`<h2><span>Calendrier des événements</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2><div style="color:var(--muted);font-size:14px;margin-bottom:12px">Chaque semaine, un paquet à thème gratuit par jour. Préparez vos paquets !</div><div class="stack">${L.map((x,k)=>{const e=EVS[x.t];return`<div class="lrow" style="background:linear-gradient(135deg,${e.bg},#0b0b0c);border:1px solid ${e.bd}"><div class="grow" style="min-width:0"><b style="color:${e.tx}">${esc(e.n)}</b><div style="font-size:13px;color:${e.t2}">${k===0?"En ce moment":"Semaine du "+new Date(x.m).toLocaleDateString("fr-FR",{day:"numeric",month:"long",timeZone:"UTC"})}</div></div><span class="pill" style="color:${e.t2};border-color:${e.bd};background:${e.bg}">${esc(e.k)}</span></div>`}).join("")}</div>`)}
 // ---------- carte du mois (vote) ----------
 const nextMonthName=m=>{const[y,mo]=m.split("-").map(Number);return new Date(Date.UTC(y,mo,15)).toLocaleDateString("fr-FR",{month:"long",timeZone:"UTC"})};
 function cotmState(){if(window.ONLINE)return S.cotm||null;const m=new Date().toISOString().slice(0,7),P=[...BYR.L,...BYR.UR];let h=[...m].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,11);const opts=[];
@@ -1467,7 +1492,7 @@ function titlesPanel(){const tl=myTitles();const hd=`<button class="ttlh" data-a
  if(!U.ttlo)return`<div class="panel" style="margin-bottom:22px">${hd}</div>`;
  return`<div class="panel stack" style="margin-bottom:22px">${hd}<div>${Object.entries(TITLES).map(([k,[n,d]])=>{const ok=tl.includes(k),hid=!ok&&k.startsWith("c_");return`<div class="ttl ${ok?"":"no"}"><span>${ok?"✓ ":"🔒 "}${hid?"???":esc(n)}</span><small>${esc(d)}</small></div>`}).join("")}</div><div style="color:var(--dim);font-size:12.5px">Choisissez le titre affiché sous votre pseudo dans Profil › Personnalisation.</div></div>`}
 const musSeg=k=>`<div class="seg" style="margin-bottom:14px"><button class="${k==="museum"?"on":""}" data-act="go" data-v="museum">Ma collection</button><button class="${k==="encyclo"?"on":""}" data-act="go" data-v="encyclo">Encyclopédie</button></div>`;
-function evNext(){const t=evInfo().t;return EVS[t===9?0:(t+1)%9]}
+function evNext(){return EVS[evSchedule(2)[1].t]}
 // ---------- objectif commun de la semaine ----------
 const COMM_TARGET=3000;
 function commState(){if(window.ONLINE)return S.comm||null;const w=wk(),end=weekEnd(),frac=Math.max(0,Math.min(1,1-(end-now())/(7*86400000)));
