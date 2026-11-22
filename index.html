@@ -966,6 +966,24 @@ body.light .mtile.tg.on svg,body.light .dwal .wi svg,body.light .dpt.best>svg{co
 .pity.hot .pt em{color:var(--green);font-weight:700}
 .pity.hot .pi svg{animation:mshine 2.8s ease-in-out infinite}
 
+/* ---- vague 1 : roue, livraison surprise, anecdotes, couleur, partage (22 nov. 2026) ---- */
+.whw{position:relative;width:min(300px,78vw);aspect-ratio:1;margin:8px auto 0;filter:drop-shadow(0 12px 30px rgba(0,0,0,.6))}
+.whl{width:100%;height:100%;border-radius:50%;box-shadow:0 0 0 6px #1a1712,0 0 40px -6px rgba(207,178,122,.45);will-change:transform}
+.whp{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid #f1dcab;z-index:2;filter:drop-shadow(0 3px 4px rgba(0,0,0,.6))}
+.whres{min-height:22px;color:var(--muted);font-size:14.5px}.whres b{color:#f1dcab}
+.cta.whgo{width:100%;border:0;border-radius:14px;padding:15px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;font-size:14px;background:linear-gradient(180deg,#ecd6a4,#c3a467);color:var(--green-ink);box-shadow:0 10px 26px -12px rgba(207,178,122,.8)}
+.cta.whgo:disabled{opacity:.5}
+.surp{display:grid;justify-items:center;gap:6px;padding:18px 14px;border-radius:16px;border:1px solid var(--line2);background:linear-gradient(180deg,var(--panel2),var(--panel))}
+.surp .sbox{font-size:42px;line-height:1}.surp b{font-size:16px}.surp span{color:var(--muted);font-size:13.5px;line-height:1.45}.surp span b{font-size:inherit;color:var(--text)}
+.surp.here{border-color:rgba(253,186,116,.6);box-shadow:0 0 30px -10px rgba(253,186,116,.7)}.surp.here .sbox{animation:sbounce 1.2s ease-in-out infinite}
+@keyframes sbounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px) rotate(-4deg)}}
+.facts{margin:0 0 12px;padding:12px 14px;border-radius:14px;border:1px solid rgba(207,178,122,.25);background:rgba(207,178,122,.06)}
+.facts b{display:block;font-size:13px;letter-spacing:.04em;color:var(--green);margin-bottom:4px}.facts p{margin:4px 0 0;font-size:13.5px;line-height:1.45;color:var(--text)}
+.accrow{display:flex;align-items:center;gap:12px;margin-top:10px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--panel)}
+.accrow b{display:block;font-size:14px}.accrow span{color:var(--muted);font-size:12.5px}
+.accs{display:flex;gap:8px}.acc{width:28px;height:28px;border-radius:50%;border:2px solid transparent;background:var(--s);box-shadow:inset 0 0 0 3px var(--panel);padding:0;cursor:pointer}
+.acc.on{border-color:var(--text)}
+.linkbtn.shpk{display:inline-flex;align-items:center;gap:6px;margin-top:10px}.linkbtn.shpk svg{width:16px;height:16px}
 </style>
 </head>
 <body>
@@ -1489,6 +1507,8 @@ function mpList(){const out=[],pv=meVip(),pr=pv&&proReady();
  const c=commState();if(c){const pct=Math.min(100,c.packs/c.target*100);const rdy=c.prev||(c.done&&!c.claimed&&c.mine>0);out.push(mpTile("comm","96,165,250","hue-rotate(168deg) saturate(1.6)","Communauté",rdy?"Paquet à récupérer":`${fmt(c.packs)} / ${fmt(c.target)}`,rdy?"PRÊT":c.done?"ATTEINT":null,rdy?null:pct))}
  return out.join("")}
 function tdyList(){const L=[];
+ {const b=bonusState();if(b){L.push({k:"wheel",n:"Roue du garage",a:"#f1dcab",ic:I.spark||I.star,sub:b.wheel?"Revenez demain":"Un tour gratuit",tag:b.wheel?"FAIT":"À TOURNER",todo:!b.wheel});
+  const s=surpriseInfo();L.push({k:"surp",n:"Livraison surprise",a:"#fdba74",ic:I.box,sub:s.st==="here"?`Arrivée ! encore <span data-end="${s.b.sat+3600000}">${fmtLeft(s.left)}</span>`:s.st==="wait"?"Arrive aujourd'hui…":s.st==="got"?"Récupérée · demain":"Ratée · demain",tag:s.st==="here"?"ARRIVÉE !":s.st==="wait"?"EN ROUTE":s.st==="got"?"LIVRÉE":"RATÉE",todo:s.st==="here"})}}
  const at=advToday();if(at){const got=advDays(),ok=got.includes(at);L.push({k:"adv",n:"Calendrier de l'Avent",a:"#fca5a5",ic:I.gift,sub:ok?"Revenez demain":`Case du ${at} à ouvrir`,tag:ok?`${got.length} / 24`:"À OUVRIR",todo:!ok,bar:got.length/24})}
  const c=cotmState();if(c&&c.opts&&c.opts.every(id=>CARS[id])){const td=c.mine==null;L.push({k:"cotm",n:"Carte du mois",a:"#f5d27a",ic:I.star,sub:td?`Votez pour ${nextMonthName(c.month)}`:"Vote enregistré",tag:td?"À FAIRE":"VOTÉ",todo:td})}
  const h=huntState(),hk=h&&huntKey(h);if(h&&HUNT_E[hk]){const n=(h.today||[]).length,m=huntN();L.push({k:"hunt",n:`Chasse aux ${HUNT_N[hk]}`,a:"#7dd3fc",ic:I.search,sub:n>=m?"Tout trouvé aujourd'hui":`${n} trouvé${n>1?"s":""} sur ${m}`,tag:`${Math.min(n,m)} / ${m}`,todo:n<m,pips:[Math.min(n,m),m]})}
@@ -1505,7 +1525,7 @@ function cheatPanel(){const q=U.chq||"";return`<div class="cht"><div class="chsc
  <div class="pad"><div class="dpad"><button data-act="chpad" data-k="H" class="pu" aria-label="Haut">▲</button><button data-act="chpad" data-k="G" class="pl" aria-label="Gauche">◀</button><i></i><button data-act="chpad" data-k="D" class="pr" aria-label="Droite">▶</button><button data-act="chpad" data-k="B" class="pd" aria-label="Bas">▼</button></div>
  <div class="abtn"><button data-act="chpad" data-k="X" aria-label="Bouton B">B</button><button data-act="chpad" data-k="A" aria-label="Bouton A">A</button></div></div>
  <p class="fine" style="text-align:center;margin-top:12px">Un code vu sur nos réseaux ? Tapez-le au-dessus.<br>Chaque code ne marche qu'une fois par compte.</p></div>`}
-const TDYH={cheat:()=>cheatPanel(),sacc:()=>accPanel(),sinv:()=>invPanel(),sblk:()=>blocksHTML(),liv:()=>livPanel(),tit:()=>titPanel(),plate:()=>platePanel(),seek:()=>seekPanel(),adv:()=>advPanel(),hunt:()=>huntPanel(),cotm:()=>cotmPanel(),mys:()=>mysteryPanel(),loy:()=>loyaltyPanel(),poll:()=>pollPanel(),gar:()=>garagePanel(),comm:()=>commPanel(),pro:()=>proPanel(),
+const TDYH={wheel:()=>wheelPanel(),surp:()=>surprisePanel(),cheat:()=>cheatPanel(),sacc:()=>accPanel(),sinv:()=>invPanel(),sblk:()=>blocksHTML(),liv:()=>livPanel(),tit:()=>titPanel(),plate:()=>platePanel(),seek:()=>seekPanel(),adv:()=>advPanel(),hunt:()=>huntPanel(),cotm:()=>cotmPanel(),mys:()=>mysteryPanel(),loy:()=>loyaltyPanel(),poll:()=>pollPanel(),gar:()=>garagePanel(),comm:()=>commPanel(),pro:()=>proPanel(),
  ev:()=>evPanel()+'<button class="linkbtn" data-act="evcal" style="display:block;margin:12px auto 0">Voir le calendrier des événements</button>'};
 function openTdy(k){const f=TDYH[k],h=f?f():"";if(!h)return;modal(`<div class="tdym" data-k="${k}">${h}</div><button class="btn ghost block" data-act="close" style="margin-top:12px">Fermer</button>`);const m=document.querySelector("#layer .tdym");if(m){m._h=h;m.parentNode.classList.add("sheet")}}
 // la fiche ouverte suit les changements (vote enregistré, case ouverte, paquet récupéré…)
@@ -1675,6 +1695,101 @@ function installBar(){if(IN_APP||STANDALONE||!/^https?:$/.test(location.protocol
  if(INSTALL_EVT)return`<div class="instbar"><div class="grow"><b>Installe l'appli Paddock</b><span>En plein écran, avec les notifications.</span></div><button class="btn green" style="padding:9px 14px" data-act="inst">Installer</button><button class="x" data-act="instx" aria-label="Fermer">${I.x}</button></div>`;
  return""}
 V.wrapped=wrappedView;V.stats=statsView;V.atelier=atelierView;V.museum=museumView;V.encyclo=encycloView;
+// ---------- vague 1 (22 nov. 2026) : roue du garage, livraison surprise, sons de moteur, Le saviez-vous, couleur, partage d'ouverture ----------
+const WHEEL=[["25","pistons","#3a3226"],["50","pistons","#2a2a2e"],["1","paquet","#3a3226"],["100","pistons","#2a2a2e"],["2","paquets","#3a3226"],["SR","super rare","#4a2236"],["250","pistons","#2a2a2e"],["UR","ultra rare","#4a3018"]];
+function parisDay(t){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Paris",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(t))}
+function hash32(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function parisToUtc(y,m,d,mins){const g=Date.UTC(y,m-1,d,0,mins);const p=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Paris",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(g));const q=k=>+p.find(x=>x.type===k).value;return g-(Date.UTC(q("year"),q("month")-1,q("day"),q("hour"),q("minute"))-g)}
+function localSurpriseAt(day){const[y,m,d]=day.split("-").map(Number);return parisToUtc(y,m,d,600+hash32(((S.user&&S.user.name)||"")+day)%660)}
+function bonusState(){if(window.ONLINE){const b=S.bonus;if(!b)return null;return{wheel:!!b.wheel,sat:Date.parse(b.sat),sgot:!!b.sgot,snext:Date.parse(b.snext)}}
+ const L=S.bonusL||(S.bonusL={}),t=parisDay(now()),tm=parisDay(now()+86400000);return{wheel:L.wd===t,sat:localSurpriseAt(t),sgot:L.sd===t,snext:localSurpriseAt(tm)}}
+function surpriseInfo(){const b=bonusState();if(!b)return null;const t=now();
+ if(b.sgot)return{st:"got",b};if(t<b.sat)return{st:"wait",b};if(t<b.sat+3600000)return{st:"here",b,left:b.sat+3600000-t};return{st:"miss",b}}
+function wheelSVG(){const R=150,seg=WHEEL.length,a=2*Math.PI/seg;let p="";
+ WHEEL.forEach(([v,l,c],k)=>{const a0=-Math.PI/2+k*a-a/2,a1=a0+a,x0=R+R*Math.cos(a0),y0=R+R*Math.sin(a0),x1=R+R*Math.cos(a1),y1=R+R*Math.sin(a1),am=a0+a/2,rot=(am*180/Math.PI)+90;
+  p+=`<path d="M${R},${R} L${x0.toFixed(1)},${y0.toFixed(1)} A${R},${R} 0 0 1 ${x1.toFixed(1)},${y1.toFixed(1)} Z" fill="${c}" stroke="rgba(207,178,122,.55)" stroke-width="1.5"/>`;
+  const tx=R+R*.66*Math.cos(am),ty=R+R*.66*Math.sin(am);p+=`<g transform="translate(${tx.toFixed(1)},${ty.toFixed(1)}) rotate(${rot.toFixed(1)})"><text text-anchor="middle" y="-2" font-size="${v.length>2?20:24}" font-weight="800" fill="${k===7?"#fdba74":k===5?"#f9a8d4":"#f1dcab"}">${v}</text><text text-anchor="middle" y="15" font-size="10.5" font-weight="600" fill="#bdb6a8" letter-spacing=".5">${l.toUpperCase()}</text></g>`});
+ return`<svg viewBox="0 0 300 300" width="100%" height="100%">${p}<circle cx="150" cy="150" r="148" fill="none" stroke="#cfb27a" stroke-width="3"/><circle cx="150" cy="150" r="30" fill="#151518" stroke="#cfb27a" stroke-width="2.5"/><text x="150" y="155" text-anchor="middle" font-size="13" font-weight="800" fill="#cfb27a" letter-spacing="1">GO</text></svg>`}
+function wheelPanel(){const b=bonusState();const done=b&&b.wheel;
+ return`<div class="stack" style="text-align:center"><div class="heye">Une fois par jour</div><b style="font-family:var(--f-head);font-size:21px;text-transform:uppercase;letter-spacing:.03em">Roue du garage</b>
+ <div class="whw"><div class="whp"></div><div class="whl" id="whl" style="transform:rotate(${U.whRot||0}deg)">${wheelSVG()}</div></div>
+ <div id="whres" class="whres">${U.whMsg||""}</div>
+ ${done?`<button class="btn ghost block" disabled>Revenez demain pour un nouveau tour</button>`:`<button class="cta whgo" data-act="wheelspin" ${U.whBusy?"disabled":""}>Tourner la roue</button>`}
+ <div style="color:var(--dim);font-size:12px">Pistons, paquets, et parfois une super rare ou une ultra rare.</div></div>`}
+function wheelLocal(){const x=Math.random()*100,seg=x<25?0:x<45?1:x<63?2:x<75?3:x<85?4:x<93?5:x<98?6:7;const co=[25,50,0,100,0,0,250,0][seg],pk=[0,0,1,0,2,0,0,0][seg];let card=null,isnew=false;
+ if(seg===5||seg===7){card=rnd(BYR[seg===5?"SR":"UR"]);isnew=!S.col[card];own(card)}S.coins+=co;S.packs+=pk;S.bonusL=S.bonusL||{};S.bonusL.wd=parisDay(now());save();return{seg,coins:co,packs:pk,card,new:isnew}}
+async function wheelSpin(){const b=bonusState();if(!b||b.wheel||U.whBusy)return;U.whBusy=true;const btn=$(".whgo");if(btn)btn.disabled=true;
+ let r;try{r=window.BONUS_API?await BONUS_API.spin():wheelLocal()}catch(x){U.whBusy=false;if(btn)btn.disabled=false;return toast(x.message)}
+ const base=Math.ceil((U.whRot||0)/360)*360,target=base+360*6-r.seg*45+(Math.random()*24-12);U.whRot=target;const el=$("#whl");
+ if(el){el.style.transition="transform 4.2s cubic-bezier(.12,.66,.12,1)";requestAnimationFrame(()=>{el.style.transform=`rotate(${target}deg)`})}
+ let k=0;const tk=setInterval(()=>{blip(300+(k%2)*80,.03);if(++k>26)clearInterval(tk)},150);
+ await new Promise(ok=>setTimeout(ok,4300));clearInterval(tk);U.whBusy=false;
+ const w=WHEEL[r.seg];U.whMsg=r.card!=null&&CARS[r.card]?`Gagné : <b>${esc(CARS[r.card].n)}</b> (${RNAME[CARS[r.card].r].toLowerCase()})${r.new?" · nouvelle !":""}`:`Gagné : <b>${w[0]} ${w[1]}</b>`;
+ if(r.card!=null){engineRev(r.seg===7?1:.6)}else blip(880,.2);
+ if(window.ONLINE&&S.bonus)S.bonus.wheel=true;toast(U.whMsg.replace(/<[^>]+>/g,""));
+ const m=document.querySelector("#layer .tdym");if(m){m.innerHTML=wheelPanel()}
+ if(window.BONUS_API)BONUS_API.after().then(()=>{const m2=document.querySelector("#layer .tdym[data-k=wheel]");if(m2)m2.innerHTML=wheelPanel()}).catch(()=>{});else render(true);
+ if(r.card!=null)setTimeout(()=>cardModal(r.card),900)}
+function surprisePanel(){const s=surpriseInfo();if(!s)return"";const hh=t=>new Date(t).toLocaleTimeString("fr-FR",{timeZone:"Europe/Paris",hour:"2-digit",minute:"2-digit"});
+ const body=s.st==="here"?`<div class="surp here"><div class="sbox">📦</div><b>Votre livraison est arrivée !</b><span>2 paquets + 50 pistons. Le livreur repart dans <b data-end="${s.b.sat+3600000}">${fmtLeft(s.left)}</b>.</span></div><button class="cta whgo" data-act="surpclaim">Récupérer la livraison</button>`
+  :s.st==="wait"?`<div class="surp"><div class="sbox">🚚</div><b>Un livreur est en route…</b><span>Il passe à une heure surprise entre 10 h et 21 h. Quand il arrive, vous avez 1 heure pour récupérer 2 paquets + 50 pistons.</span></div>`
+  :s.st==="got"?`<div class="surp"><div class="sbox">✅</div><b>Livraison récupérée</b><span>Prochaine livraison demain, à une nouvelle heure surprise.</span></div>`
+  :`<div class="surp"><div class="sbox">💨</div><b>Livraison ratée</b><span>Le livreur est passé à ${hh(s.b.sat)}. Revenez demain, il passera à une autre heure !</span></div>`;
+ return`<div class="stack" style="text-align:center"><div class="heye">Chaque jour</div><b style="font-family:var(--f-head);font-size:21px;text-transform:uppercase;letter-spacing:.03em">Livraison surprise</b>${body}</div>`}
+async function surpriseClaim(){const s=surpriseInfo();if(!s||s.st!=="here")return toast("Pas de livraison à récupérer pour l'instant.");
+ try{if(window.BONUS_API){await BONUS_API.claim();if(S.bonus)S.bonus.sgot=true}else{S.packs+=2;S.coins+=50;S.bonusL=S.bonusL||{};S.bonusL.sd=parisDay(now());save()}}catch(x){return toast(x.message)}
+ blip(660,.1);setTimeout(()=>blip(990,.18),120);toast("Livraison récupérée : 2 paquets + 50 pistons !");closeModal();render(true);if(window.BONUS_API)BONUS_API.after().catch(()=>{})}
+let surpToasted="";setInterval(()=>{try{if(!S||!S.user)return;const s=surpriseInfo();if(s&&s.st==="here"&&surpToasted!==parisDay(now())){surpToasted=parisDay(now());toast("📦 Livraison surprise arrivée ! Vous avez 1 heure pour la récupérer.");blip(880,.12);if(U.view==="packs"||!U.view)render(true)}}catch(e){}},20000);
+// sons de moteur : montée en régime synthétisée
+function engineRev(power=1){if(!S||!S.set||!S.set.sound)return;try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();const t=actx.currentTime,dur=1.1+power*.6;
+ const out=actx.createGain();out.gain.setValueAtTime(.0001,t);out.gain.exponentialRampToValueAtTime(.22*power+.05,t+.08);out.gain.setValueAtTime(.22*power+.05,t+dur-.35);out.gain.exponentialRampToValueAtTime(.0001,t+dur);
+ const lp=actx.createBiquadFilter();lp.type="lowpass";lp.frequency.setValueAtTime(500,t);lp.frequency.exponentialRampToValueAtTime(1800+power*1400,t+dur*.6);lp.Q.value=4;lp.connect(out);out.connect(actx.destination);
+ [0,7,-5].forEach((dt,i)=>{const o=actx.createOscillator();o.type=i===2?"square":"sawtooth";o.detune.value=dt*10;const f0=42,f1=150+power*110,f2=110+power*60;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+dur*.55);o.frequency.exponentialRampToValueAtTime(f2,t+dur);const g=actx.createGain();g.gain.value=i===2?.25:.5;o.connect(g);g.connect(lp);o.start(t);o.stop(t+dur+.05)});
+ const lfo=actx.createOscillator(),lg=actx.createGain();lfo.frequency.value=28;lg.gain.value=.08;lfo.connect(lg);lg.connect(out.gain);lfo.start(t);lfo.stop(t+dur)}catch(e){}}
+// Le saviez-vous ? : petites anecdotes calculées sur le catalogue
+let FACTS=null;function factsIdx(){if(FACTS)return FACTS;const by=k=>CARS.map(c=>c[k]).sort((a,b)=>a-b);const hp=by("hp"),v=by("v");const brand={},dec={};
+ CARS.forEach(c=>{(brand[c.b]=brand[c.b]||[]).push(c.id);const d=Math.floor(c.y1/10)*10;(dec[d]=dec[d]||[]).push(c.id)});const rc={};CARS.forEach(c=>rc[c.r]=(rc[c.r]||0)+1);return FACTS={hp,v,brand,dec,rc}}
+function pctBelow(arr,x){let lo=0,hi=arr.length;while(lo<hi){const m=(lo+hi)>>1;if(arr[m]<x)lo=m+1;else hi=m}return Math.round(lo/arr.length*100)}
+function carFacts(id){const c=CARS[id],F=factsIdx(),out=[],yr=new Date().getFullYear(),bl=F.brand[c.b]||[],dl=F.dec[Math.floor(c.y1/10)*10]||[];
+ const ph=pctBelow(F.hp,c.hp);if(ph>=50)out.push(`Elle est plus puissante que ${ph} % des voitures du jeu.`);else out.push(`Avec ${fmt(c.hp)} ch, elle fait partie des ${100-ph} % de voitures les moins puissantes du jeu.`);
+ if(bl.length>2){const top=bl.reduce((a,b)=>CARS[b].v>CARS[a].v?b:a);const old=bl.reduce((a,b)=>CARS[b].y1<CARS[a].y1?b:a);if(top===id)out.push(`C'est la plus rapide des ${bl.length} ${c.b} du jeu.`);else if(old===id)out.push(`C'est la plus ancienne des ${bl.length} ${c.b} du jeu.`);else out.push(`${c.b} compte ${bl.length} voitures dans le jeu : à vous de toutes les trouver.`)}
+ if(dl.length>3){const fd=dl.reduce((a,b)=>CARS[b].v>CARS[a].v?b:a);if(fd===id)out.push(`C'est la voiture la plus rapide des années ${Math.floor(c.y1/10)*10} dans le jeu.`)}
+ const age=yr-c.y1;if(c.y2>=2026&&age<=1)out.push("Elle vient tout juste de sortir.");else if(c.y2>=2026)out.push(`Elle est produite depuis ${age} ans et l'est toujours.`);else if(c.y2>c.y1)out.push(`Elle a été produite pendant ${c.y2-c.y1+1} ans et a fêté ses ${age} ans.`);else out.push(`Elle est sortie il y a ${age} ans.`);
+ if(["L","UR"].includes(c.r))out.push(`Seules ${fmt(F.rc[c.r])} voitures sur ${fmt(CARS.length)} sont ${RNAME[c.r].toLowerCase()}s.`);
+ if(c.v>=300)out.push(`À ${c.v} km/h, elle parcourt un terrain de foot en à peine plus d'une seconde.`);
+ const pick=[];let s=id*7919;const L=out.slice();while(pick.length<2&&L.length){s=(s*1103515245+12345)>>>0;pick.push(L.splice(s%L.length,1)[0])}return pick}
+function factsHTML(id){const f=carFacts(id);return f.length?`<div class="facts"><b>💡 Le saviez-vous ?</b>${f.map(x=>`<p>${x}</p>`).join("")}</div>`:""}
+// couleur de l'interface
+const ACCENTS={gold:{n:"Doré"},silver:{n:"Argent",m:{"207,178,122":"192,198,207","241,220,171":"238,241,245","#cfb27a":"#c0c6cf","#f1dcab":"#eef1f5","#ecd6a4":"#e6e9ee","#c3a467":"#aab1bb","#9c7d43":"#7d8590","#7f632f":"#5f6670","#d6b46a":"#cfd5dd","#8a6d36":"#5f6670"}},
+ red:{n:"Rouge course",m:{"207,178,122":"230,92,82","241,220,171":"255,196,190","#cfb27a":"#e65c52","#f1dcab":"#ffc4be","#ecd6a4":"#f58a80","#c3a467":"#cf463d","#9c7d43":"#9a2f29","#7f632f":"#7a221d","#d6b46a":"#ea6d63","#8a6d36":"#b3342c"}},
+ blue:{n:"Bleu",m:{"207,178,122":"95,168,232","241,220,171":"207,230,251","#cfb27a":"#5fa8e8","#f1dcab":"#cfe6fb","#ecd6a4":"#9ccbf4","#c3a467":"#4b93d6","#9c7d43":"#2f6aa3","#7f632f":"#245480","#d6b46a":"#6fb2ec","#8a6d36":"#2b6cb0"}},
+ green:{n:"Vert anglais",m:{"207,178,122":"92,191,138","241,220,171":"201,240,218","#cfb27a":"#5cbf8a","#f1dcab":"#c9f0da","#ecd6a4":"#93dcb4","#c3a467":"#47a874","#9c7d43":"#2f7a52","#7f632f":"#245f40","#d6b46a":"#6cc896","#8a6d36":"#2f7a52"}}};
+let ACC_ORIG=null;function accentGet(){try{return localStorage.getItem("paddock-accent")||"gold"}catch(e){return"gold"}}
+function applyAccent(k){const st=document.getElementById("mainstyle")||[...document.querySelectorAll("style")].sort((a,b)=>b.textContent.length-a.textContent.length)[0];if(!st)return;st.id="mainstyle";if(ACC_ORIG==null)ACC_ORIG=st.textContent;
+ const A=ACCENTS[k]||ACCENTS.gold;if(!A.m){st.textContent=ACC_ORIG;return}const keys=Object.keys(A.m).sort((a,b)=>b.length-a.length);const re=new RegExp(keys.join("|"),"gi");st.textContent=ACC_ORIG.replace(re,m=>A.m[m.toLowerCase()]||m)}
+function accentRow(){const cur=accentGet();const sw={gold:"#cfb27a",silver:"#c0c6cf",red:"#e65c52",blue:"#5fa8e8",green:"#5cbf8a"};return`<div class="accrow"><div class="grow"><b>Couleur de l'interface</b><span>${ACCENTS[cur].n}</span></div><div class="accs">${Object.keys(ACCENTS).map(k=>`<button class="acc ${k===cur?"on":""}" data-act="accent" data-k="${k}" style="--s:${sw[k]}" aria-label="${ACCENTS[k].n}"></button>`).join("")}</div></div>`}
+try{if(accentGet()!=="gold")applyAccent(accentGet())}catch(e){}
+// partage d'une ouverture de paquet
+async function packCanvas(ids){const W=1080,Hh=1350,cv=document.createElement("canvas");cv.width=W;cv.height=Hh;const g=cv.getContext("2d");
+ const css=getComputedStyle(document.documentElement),rcol=r=>(css.getPropertyValue("--c"+r)||"#d6b46a").trim()||"#d6b46a";
+ const HEAD='"Archivo","Helvetica Neue",Arial,sans-serif',BODY='"Manrope","Helvetica Neue",Arial,sans-serif';try{await document.fonts.load(`800 60px Archivo`);await document.fonts.load(`600 30px Manrope`)}catch(e){}
+ const rr=(x,y,w,h,r)=>{g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()};
+ const top=ids.slice().sort((a,b)=>RAR.indexOf(CARS[a].r)-RAR.indexOf(CARS[b].r)).slice(0,5);const best=top[0],bc=rcol(CARS[best].r);
+ let bg=g.createRadialGradient(W/2,420,60,W/2,420,W);bg.addColorStop(0,bc+"50");bg.addColorStop(.6,"#111114");bg.addColorStop(1,"#070708");g.fillStyle=bg;g.fillRect(0,0,W,Hh);
+ g.textAlign="center";g.fillStyle="#f4f2ee";g.font=`800 50px ${HEAD}`;g.fillText("PADDOCK",W/2,86);g.fillStyle="#cfb27a";g.font=`700 26px ${HEAD}`;g.fillText(ids.length>5?`MON OUVERTURE · ${ids.length} CARTES`:"MON OUVERTURE DE PAQUET",W/2,130);g.textAlign="left";
+ async function photo(c,x,y,w,h){let ok=false;if(IMGMODE==="url"&&c.th){try{const im=await loadImg(c.th.replace(/\/(\d+)px-/,"/640px-"),true).catch(()=>loadImg(c.th,true));const t=document.createElement("canvas");t.width=t.height=1;t.getContext("2d").drawImage(im,0,0);t.getContext("2d").getImageData(0,0,1,1);const s=Math.max(w/im.width,h/im.height);g.save();g.beginPath();g.rect(x,y,w,h);g.clip();g.drawImage(im,x+(w-im.width*s)/2,y+(h-im.height*s)/2,im.width*s,im.height*s);g.restore();ok=true}catch(e){}}
+  if(!ok){try{const svg=carSVG(c).replace("<svg ",'<svg xmlns="http://www.w3.org/2000/svg" width="960" height="500" ');const u=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml"}));const im=await loadImg(u);let gr=g.createLinearGradient(0,y,0,y+h);gr.addColorStop(0,"#2a2c31");gr.addColorStop(1,"#17181b");g.fillStyle=gr;g.fillRect(x,y,w,h);const s=Math.min(w/im.width,h/im.height)*.95;g.drawImage(im,x+(w-im.width*s)/2,y+(h-im.height*s)/2,im.width*s,im.height*s);URL.revokeObjectURL(u)}catch(e){}}}
+ async function tile(id,x,y,w,h,big){const c=CARS[id],col=rcol(c.r);g.save();g.shadowColor=col+"99";g.shadowBlur=big?60:30;rr(x,y,w,h,big?30:22);g.fillStyle="#151518";g.fill();g.restore();
+  g.save();rr(x,y,w,h,big?30:22);g.clip();g.fillStyle="#151518";g.fillRect(x,y,w,h);const ih=Math.round(h*(big?.62:.58));g.fillStyle="#1f2024";g.fillRect(x,y,w,ih);await photo(c,x,y,w,ih);g.fillStyle=col;g.fillRect(x,y+ih,w,big?6:4);
+  const fs=big?26:17;g.font=`800 ${fs}px ${HEAD}`;const lab=RSHORT[c.r],bw=g.measureText(lab).width+(big?40:26);rr(x+(big?22:12),y+(big?22:12),bw,fs+(big?22:14),(fs+(big?22:14))/2);g.fillStyle=col;g.fill();g.fillStyle="#111";g.textBaseline="middle";g.fillText(lab,x+(big?42:25),y+(big?22:12)+(fs+(big?22:14))/2+1);
+  g.textBaseline="alphabetic";g.fillStyle="#f4f2ee";let nf=big?54:28;g.font=`800 ${nf}px ${HEAD}`;let name=c.n;while(g.measureText(name).width>w-(big?72:36)&&name.length>4)name=name.slice(0,-2);if(name!==c.n)name=name.trim()+"…";g.fillText(name,x+(big?36:18),y+ih+(big?78:44));
+  g.font=`600 ${big?28:17}px ${BODY}`;g.fillStyle="#a8a49c";g.fillText(`${fmt(c.hp)} ch · ${fmt(c.v)} km/h · ${c.y1}`,x+(big?36:18),y+ih+(big?124:72));g.restore()}
+ await tile(best,90,165,900,600,true);const rest=top.slice(1),tw=(900-30)/2,th=200;
+ for(let i=0;i<rest.length;i++){const x=90+(i%2)*(tw+30),y=795+Math.floor(i/2)*(th+28);await tile(rest[i],x,y,tw,th,false)}
+ g.textAlign="center";g.fillStyle="#a8a49c";g.font=`600 28px ${BODY}`;g.fillText("Collectionne de vraies voitures sur paddock.click",W/2,Hh-34);return cv}
+async function sharePack(){const R=U.reveal;if(!R)return;toast("Préparation de l'image…");let cv;try{cv=await packCanvas(R.ids)}catch(e){return toast("Impossible de créer l'image.")}
+ const best=R.ids.slice().sort((a,b)=>RAR.indexOf(CARS[a].r)-RAR.indexOf(CARS[b].r))[0];try{window.adsEvent&&adsEvent("share",{method:"pack",content_type:"pack"})}catch(e){}
+ await shareImage(cv,"paddock-ouverture.png",`Regarde mon ouverture Paddock : ${CARS[best].n} (${RNAME[CARS[best].r].toLowerCase()}) 🏁 Viens ouvrir des paquets avec moi : ${shareLink()}`,"Mon ouverture")}
 const PITY_N=50;
 function pityHTML(){if(typeof S.pity!=="number")return"";const n=Math.min(PITY_N-1,Math.max(0,S.pity)),left=PITY_N-n,pct=n/PITY_N*100;
  return`<div class="pity ${left<=5?"hot":""}"><span class="pi">${I.star}</span><div class="grow"><div class="pt"><b>Légendaire garantie</b><em>${left===1?"au prochain paquet !":`dans ${left} paquets max.`}</em></div><div class="pb"><i style="width:${pct.toFixed(1)}%"></i></div></div></div>`}
@@ -1694,7 +1809,7 @@ V.packs=()=>{refillPacks();const tz=teaser(),td=tdyList(),nt=td.filter(x=>x.todo
  <div class="mgt">Autres paquets</div><div class="mps">${mpList()}</div>
  <div class="mgt">Aujourd'hui${nt?`<span class="tbadge">${nt} à faire</span>`:""}</div><div class="tts">${td.map(ttTile).join("")}</div>
  ${fd?`<div class="hfeed">${fd}</div>`:""}</div>`};
-function revealFx(r,holo){const big=r==="L"||r==="ED";if(!big&&r!=="UR"&&!holo)return;
+function revealFx(r,holo){const big=r==="L"||r==="ED";if(big)engineRev(1);else if(r==="UR")engineRev(.55);if(!big&&r!=="UR"&&!holo)return;
  try{if(navigator.vibrate)navigator.vibrate(big?[80,60,80,60,220]:[60,40,90])}catch(e){}
  const notes=big?[523,659,784,1047,1319]:[659,880,1175];notes.forEach((f,k)=>setTimeout(()=>blip(f,big?.18:.12),k*(big?110:90)));
  const col=r==="ED"?"#e43a4f":r==="L"?"#f5d27a":r==="UR"?"#f39d4d":"#f0abfc";const fx=document.createElement("div");fx.className="revfx"+(big?" big":"");fx.style.setProperty("--fx",col);
@@ -1704,7 +1819,7 @@ V.reveal=()=>{const R=U.reveal;const id=R.ids[R.i];const left=R.ids.length-1-R.i
  <div class="ctr">Carte <b>${R.i+1}</b> / ${R.ids.length}</div>
  ${cardHTML(id,{big:true,star:true,isnew:R.fresh[R.i],holo:R.holo&&R.holo[R.i]})}
  <div class="dots"><button class="arrow" data-act="rprev" ${R.i?"":"disabled"} aria-label="Précédente">${I.left}</button>${R.ids.length>12?`<div class="rprog"><i style="width:${(R.i+1)/R.ids.length*100}%"></i></div>`:R.ids.map((_,k)=>`<i class="${k===R.i?"on":""}"></i>`).join("")}<button class="arrow" data-act="rnext" ${left?"":"disabled"} aria-label="Suivante">${I.right}</button></div>
- ${left?`<button class="btn dark" style="padding-inline:40px" data-act="rnext">Encore ${left} carte${left>1?"s":""}</button>`:`<div class="row"><button class="btn ghost" data-act="go" data-v="collection">Voir ma collection</button><button class="btn green" data-act="go" data-v="packs">Terminé</button></div>`}
+ ${left?`<button class="btn dark" style="padding-inline:40px" data-act="rnext">Encore ${left} carte${left>1?"s":""}</button>`:`<div class="row"><button class="btn ghost" data-act="go" data-v="collection">Voir ma collection</button><button class="btn green" data-act="go" data-v="packs">Terminé</button></div><button class="linkbtn shpk" data-act="sharepk">${I.link} Partager mon ouverture</button>`}
  ${R.ids.length>5?`<button class="linkbtn" data-act="rall">Tout afficher (${R.ids.length} cartes)</button>`:""}</div>`};
 
 function sortIds(ids,s){const by={rar:(a,b)=>RAR.indexOf(CARS[a].r)-RAR.indexOf(CARS[b].r)||CARS[a].n.localeCompare(CARS[b].n),atk:(a,b)=>CARS[b].hp-CARS[a].hp,def:(a,b)=>CARS[b].v-CARS[a].v,name:(a,b)=>CARS[a].n.localeCompare(CARS[b].n),year:(a,b)=>CARS[a].y1-CARS[b].y1,yearn:(a,b)=>CARS[b].y1-CARS[a].y1,brand:(a,b)=>CARS[a].b.localeCompare(CARS[b].b)||CARS[a].y1-CARS[b].y1,recent:(a,b)=>b-a};return ids.sort(by[s]||by.rar)}
@@ -1935,6 +2050,7 @@ V.settings=()=>{const tg=(act,k,icn,l,on,t1,t0)=>`<button class="mtile tg ${on?"
  return`<div class="pagehead"><h1>Paramètres</h1></div><div class="set2">
  <div class="mgt">Préférences</div>
  <div class="mgrid ${ADS_ON?"g2":""}">${tg("set","sound",I.sound,"Sons",S.set.sound,"Activés","Coupés")}${tg("set","notif",I.bell,"Notifications",S.set.notif,"Activées","Coupées")}${tg("theme","",I.moon,"Mode sombre",!S.set.light,"Activé","Désactivé")}${ADS_ON?tg("ckset","",I.chart,"Mesure des pubs",consentGet()==="yes","Acceptée","Refusée"):""}</div>
+  ${accentRow()}
  ${window.PUSH?`<div class="panel pushp">${PUSH.row()}</div>`:""}
  <div class="mgt">Compte</div>
  <div class="dlst">${setRow(I.mail,"Adresse e-mail",esc(S.user.email||""),"sacc")}${setRow(I.user,"Nom d'utilisateur",esc(S.user.name)+(meVip()?"":" · modifiable avec Paddock Pro"),"sacc")}${setRow(I.link,"Lien d'invitation",meVip()?esc(myInvite()):"Personnalisable avec Paddock Pro","sinv")}${setRow(I.spark,"Codes de triche","Un code vu sur nos réseaux ? Entrez-le ici","cheat")}${setRow(I.shield,"Joueurs bloqués",BL.length?`${BL.length} joueur${BL.length>1?"s":""} bloqué${BL.length>1?"s":""}`:"Aucun joueur bloqué","sblk")}</div>
@@ -2120,6 +2236,7 @@ function cardModal(id,mode){const c=CARS[id];const n=S.col[id]||0;const inWish=S
  modal(`<h2><span>${RNAME[c.r]}</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2>${cardHTML(id,{big:true,own:true})}
  ${c.th?(IMGMODE==="url"?`<div class="credit">Photo : ${esc(c.art||"auteur inconnu")} · ${esc(c.lic)} · <a href="${esc(c.fp)}" target="_blank" rel="noopener">Wikimedia Commons</a></div>`:`<div class="credit"><a href="${esc(c.fp)}" target="_blank" rel="noopener">Voir la photo sur Wikimedia Commons</a> · ${esc(c.art||"auteur inconnu")} · ${esc(c.lic)}</div>`):""}
  <div style="text-align:center;color:var(--muted);margin:12px 0">${n?`Vous en possédez ${n}`:"Vous ne possédez pas encore cette voiture"}${c.views?` · ${fmt(c.views)} vues Wikipédia en 60 jours`:""}</div>
+ ${factsHTML(id)}
  ${c.wt?`<div style="text-align:center;margin-bottom:12px"><a class="linkbtn" style="text-decoration:none" href="https://${c.wiki}.wikipedia.org/wiki/${encodeURIComponent(c.wt.replace(/ /g,"_"))}" target="_blank" rel="noopener">Lire l'article Wikipédia</a></div>`:""}
  ${n&&signedOf(id)?`<div style="text-align:center;color:#fde68a;margin:-4px 0 12px">✍ Exemplaire signé par ${SIGNERS[id%SIGNERS.length]}${signedOf(id)>1?` (×${signedOf(id)})`:""}</div>`:""}${RECORDS[id]?`<div class="recline">🏆 ${esc(RECORDS[id])}</div>`:""}<div id="cotebox">${coteHTML(id)}</div>
  ${n?upBox(id):""}<div class="stack"><button class="btn outline-green" data-act="sharec" data-id="${id}">${I.link} Partager la carte</button>${n?`<button class="btn ghost" data-act="favm" data-id="${id}">${S.fav.includes(id)?"Retirer des favorites":"Ajouter aux favorites"}</button><button class="btn outline-green" data-act="sellid" data-id="${id}">Mettre en vente au marché</button>`:`<button class="btn ${inWish?"ghost":"green"}" data-act="wishm" data-id="${id}">${inWish?"Retirer de la liste de souhaits":"Ajouter à la liste de souhaits"}</button><div style="color:var(--muted);font-size:13px;text-align:center">Vous recevrez une notification dès qu'elle sera mise en vente au marché.</div>`}</div>`)}
@@ -2276,6 +2393,8 @@ document.addEventListener("click",e=>{
  notifs:()=>{const h=S.notifs.length?`<div class="stack">${S.notifs.map(n=>`<div class="lrow" style="${n.read?"":"border:1px solid var(--green-d)"}"><div class="grow"><div>${esc(n.txt)}</div><div class="sub">${new Date(n.t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</div></div></div>`).join("")}</div>`:'<div class="empty">Aucune notification.</div>';S.notifs.forEach(n=>n.read=true);save();const ph=patchHTML();markPatchSeen();render();modal(`<h2><span>Notifications</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2><div class="stack">${ph}${h}</div>`)},
  set:()=>{S.set[d.k]=!S.set[d.k];save();render()},
  theme:()=>{S.set.light=!S.set.light;save();render()},
+ accent:()=>{try{localStorage.setItem("paddock-accent",d.k)}catch(e){}applyAccent(d.k);render(true)},
+ wheelspin:()=>wheelSpin(),surpclaim:()=>surpriseClaim(),sharepk:()=>sharePack(),
  saveacc:()=>{const n=$("#suser").value.trim(),m=$("#semail").value.trim();if(n.length<3)return toast("Le nom doit faire au moins 3 caractères.");if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(m))return toast("Adresse e-mail invalide.");if(n!==S.user.name){if(!meVip())return toast("Changer de pseudo est réservé aux membres Paddock Pro.");if(now()<nameNext())return toast(`Prochain changement possible dans ${fmtLeft(nameNext()-now())}.`);if(!/^[A-Za-z0-9_.\-]{3,20}$/.test(n))return toast("Le pseudo doit faire 3 à 20 caractères : lettres, chiffres, _ . -");if(S.acc[n])return toast("Ce nom est déjà pris.");S.user.nameTs=now();S.acc[n]=S.acc[S.user.name]||{};delete S.acc[S.user.name]}S.user.name=n;S.user.email=m;save();toast("Sauvegardé.");render()},
  buy:()=>modal(`<h2><span>${fmt(+d.n)} pistons · ${esc(d.p)}</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2><p style="color:var(--muted)">Le paiement n'est pas encore branché : aucun montant n'a été débité. Pour encaisser de vrais paiements, le jeu doit tourner sur un serveur relié à un prestataire de paiement comme Stripe.</p><button class="btn ghost block" data-act="close">Compris</button>`,1),
  logout:()=>{modal(`<h2>Se déconnecter ?</h2><p style="color:var(--muted)">Votre partie reste enregistrée sur cet appareil.</p><div class="row"><button class="btn ghost grow" data-act="close">Annuler</button><button class="btn danger grow" data-act="logout2">Déconnexion</button></div>`,1)},

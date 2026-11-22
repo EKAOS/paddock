@@ -99,7 +99,7 @@
       const res = await Promise.all([rpc("get_state"), rpc("get_sub").catch(() => null), rpc("get_levels").catch(() => []),
         rpc("get_event").catch(() => null), vis ? rpc("ping").catch(() => null) : null,
         rpc("get_community").catch(() => null), rpc("get_wish").catch(() => null), rpc("get_level").catch(() => null),
-        rpc("get_secrets").catch(() => null), rpc("get_poll").catch(() => undefined), rpc("get_extras").catch(() => null), rpc("get_pity").catch(() => null)]);
+        rpc("get_secrets").catch(() => null), rpc("get_poll").catch(() => undefined), rpc("get_extras").catch(() => null), rpc("get_pity").catch(() => null), rpc("get_bonus").catch(() => null)]);
       applyAll(res, true);
       try { localStorage.setItem(OKEY, JSON.stringify({ t: Date.now(), r: res.slice(0, 8) })); } catch (e) {}
       if (window.OFFLINE) { window.OFFLINE = false; setTimeout(() => toast("De retour en ligne."), 200); }
@@ -108,7 +108,8 @@
   // applique les réponses du serveur (ou la dernière copie gardée pour le mode hors ligne)
   function applyAll(res, live) {
     {
-      const [st, sub, lv, ev, , cm, wl, lvl, sec, poll, ext, pity] = res;
+      const [st, sub, lv, ev, , cm, wl, lvl, sec, poll, ext, pity, bonus] = res;
+      if (bonus && typeof bonus === "object") S.bonus = bonus;
       if (typeof pity === "number") S.pity = pity;
       apply(st); S.sub = sub || {}; S.evSrv = ev && ev.until ? { t: ev.theme, until: T(ev.until) } : null;
       if (cm) S.comm = cm;
@@ -284,6 +285,7 @@
   };
 
   // ---------- actions ----------
+  window.BONUS_API = { spin: () => rpc("spin_wheel"), claim: () => rpc("claim_surprise"), after: () => sync() };
   const act = (fn) => async (el, d, e) => { try { await fn(el, d, e); } catch (x) { toast(x.message); } };
   const after = async (v) => { await sync(); if (v) await loadFor(v); render(true); };
   const packOrder = list => {
