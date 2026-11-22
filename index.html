@@ -995,6 +995,15 @@ body.light .mtile.tg.on svg,body.light .dwal .wi svg,body.light .dpt.best>svg{co
 .numtag{position:absolute;left:8px;bottom:8px;z-index:3;font-weight:800;font-size:11px;letter-spacing:.04em;padding:3px 8px;border-radius:99px;color:#1a1305;background:linear-gradient(180deg,#f8e7bd,#c9a55c);box-shadow:0 0 12px rgba(241,220,171,.6)}
 .numtag small{font-size:9px;opacity:.75;margin-left:1px}.card.big .numtag{font-size:14px;padding:5px 11px;left:12px;bottom:12px}
 .dcode{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:26px;font-weight:800;letter-spacing:.12em;text-align:center;padding:12px;border-radius:12px;border:1px dashed rgba(207,178,122,.5);color:#f1dcab;background:rgba(207,178,122,.06)}
+/* ---- vague 3 : garage 3D (22 nov. 2026) ---- */
+.g3d{position:fixed;inset:0;z-index:300;background:#09090a;touch-action:none}
+.g3d canvas{display:block;width:100%;height:100%}
+.g3h{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 10px;z-index:2;pointer-events:none}
+.g3h b{font-family:var(--f-head);font-size:22px;text-transform:uppercase;letter-spacing:.04em}.g3h .heye{justify-content:flex-start}.g3h .heye::before{display:none}
+.g3h .x{pointer-events:auto;background:rgba(255,255,255,.08);border-radius:50%;width:40px;height:40px}
+.g3load{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);letter-spacing:.1em;font-size:13px;text-transform:uppercase}
+.g3tip{position:absolute;left:0;right:0;bottom:calc(18px + env(safe-area-inset-bottom,0px));text-align:center;color:var(--dim);font-size:12.5px;pointer-events:none}
+.linkbtn.g3b{margin-left:auto;font-size:13px;display:inline-flex;align-items:center;gap:6px;font-family:var(--f-body)}
 </style>
 </head>
 <body>
@@ -1826,6 +1835,47 @@ function codeAdminHTML(){const b=S.bonus;if(!b||!b.code)return"";return`<div cla
  <div class="dcode">${esc(b.code)}</div><div style="color:var(--muted);font-size:13px">1 paquet + 50 pistons, valable jusqu'à minuit. Un nouveau code est créé chaque jour.</div>
  <details class="fine" style="text-align:left"><summary style="cursor:pointer;color:var(--text)">${b.hook?"Changer le salon Discord":"Le publier tout seul sur Discord"}</summary><ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:1.5"><li>Sur Discord, ouvrez les paramètres du salon <b>codes-et-cadeaux</b> → Intégrations → Webhooks → Nouveau webhook.</li><li>Cliquez sur « Copier l'URL du webhook ».</li><li>Collez-la ci-dessous et validez : le code d'aujourd'hui est publié tout de suite, puis chaque matin vers 8 h.</li></ol>
  <div class="srow"><input class="input" id="dhook" placeholder="https://discord.com/api/webhooks/…" autocomplete="off"><button class="btn green" data-act="dhook">Valider</button></div></details></div>`}
+// ---------- vague 3 (22 nov. 2026) : garage 3D de la vitrine ----------
+let THREE_P=null;function loadThree(){if(window.THREE)return Promise.resolve();if(THREE_P)return THREE_P;THREE_P=new Promise((ok,ko)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";s.onload=ok;s.onerror=()=>{THREE_P=null;ko(new Error("Chargement de la 3D impossible. Vérifiez votre connexion."))};document.head.appendChild(s)});return THREE_P}
+async function cardTexCanvas(id){const c=CARS[id],W=512,Hh=704,cv=document.createElement("canvas");cv.width=W;cv.height=Hh;const g=cv.getContext("2d");
+ const css=getComputedStyle(document.documentElement),col=(css.getPropertyValue("--c"+c.r)||"#d6b46a").trim()||"#d6b46a";const HEAD='"Archivo","Helvetica Neue",Arial,sans-serif',BODY='"Manrope","Helvetica Neue",Arial,sans-serif';
+ const rr=(x,y,w,h,r)=>{g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()};
+ g.fillStyle=col;rr(0,0,W,Hh,34);g.fill();g.save();rr(8,8,W-16,Hh-16,28);g.clip();g.fillStyle="#151518";g.fillRect(0,0,W,Hh);
+ const ih=380;let gr=g.createLinearGradient(0,0,0,ih);gr.addColorStop(0,"#2a2c31");gr.addColorStop(1,"#17181b");g.fillStyle=gr;g.fillRect(0,0,W,ih);let ok=false;
+ if(IMGMODE==="url"&&c.th){try{const im=await loadImg(c.th.replace(/\/(\d+)px-/,"/640px-"),true).catch(()=>loadImg(c.th,true));const t=document.createElement("canvas");t.width=t.height=1;t.getContext("2d").drawImage(im,0,0);t.getContext("2d").getImageData(0,0,1,1);const s=Math.max(W/im.width,ih/im.height);g.drawImage(im,(W-im.width*s)/2,(ih-im.height*s)/2,im.width*s,im.height*s);ok=true}catch(e){}}
+ if(!ok){try{const svg=carSVG(c).replace("<svg ",'<svg xmlns="http://www.w3.org/2000/svg" width="960" height="500" ');const u=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml"}));const im=await loadImg(u);const s=Math.min(W/im.width,ih/im.height)*.95;g.drawImage(im,(W-im.width*s)/2,(ih-im.height*s)/2,im.width*s,im.height*s);URL.revokeObjectURL(u)}catch(e){}}
+ g.fillStyle=col;g.fillRect(0,ih,W,6);g.font=`800 22px ${HEAD}`;const lab=RSHORT[c.r],bw=g.measureText(lab).width+34;rr(22,22,bw,40,20);g.fillStyle=col;g.fill();g.fillStyle="#111";g.textBaseline="middle";g.fillText(lab,39,43);
+ g.textBaseline="alphabetic";g.fillStyle="#f4f2ee";let fs=40;g.font=`800 ${fs}px ${HEAD}`;const words=c.n.split(" "),lines=[];let cur="";for(const w of words){const t=cur?cur+" "+w:w;if(g.measureText(t).width>W-70&&cur){lines.push(cur);cur=w}else cur=t}lines.push(cur);
+ let y=ih+62;lines.slice(0,2).forEach(l=>{g.fillText(l,34,y);y+=46});g.font=`600 22px ${BODY}`;g.fillStyle="#a8a49c";g.fillText(`${c.y1} · ${c.b}`,34,y+4);
+ g.fillStyle="#f4f2ee";g.font=`800 36px ${HEAD}`;g.fillText(fmt(c.hp),34,Hh-52);let w1=g.measureText(fmt(c.hp)).width;g.font=`600 20px ${BODY}`;g.fillStyle="#a8a49c";g.fillText("ch",42+w1,Hh-52);
+ g.textAlign="right";g.fillStyle="#f4f2ee";g.font=`800 36px ${HEAD}`;g.fillText(fmt(c.v),W-70,Hh-52);g.font=`600 20px ${BODY}`;g.fillStyle="#a8a49c";g.fillText("km/h",W-22,Hh-52);g.restore();return cv}
+async function garage3D(ids,who){ids=ids.filter(id=>id!=null&&CARS[id]);if(!ids.length)return toast("Ajoutez des voitures à votre vitrine d'abord.");
+ const ov=document.createElement("div");ov.className="g3d";ov.innerHTML=`<div class="g3h"><div><div class="heye">${esc(who||"Mon garage")}</div><b>Garage 3D</b></div><button class="x" aria-label="Fermer">${I.x}</button></div><div class="g3load">Ouverture du garage…</div><div class="g3tip">Glissez pour tourner · touchez une voiture pour la voir</div>`;document.body.appendChild(ov);
+ let alive=true,raf=0;const close=()=>{alive=false;cancelAnimationFrame(raf);try{ren&&ren.dispose()}catch(e){}ov.remove()};ov.querySelector(".x").onclick=close;
+ let ren;try{await loadThree()}catch(e){ov.remove();return toast(e.message)}if(!alive)return;const T=window.THREE;
+ const W=()=>ov.clientWidth,Hh=()=>ov.clientHeight;ren=new T.WebGLRenderer({antialias:true});ren.setPixelRatio(Math.min(2,window.devicePixelRatio||1));ren.setSize(W(),Hh());ren.shadowMap.enabled=true;ren.outputEncoding=T.sRGBEncoding;ov.appendChild(ren.domElement);
+ const sc=new T.Scene();sc.background=new T.Color(0x09090a);sc.fog=new T.Fog(0x09090a,9,22);const cam=new T.PerspectiveCamera(45,W()/Hh(),.1,60);
+ const n=ids.length,R=Math.max(2.2,n*.5);const place=()=>{const asp=W()/Hh(),k=1/Math.min(1,asp*1.25);cam.position.set(0,2.6+R*.35*k,(R+3.6)*k);cam.lookAt(0,.95,0)};place();
+ sc.add(new T.AmbientLight(0xffffff,.35));const sp=new T.SpotLight(0xffe7b8,1.6,30,Math.PI/5,.45,1);sp.position.set(0,9,3);sp.castShadow=true;sp.shadow.mapSize.set(1024,1024);sc.add(sp);sc.add(sp.target);
+ const fl=new T.Mesh(new T.CircleGeometry(16,64),new T.MeshStandardMaterial({color:0x141416,roughness:.35,metalness:.6}));fl.rotation.x=-Math.PI/2;fl.receiveShadow=true;sc.add(fl);
+ const ring=new T.Mesh(new T.RingGeometry(R+.9,R+1.0,96),new T.MeshBasicMaterial({color:0xcfb27a,transparent:true,opacity:.55}));ring.rotation.x=-Math.PI/2;ring.position.y=.005;sc.add(ring);
+ const tt=new T.Group();sc.add(tt);const css=getComputedStyle(document.documentElement);const picks=[];
+ for(let k=0;k<n;k++){const id=ids[k],a=k/n*Math.PI*2,col=new T.Color(((css.getPropertyValue("--c"+CARS[id].r)||"#d6b46a").trim())||"#d6b46a");
+  const ped=new T.Mesh(new T.CylinderGeometry(.62,.7,.28,40),new T.MeshStandardMaterial({color:0x1d1d21,roughness:.4,metalness:.7}));ped.position.set(Math.sin(a)*R,.14,Math.cos(a)*R);ped.castShadow=ped.receiveShadow=true;tt.add(ped);
+  const glow=new T.Mesh(new T.RingGeometry(.64,.76,40),new T.MeshBasicMaterial({color:col,transparent:true,opacity:.85,side:T.DoubleSide}));glow.rotation.x=-Math.PI/2;glow.position.set(ped.position.x,.29,ped.position.z);tt.add(glow);
+  const pl=new T.PointLight(col,.6,2.4);pl.position.set(ped.position.x,.7,ped.position.z);tt.add(pl);
+  const mat=new T.MeshStandardMaterial({color:0x222226,roughness:.5,metalness:.3});const front=new T.MeshStandardMaterial({color:0xffffff,roughness:.45,metalness:.05});
+  const card=new T.Mesh(new T.BoxGeometry(1.28,1.76,.035),[mat,mat,mat,mat,front,mat]);card.position.set(ped.position.x,1.2,ped.position.z);card.rotation.y=a;card.castShadow=true;card.userData={id,ph:k*1.3};tt.add(card);picks.push(card);
+  cardTexCanvas(id).then(cv=>{const tx=new T.CanvasTexture(cv);tx.encoding=T.sRGBEncoding;tx.anisotropy=4;front.map=tx;front.needsUpdate=true}).catch(()=>{})}
+ const ld=ov.querySelector(".g3load");if(ld)ld.remove();
+ let rot=0,vel=.0035,drag=null,moved=0;const el=ren.domElement;
+ el.addEventListener("pointerdown",e=>{drag={x:e.clientX,r:rot};moved=0;vel=0;el.setPointerCapture(e.pointerId)});
+ el.addEventListener("pointermove",e=>{if(!drag)return;const dx=e.clientX-drag.x;moved=Math.max(moved,Math.abs(dx));const nr=drag.r+dx*.008;vel=nr-rot;rot=nr});
+ el.addEventListener("pointerup",e=>{const wasDrag=drag&&moved>6;drag=null;if(wasDrag){vel=Math.max(-.05,Math.min(.05,vel));return}
+  const r=el.getBoundingClientRect(),m=new T.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height)*2+1),rc=new T.Raycaster();rc.setFromCamera(m,cam);const hit=rc.intersectObjects(picks)[0];if(hit){const id=hit.object.userData.id;close();cardModal(id)}});
+ const onR=()=>{if(!alive)return;cam.aspect=W()/Hh();cam.updateProjectionMatrix();place();ren.setSize(W(),Hh())};window.addEventListener("resize",onR);
+ const t0=performance.now();(function loop(){if(!alive){window.removeEventListener("resize",onR);return}raf=requestAnimationFrame(loop);const t=(performance.now()-t0)/1000;
+  if(!drag){rot+=vel;vel+=(.0035-vel)*.02}tt.rotation.y=rot;picks.forEach(c=>{c.position.y=1.2+Math.sin(t*1.4+c.userData.ph)*.05;c.rotation.y=-rot});ren.render(sc,cam)})()}
 const PITY_N=50;
 function pityHTML(){if(typeof S.pity!=="number")return"";const n=Math.min(PITY_N-1,Math.max(0,S.pity)),left=PITY_N-n,pct=n/PITY_N*100;
  return`<div class="pity ${left<=5?"hot":""}"><span class="pi">${I.star}</span><div class="grow"><div class="pt"><b>Légendaire garantie</b><em>${left===1?"au prochain paquet !":`dans ${left} paquets max.`}</em></div><div class="pb"><i style="width:${pct.toFixed(1)}%"></i></div></div></div>`}
@@ -1945,7 +1995,7 @@ V.profile=()=>{const me=myMe(),p=myLevel(),sk=(me.seeking||[]).filter(id=>CARS[i
  <div><div class="mgt" style="margin-top:4px">Personnaliser</div><div class="mgrid">${T(I.pal,"Livrée",esc(livOf(me.livery||"or").n),'data-act="tdy" data-k="liv"')}${T(I.medal,"Titre",me.title&&TITLES[me.title]?esc(TITLES[me.title][0]):"Aucun",'data-act="tdy" data-k="tit"')}${T(I.plate,"Plaque",me.plate?esc(me.plate):"Aucune",'data-act="tdy" data-k="plate"')}${T(I.cam,"Photo","et bannière",'data-act="editav"')}${T(I.search,"Je cherche",`${sk} / ${seekN()}`,'data-act="tdy" data-k="seek"')}${T(I.link,"Partager","mon profil",`data-act="shareprof" data-f="${esc(S.user.name)}"`,"hot")}</div></div>
  ${badgesHTML({series:serClaimed(),seasons:S.mySeasons||[],advent:advDays().length,hunts:(()=>{const h=huntState();return h&&h.total>=HUNT_BADGE?[h.season]:[]})()})}
  ${S.brandsClaimed.length?`<div class="panel stack"><b style="font-family:var(--f-head);font-size:18px">Marques complétées</b><div class="modbtns">${S.brandsClaimed.map(b=>`<span class="pill">${esc(b)}</span>`).join("")}</div></div>`:""}
- <div class="panel stack"><h3 style="display:flex;gap:10px;align-items:center;font-size:20px"><span style="color:var(--gold);width:26px;display:inline-flex">${I.trophy}</span>Vitrine</h3>
+ <div class="panel stack"><h3 style="display:flex;gap:10px;align-items:center;font-size:20px"><span style="color:var(--gold);width:26px;display:inline-flex">${I.trophy}</span>Vitrine<button class="linkbtn g3b" data-act="g3d">✦ Voir en 3D</button></h3>
  ${decorWrap(myDecor(),`<div class="vit">${S.show.slice(0,showN()).map((id,k)=>id!==null&&S.col[id]?`<div style="position:relative">${cardHTML(id)}<button class="x" data-act="unshow" data-k="${k}" style="position:absolute;top:-6px;right:-6px;background:var(--panel2);border-radius:50%;z-index:3" aria-label="Retirer">${I.x}</button></div>`:`<button class="slot" data-act="pickshow" data-k="${k}" aria-label="Ajouter à la vitrine">+</button>`).join("")}</div>`,myMe().livery)}${window.ONLINE&&myMe().reacts?`<div style="margin-top:12px"><div class="label" style="margin-bottom:6px">Réactions de vos visiteurs</div>${reactBar(S.user.name,myMe().reacts,true)}</div>`:""}</div></div>`};
 function gwGoal(){if(window.ONLINE)return S.guild&&S.guild.goal;if(!S.guild)return null;const w=weekId(now());const g=S.gwk&&S.gwk.w===w?S.gwk:{pts:0,me:0};const target=Math.min(600,Math.max(60,40*S.guild.members.length));return{pts:Math.min(target,g.pts+S.guild.members.length*7),target,done:g.pts+S.guild.members.length*7>=target}}
 function gwMemberPts(m){if(window.ONLINE)return(S.guild.wk||{})[m]||0;if(m===S.user.name)return S.gwk&&S.gwk.w===weekId(now())?S.gwk.me:0;return 7}
@@ -2428,6 +2478,7 @@ document.addEventListener("click",e=>{
  trno:()=>{const o=S.offers.find(x=>x.id===d.id);o.status="refused";S.history.unshift(o);S.offers=S.offers.filter(x=>x!==o);save();render()},
  notifs:()=>{const h=S.notifs.length?`<div class="stack">${S.notifs.map(n=>`<div class="lrow" style="${n.read?"":"border:1px solid var(--green-d)"}"><div class="grow"><div>${esc(n.txt)}</div><div class="sub">${new Date(n.t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</div></div></div>`).join("")}</div>`:'<div class="empty">Aucune notification.</div>';S.notifs.forEach(n=>n.read=true);save();const ph=patchHTML();markPatchSeen();render();modal(`<h2><span>Notifications</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2><div class="stack">${ph}${h}</div>`)},
  set:()=>{S.set[d.k]=!S.set[d.k];save();render()},
+ g3d:()=>garage3D(S.show.slice(0,showN()).filter(id=>id!==null&&S.col[id]),"Mon garage"),
  theme:()=>{S.set.light=!S.set.light;save();render()},
  accent:()=>{try{localStorage.setItem("paddock-accent",d.k)}catch(e){}applyAccent(d.k);render(true)},
  wheelspin:()=>wheelSpin(),surpclaim:()=>surpriseClaim(),sharepk:()=>sharePack(),
