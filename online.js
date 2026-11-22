@@ -99,7 +99,7 @@
       const res = await Promise.all([rpc("get_state"), rpc("get_sub").catch(() => null), rpc("get_levels").catch(() => []),
         rpc("get_event").catch(() => null), vis ? rpc("ping").catch(() => null) : null,
         rpc("get_community").catch(() => null), rpc("get_wish").catch(() => null), rpc("get_level").catch(() => null),
-        rpc("get_secrets").catch(() => null), rpc("get_poll").catch(() => undefined), rpc("get_extras").catch(() => null)]);
+        rpc("get_secrets").catch(() => null), rpc("get_poll").catch(() => undefined), rpc("get_extras").catch(() => null), rpc("get_pity").catch(() => null), rpc("get_bonus").catch(() => null), rpc("get_numbered").catch(() => null), rpc("get_social").catch(() => null), rpc("get_ach2").catch(() => null), rpc("get_secrets2").catch(() => null)]);
       applyAll(res, true);
       try { localStorage.setItem(OKEY, JSON.stringify({ t: Date.now(), r: res.slice(0, 8) })); } catch (e) {}
       if (window.OFFLINE) { window.OFFLINE = false; setTimeout(() => toast("De retour en ligne."), 200); }
@@ -108,7 +108,13 @@
   // applique les réponses du serveur (ou la dernière copie gardée pour le mode hors ligne)
   function applyAll(res, live) {
     {
-      const [st, sub, lv, ev, , cm, wl, lvl, sec, poll, ext] = res;
+      const [st, sub, lv, ev, , cm, wl, lvl, sec, poll, ext, pity, bonus, numb, social, ach2, sec2] = res;
+      if (ach2 && typeof ach2 === "object") S.ach2 = ach2;
+      if (sec2 && typeof sec2 === "object") { if (S.sec2) Object.keys(sec2).forEach(k => { if (!S.sec2[k]) sec2Unlocked(k); }); S.sec2 = sec2; }
+      if (Array.isArray(numb)) { S.numb = {}; for (const [id, n] of numb) S.numb[id] = n; }
+      if (social && typeof social === "object") S.social = social;
+      if (bonus && typeof bonus === "object") S.bonus = bonus;
+      if (typeof pity === "number") S.pity = pity;
       apply(st); S.sub = sub || {}; S.evSrv = ev && ev.until ? { t: ev.theme, until: T(ev.until) } : null;
       if (cm) S.comm = cm;
       if (ext) { S.seriesClaimed = ext.series || []; S.adv = ext.advent || null; S.mySeasons = ext.seasons || []; S.cotm = ext.cotm || null; S.hunt = ext.hunt || null; S.me = ext.me || {}; S.loyal = ext.loyalty || null; S.myst = ext.mystery || null; S.combos = ext.combos || []; S.barn = ext.barn || null; S.signed = {}; for (const [id, n] of ext.signed || []) S.signed[id] = n; }
@@ -174,7 +180,7 @@
         if (gg) { if (gg.day) absorb(gg.day); if (gg.best) absorb(gg.best); }
       } else if (v === "friends" || v === "battle") {
         S.friends = (await rpc("get_friends")).map(absorb);
-        if (v === "friends") { const [lg, fd] = await Promise.all([rpc("get_league").catch(() => []), rpc("get_feed").catch(() => [])]); U.league = (lg || []).map(p => ({ u: absorb(p), n: p.n, xp: p.xp, pr: p.pr || 0, pts: p.pts, me: p.me })); U.feed = (fd || []).map(f => Object.assign({}, f, { u: absorb(f), t: T(f.t) })); }
+        if (v === "friends") { const [lg, fd] = await Promise.all([rpc("get_league").catch(() => []), Promise.resolve([])]); U.league = (lg || []).map(p => ({ u: absorb(p), n: p.n, xp: p.xp, pr: p.pr || 0, pts: p.pts, me: p.me })); U.feed = (fd || []).map(f => Object.assign({}, f, { u: absorb(f), t: T(f.t) })); }
         if (v === "battle") await liveList(true);
         else { const r = await rpc("get_refs").catch(() => null); if (r) { r.parrain = r.parrain ? { n: absorb(r.parrain) } : null; r.kids = (r.kids || []).map(k => ({ n: absorb(k), lv: k.lv, done: k.done })); } window.REFS = r; }
       } else if (v === "messages") {
@@ -283,6 +289,7 @@
   };
 
   // ---------- actions ----------
+  window.BONUS_API = { spin: () => rpc("spin_wheel"), claim: () => rpc("claim_surprise"), after: () => sync() };
   const act = (fn) => async (el, d, e) => { try { await fn(el, d, e); } catch (x) { toast(x.message); } };
   const after = async (v) => { await sync(); if (v) await loadFor(v); render(true); };
   const packOrder = list => {
@@ -323,7 +330,9 @@
     b.n++; b.last = t;
     const p = $("#packbtn"); if (p) { p.classList.remove("shake"); void p.offsetWidth; p.classList.add("shake"); }
     blip((kind === "pro" ? 500 : 380) + (b.n - 1) * 40, .15);
-    try { const res = await rpc("open_pack", { kind }); b.cards.push(...res.filter(x => CARS[x.id])); }
+    try { const res = await rpc("open_pack", { kind }); b.cards.push(...res.filter(x => CARS[x.id]));
+      for (const x of res) if (x.num) { S.numb = S.numb || {}; S.numb[x.id] = x.num; setTimeout(() => toast(`Carte numérotée N° ${x.num} / 100 : ${CARS[x.id].n} !`), 1500); }
+      if (kind === "normal" && typeof S.pity === "number") S.pity = res.some(x => CARS[x.id] && CARS[x.id].r === "L") ? 0 : S.pity + 1; }
     catch (x) { b.err = b.err || x; }
     b.done++;
     if (b.done < b.n) return;                                            // d'autres paquets sont encore en route
@@ -691,8 +700,17 @@
     open: act(async () => { if (!S.packs) return toast("Plus de paquet disponible pour l'instant."); await openKind("normal"); }),
     openpro: act(async () => { await openKind("pro"); }),
     openev: act(async () => { await openKind("event"); }),
+    giftsend: act(async (el, d) => { await rpc("send_gift", { nm: d.f }); toast(`Paquet offert à ${d.f} !`); blip(880, .12); await sync(); closeModal(); openTdy("gift"); render(true); }),
+    duelnew: act(async (el, d) => { await rpc("duel_create", { nm: d.f }); toast(`Défi lancé contre ${d.f} !`); await sync(); closeModal(); openTdy("duel"); render(true); }),
+    duelopen: act(async (el, d) => {
+      el.disabled = true; const r = await rpc("duel_open", { did: +d.id });
+      const rv = packOrder(r.cards.filter(id => CARS[id]).map(id => ({ id, new: !S.col[id], holo: false })));
+      closeModal(); U.reveal = rv; blip(700, .12); _go("reveal"); toast(`Votre score : ${r.score} points`); sync().then(() => render(true)).catch(() => {});
+    }),
+    dhook: act(async () => { const v = (document.getElementById("dhook") || {}).value || ""; const r = await rpc("set_discord_hook", { url: v.trim() }); toast(r.hook ? "Discord relié : le code du jour vient d'être publié." : "Discord détaché."); await sync(); render(true); }),
     daily: act(async () => { const r = await rpc("claim_daily"); blip(780); toast(`Jour ${r.day} : ${dailyTxt({ c: r.coins, p: r.packs })}`); await after(); }),
     wkclaim: act(async (el, d) => { const n = await rpc("claim_week", { i: +d.i }); toast(`+${n} pistons`); await after(); }),
+    claim2: act(async (el, d) => { const n = await rpc("claim_ach2", { ak: d.k }); toast(`+${n} pistons`); blip(880, .12); await after(); }),
     claim: act(async (el, d) => { const n = await rpc("claim_ach", { i: +d.i }); toast(`+${n} pistons`); await after(); }),
     brandclaim: act(async (el, d) => { const n = await rpc("claim_brand", { b: d.b }); toast(`Marque ${d.b} complétée : +${n} pistons`); await after(); }),
     fusego: act(async (el, d) => {
