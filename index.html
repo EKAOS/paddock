@@ -1908,7 +1908,7 @@ function supportModal(){try{localStorage.setItem("paddock-support",SUPPORT_V)}ca
  `<p>Paddock est gratuit et le restera. Mais faire tourner les serveurs (comptes, cartes, échanges, marché, défis…) coûte de l'argent chaque mois, et la facture grimpe avec le nombre de joueurs.</p>
  <p>Si le jeu vous plaît, la communauté peut nous aider à le garder en ligne : ${canBuy?"en prenant <b>Paddock Pro</b> ou quelques <b>pistons</b>. Chaque achat compte vraiment, et vous recevez des avantages en échange.":"en invitant vos amis et en parlant de Paddock autour de vous."}</p>
  <p class="supt">Merci à toute la communauté ❤️</p>`}
- <div class="stack" style="margin-top:6px">${pro?`<button class="btn green block" data-act="close">Avec plaisir</button>`:canBuy?`<button class="cta whgo" data-act="getpro">Découvrir Paddock Pro</button><button class="btn outline-green block" data-act="supshop">Acheter des pistons</button><button class="btn ghost block" data-act="close">Plus tard</button>`:`<button class="cta whgo" data-act="invite">Inviter des amis</button><button class="btn ghost block" data-act="close">Plus tard</button>`}</div></div>`)}
+ <div class="stack" style="margin-top:6px">${pro?`<button class="btn green block" data-act="close">Avec plaisir</button>`:canBuy?`<button class="cta whgo" data-act="supshop" data-s="PADDOCK PRO">Découvrir Paddock Pro</button><button class="btn outline-green block" data-act="supshop" data-s="PISTONS">Acheter des pistons</button><button class="btn ghost block" data-act="close">Plus tard</button>`:`<button class="cta whgo" data-act="invite">Inviter des amis</button><button class="btn ghost block" data-act="close">Plus tard</button>`}</div></div>`)}
 setInterval(()=>{try{if(!S||!S.user||S.loggedOut||supportSeen()||!tutoDone()||document.querySelector(".overlay,#layer .modal,.g3d")||(window.ONLINE&&!S.user.since))return;if(document.querySelector("#layer")&&document.querySelector("#layer").children.length)return;supportModal()}catch(e){}},2500);
 const PITY_N=50;
 function pityHTML(){if(typeof S.pity!=="number")return"";const n=Math.min(PITY_N-1,Math.max(0,S.pity)),left=PITY_N-n,pct=n/PITY_N*100;
@@ -2512,7 +2512,7 @@ document.addEventListener("click",e=>{
  notifs:()=>{const h=S.notifs.length?`<div class="stack">${S.notifs.map(n=>`<div class="lrow" style="${n.read?"":"border:1px solid var(--green-d)"}"><div class="grow"><div>${esc(n.txt)}</div><div class="sub">${new Date(n.t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</div></div></div>`).join("")}</div>`:'<div class="empty">Aucune notification.</div>';S.notifs.forEach(n=>n.read=true);save();const ph=patchHTML();markPatchSeen();render();modal(`<h2><span>Notifications</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2><div class="stack">${ph}${h}</div>`)},
  set:()=>{S.set[d.k]=!S.set[d.k];save();render()},
  g3d:()=>garage3D(S.show.slice(0,showN()).filter(id=>id!==null&&S.col[id]),"Mon garage"),
- supshop:()=>{closeModal();go("shop")},
+ supshop:()=>{closeModal();go("shop");const k=d.s||"";setTimeout(()=>{const h=[...document.querySelectorAll("#app .mgt,#app .label,#app h3,#app h2")].find(x=>x.textContent.trim().toUpperCase()===k);if(h)h.scrollIntoView({behavior:"smooth",block:"start"});else window.scrollTo(0,0)},120)},
  theme:()=>{S.set.light=!S.set.light;save();render()},
  accent:()=>{try{localStorage.setItem("paddock-accent",d.k)}catch(e){}applyAccent(d.k);render(true)},
  wheelspin:()=>wheelSpin(),surpclaim:()=>surpriseClaim(),sharepk:()=>sharePack(),
