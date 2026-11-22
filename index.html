@@ -1014,6 +1014,8 @@ body.light .mtile.tg.on svg,body.light .dwal .wi svg,body.light .dpt.best>svg{co
 /* ---- message de soutien ---- */
 .supm{text-align:center}.supi{font-size:40px;line-height:1;margin:4px 0 10px}.supm .suph{justify-content:center;text-align:center;font-family:var(--f-head);font-size:22px;text-transform:uppercase;letter-spacing:.03em;margin:6px 0 12px}
 .supm p{color:var(--muted);font-size:14.5px;line-height:1.55;margin:0 0 10px;text-align:left}.supm p b{color:var(--text)}.supm .supt{text-align:center;color:var(--text);font-weight:600}
+.btn.enb{margin:0 0 12px;display:flex;align-items:center;justify-content:center;gap:4px}.btn.enb.on{border-color:rgba(241,220,171,.6);box-shadow:0 0 18px -6px rgba(241,220,171,.7);animation:enbr .12s linear 12}
+@keyframes enbr{50%{transform:translateX(1px)}}
 </style>
 </head>
 <body>
@@ -1774,7 +1776,7 @@ async function surpriseClaim(){const s=surpriseInfo();if(!s||s.st!=="here")retur
  blip(660,.1);setTimeout(()=>blip(990,.18),120);toast("Livraison récupérée : 2 paquets + 50 pistons !");closeModal();render(true);if(window.BONUS_API)BONUS_API.after().catch(()=>{})}
 let surpToasted="";setInterval(()=>{try{if(!S||!S.user)return;const s=surpriseInfo();if(s&&s.st==="here"&&surpToasted!==parisDay(now())){surpToasted=parisDay(now());toast("📦 Livraison surprise arrivée ! Vous avez 1 heure pour la récupérer.");blip(880,.12);if(U.view==="packs"||!U.view)render(true)}}catch(e){}},20000);
 // sons de moteur : montée en régime synthétisée
-function engineRev(power=1){if(!S||!S.set||!S.set.sound)return;try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();const t=actx.currentTime,dur=1.1+power*.6;
+function engineRev(power=1,force){if(!S||!S.set||(!S.set.sound&&!force))return;try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();const t=actx.currentTime,dur=1.1+power*.6;
  const out=actx.createGain();out.gain.setValueAtTime(.0001,t);out.gain.exponentialRampToValueAtTime(.22*power+.05,t+.08);out.gain.setValueAtTime(.22*power+.05,t+dur-.35);out.gain.exponentialRampToValueAtTime(.0001,t+dur);
  const lp=actx.createBiquadFilter();lp.type="lowpass";lp.frequency.setValueAtTime(500,t);lp.frequency.exponentialRampToValueAtTime(1800+power*1400,t+dur*.6);lp.Q.value=4;lp.connect(out);out.connect(actx.destination);
  [0,7,-5].forEach((dt,i)=>{const o=actx.createOscillator();o.type=i===2?"square":"sawtooth";o.detune.value=dt*10;const f0=42,f1=150+power*110,f2=110+power*60;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+dur*.55);o.frequency.exponentialRampToValueAtTime(f2,t+dur);const g=actx.createGain();g.gain.value=i===2?.25:.5;o.connect(g);g.connect(lp);o.start(t);o.stop(t+dur+.05)});
@@ -2355,7 +2357,7 @@ function cardModal(id,mode){const c=CARS[id];const n=S.col[id]||0;const inWish=S
  modal(`<h2><span>${RNAME[c.r]}</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2>${cardHTML(id,{big:true,own:true})}
  ${c.th?(IMGMODE==="url"?`<div class="credit">Photo : ${esc(c.art||"auteur inconnu")} · ${esc(c.lic)} · <a href="${esc(c.fp)}" target="_blank" rel="noopener">Wikimedia Commons</a></div>`:`<div class="credit"><a href="${esc(c.fp)}" target="_blank" rel="noopener">Voir la photo sur Wikimedia Commons</a> · ${esc(c.art||"auteur inconnu")} · ${esc(c.lic)}</div>`):""}
  <div style="text-align:center;color:var(--muted);margin:12px 0">${n?`Vous en possédez ${n}`:"Vous ne possédez pas encore cette voiture"}${c.views?` · ${fmt(c.views)} vues Wikipédia en 60 jours`:""}</div>
- ${factsHTML(id)}
+ ${["L","UR","ED"].includes(c.r)?`<button class="btn ghost block enb" data-act="engine" data-r="${c.r}">🔊 Écouter le moteur${NB()}</button>`:""}${factsHTML(id)}
  ${c.wt?`<div style="text-align:center;margin-bottom:12px"><a class="linkbtn" style="text-decoration:none" href="https://${c.wiki}.wikipedia.org/wiki/${encodeURIComponent(c.wt.replace(/ /g,"_"))}" target="_blank" rel="noopener">Lire l'article Wikipédia</a></div>`:""}
  ${n&&signedOf(id)?`<div style="text-align:center;color:#fde68a;margin:-4px 0 12px">✍ Exemplaire signé par ${SIGNERS[id%SIGNERS.length]}${signedOf(id)>1?` (×${signedOf(id)})`:""}</div>`:""}${RECORDS[id]?`<div class="recline">🏆 ${esc(RECORDS[id])}</div>`:""}<div id="cotebox">${coteHTML(id)}</div>
  ${n?upBox(id):""}<div class="stack"><button class="btn outline-green" data-act="sharec" data-id="${id}">${I.link} Partager la carte</button>${n?`<button class="btn ghost" data-act="favm" data-id="${id}">${S.fav.includes(id)?"Retirer des favorites":"Ajouter aux favorites"}</button><button class="btn outline-green" data-act="sellid" data-id="${id}">Mettre en vente au marché</button>`:`<button class="btn ${inWish?"ghost":"green"}" data-act="wishm" data-id="${id}">${inWish?"Retirer de la liste de souhaits":"Ajouter à la liste de souhaits"}</button><div style="color:var(--muted);font-size:13px;text-align:center">Vous recevrez une notification dès qu'elle sera mise en vente au marché.</div>`}</div>`)}
@@ -2517,6 +2519,7 @@ document.addEventListener("click",e=>{
  duelopen:()=>{const g=S.social;const x=g&&g.duels.find(z=>String(z.id)===String(d.id));if(!x||x.mine)return;const ids=Array.from({length:5},()=>drawId(false));const fresh=revealPack(ids.slice());ids.forEach(id=>own(id));x.mine=ids;x.ms=ids.reduce((a,id)=>a+RPTS[CARS[id].r],0);
   if(x.opened){x.theirs=Array.from({length:5},()=>drawId(false));x.ts=x.theirs.reduce((a,id)=>a+RPTS[CARS[id].r],0);x.done=true;x.win=x.ms>x.ts?1:x.ms<x.ts?-1:0;if(x.win===1)S.coins+=100;else if(x.win===0)S.coins+=30}
   save();closeModal();const rv=ids.slice().sort((a,b)=>RAR.indexOf(CARS[a].r)-RAR.indexOf(CARS[b].r));U.reveal={ids:rv,fresh:rv.map(id=>(S.col[id]||0)<=1),holo:rv.map(()=>false),i:0};go("reveal");toast(`Votre score : ${x.ms} points`)},
+ engine:()=>{engineRev(d.r==="UR"?.55:1,true);el.classList.add("on");setTimeout(()=>el.classList.remove("on"),1800)},
  supshop:()=>{closeModal();go("shop");const k=d.s||"";setTimeout(()=>{const h=[...document.querySelectorAll("#app .mgt,#app .label,#app h3,#app h2")].find(x=>x.textContent.trim().toUpperCase()===k);if(h)h.scrollIntoView({behavior:"smooth",block:"start"});else window.scrollTo(0,0)},120)},
  theme:()=>{S.set.light=!S.set.light;save();render()},
  accent:()=>{try{localStorage.setItem("paddock-accent",d.k)}catch(e){}applyAccent(d.k);render(true)},
