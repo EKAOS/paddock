@@ -109,13 +109,14 @@
   function applyAll(res, live) {
     {
       const [st, sub, lv, ev, , cm, wl, lvl, sec, poll, ext, pity, bonus, numb, social, ach2, sec2] = res;
+      apply(st); // crée S (connexion fraîche : S est null) avant d'y écrire quoi que ce soit
       if (ach2 && typeof ach2 === "object") S.ach2 = ach2;
       if (sec2 && typeof sec2 === "object") { if (S.sec2) Object.keys(sec2).forEach(k => { if (!S.sec2[k]) sec2Unlocked(k); }); S.sec2 = sec2; }
       if (Array.isArray(numb)) { S.numb = {}; for (const [id, n] of numb) S.numb[id] = n; }
       if (social && typeof social === "object") S.social = social;
       if (bonus && typeof bonus === "object") S.bonus = bonus;
       if (typeof pity === "number") S.pity = pity;
-      apply(st); S.sub = sub || {}; S.evSrv = ev && ev.until ? { t: ev.theme, until: T(ev.until) } : null;
+      S.sub = sub || {}; S.evSrv = ev && ev.until ? { t: ev.theme, until: T(ev.until) } : null;
       if (cm) S.comm = cm;
       if (ext) { S.seriesClaimed = ext.series || []; S.adv = ext.advent || null; S.mySeasons = ext.seasons || []; S.cotm = ext.cotm || null; S.hunt = ext.hunt || null; S.me = ext.me || {}; S.loyal = ext.loyalty || null; S.myst = ext.mystery || null; S.combos = ext.combos || []; S.barn = ext.barn || null; S.signed = {}; for (const [id, n] of ext.signed || []) S.signed[id] = n; }
       if (lvl) { const before = S.lvInfo && S.lvInfo.lv; S.lvInfo = lvl; if (before && lvl.lv > before) setTimeout(() => { blip(990, .25); toast(`Niveau ${lvl.lv} atteint ! Récompense dans vos notifications.`); }, 400); }
