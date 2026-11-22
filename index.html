@@ -1011,6 +1011,9 @@ body.light .mtile.tg.on svg,body.light .dwal .wi svg,body.light .dpt.best>svg{co
 .tic{position:relative}.nvd{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:#f1dcab;box-shadow:0 0 0 2px var(--panel),0 0 10px rgba(241,220,171,.9);animation:nvp 2.4s ease-in-out infinite}
 @keyframes nvp{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.75);opacity:.7}}
 @media (prefers-reduced-motion:reduce){.nvb,.nvl,.nvd{animation:none}}
+/* ---- message de soutien ---- */
+.supm{text-align:center}.supi{font-size:40px;line-height:1;margin:4px 0 10px}.supm .suph{justify-content:center;text-align:center;font-family:var(--f-head);font-size:22px;text-transform:uppercase;letter-spacing:.03em;margin:6px 0 12px}
+.supm p{color:var(--muted);font-size:14.5px;line-height:1.55;margin:0 0 10px;text-align:left}.supm p b{color:var(--text)}.supm .supt{text-align:center;color:var(--text);font-weight:600}
 </style>
 </head>
 <body>
@@ -1894,6 +1897,19 @@ function ach2HTML(){const A=S.ach2;if(!A)return"";const m=A.m||{},got=A.got||[];
  return`<div class="headrow" style="margin:22px 0 10px"><b style="font-family:var(--f-head);font-size:19px">Nouveaux succès${NB()}</b><span class="pill">${got.length} / ${ACH2.length}</span></div><div class="stack">${ACH2.map(([k,t,d,mk,goal,rw])=>{const v=Math.min(goal,m[mk]||0),done=v>=goal,cl=got.includes(k);
   return`<div class="panel ach ${done?"done":""}"><div class="ai">${done?I.check:I.trophy.replace("<svg",'<svg width="22" height="22"')}</div><div class="grow"><b>${t}</b><div style="color:var(--muted);font-size:14px">${d} · ${fmt(v)}/${fmt(goal)}</div><div class="bar"><i style="width:${v/goal*100}%"></i></div></div>${done&&!cl?`<button class="btn green" data-act="claim2" data-k="${k}" style="padding:8px 12px">+${rw}</button>`:cl?'<span class="pill">Réclamé</span>':`<span style="color:var(--muted);font-size:13px;white-space:nowrap">+${rw}</span>`}</div>`}).join("")}</div>`}
 function sec2Unlocked(k){const x=SECRETS2.find(s=>s[0]===k);if(!x)return;setTimeout(()=>{blip(880,.12);setTimeout(()=>blip(1320,.18),120);toast(`${x[3]} Succès caché : ${x[1]} ! +25 pistons`)},400)}
+
+// ---------- message de soutien, une seule fois après la mise à jour ----------
+const SUPPORT_V="nov22";
+function supportSeen(){try{return localStorage.getItem("paddock-support")===SUPPORT_V}catch(e){return true}}
+function supportModal(){try{localStorage.setItem("paddock-support",SUPPORT_V)}catch(e){}
+ const pro=meVip(),canBuy=!window.IN_APP||!!window.PLAY;
+ modal(`<div class="supm"><div class="supi">🏁</div><div class="heye">Le mot de l'équipe</div><h2 class="suph">${pro?"Merci, vraiment":"Aidez Paddock à rouler"}</h2>
+ ${pro?`<p>Vous êtes membre <b>Paddock Pro</b> : c'est grâce à vous que les serveurs tournent et que le jeu continue d'avancer. Merci du fond du cœur ❤️</p>`:
+ `<p>Paddock est gratuit et le restera. Mais faire tourner les serveurs (comptes, cartes, échanges, marché, défis…) coûte de l'argent chaque mois, et la facture grimpe avec le nombre de joueurs.</p>
+ <p>Si le jeu vous plaît, la communauté peut nous aider à le garder en ligne : ${canBuy?"en prenant <b>Paddock Pro</b> ou quelques <b>pistons</b>. Chaque achat compte vraiment, et vous recevez des avantages en échange.":"en invitant vos amis et en parlant de Paddock autour de vous."}</p>
+ <p class="supt">Merci à toute la communauté ❤️</p>`}
+ <div class="stack" style="margin-top:6px">${pro?`<button class="btn green block" data-act="close">Avec plaisir</button>`:canBuy?`<button class="cta whgo" data-act="getpro">Découvrir Paddock Pro</button><button class="btn outline-green block" data-act="supshop">Acheter des pistons</button><button class="btn ghost block" data-act="close">Plus tard</button>`:`<button class="cta whgo" data-act="invite">Inviter des amis</button><button class="btn ghost block" data-act="close">Plus tard</button>`}</div></div>`)}
+setInterval(()=>{try{if(!S||!S.user||S.loggedOut||supportSeen()||!tutoDone()||document.querySelector(".overlay,#layer .modal,.g3d")||(window.ONLINE&&!S.user.since))return;if(document.querySelector("#layer")&&document.querySelector("#layer").children.length)return;supportModal()}catch(e){}},2500);
 const PITY_N=50;
 function pityHTML(){if(typeof S.pity!=="number")return"";const n=Math.min(PITY_N-1,Math.max(0,S.pity)),left=PITY_N-n,pct=n/PITY_N*100;
  return`<div class="pity ${left<=5?"hot":""}"><span class="pi">${I.star}</span><div class="grow"><div class="pt"><b>Légendaire garantie${NB()}</b><em>${left===1?"au prochain paquet !":`dans ${left} paquets max.`}</em></div><div class="pb"><i style="width:${pct.toFixed(1)}%"></i></div></div></div>`}
@@ -2496,6 +2512,7 @@ document.addEventListener("click",e=>{
  notifs:()=>{const h=S.notifs.length?`<div class="stack">${S.notifs.map(n=>`<div class="lrow" style="${n.read?"":"border:1px solid var(--green-d)"}"><div class="grow"><div>${esc(n.txt)}</div><div class="sub">${new Date(n.t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</div></div></div>`).join("")}</div>`:'<div class="empty">Aucune notification.</div>';S.notifs.forEach(n=>n.read=true);save();const ph=patchHTML();markPatchSeen();render();modal(`<h2><span>Notifications</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2><div class="stack">${ph}${h}</div>`)},
  set:()=>{S.set[d.k]=!S.set[d.k];save();render()},
  g3d:()=>garage3D(S.show.slice(0,showN()).filter(id=>id!==null&&S.col[id]),"Mon garage"),
+ supshop:()=>{closeModal();go("shop")},
  theme:()=>{S.set.light=!S.set.light;save();render()},
  accent:()=>{try{localStorage.setItem("paddock-accent",d.k)}catch(e){}applyAccent(d.k);render(true)},
  wheelspin:()=>wheelSpin(),surpclaim:()=>surpriseClaim(),sharepk:()=>sharePack(),
