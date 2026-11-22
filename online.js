@@ -99,7 +99,7 @@
       const res = await Promise.all([rpc("get_state"), rpc("get_sub").catch(() => null), rpc("get_levels").catch(() => []),
         rpc("get_event").catch(() => null), vis ? rpc("ping").catch(() => null) : null,
         rpc("get_community").catch(() => null), rpc("get_wish").catch(() => null), rpc("get_level").catch(() => null),
-        rpc("get_secrets").catch(() => null), rpc("get_poll").catch(() => undefined), rpc("get_extras").catch(() => null)]);
+        rpc("get_secrets").catch(() => null), rpc("get_poll").catch(() => undefined), rpc("get_extras").catch(() => null), rpc("get_pity").catch(() => null)]);
       applyAll(res, true);
       try { localStorage.setItem(OKEY, JSON.stringify({ t: Date.now(), r: res.slice(0, 8) })); } catch (e) {}
       if (window.OFFLINE) { window.OFFLINE = false; setTimeout(() => toast("De retour en ligne."), 200); }
@@ -108,7 +108,8 @@
   // applique les réponses du serveur (ou la dernière copie gardée pour le mode hors ligne)
   function applyAll(res, live) {
     {
-      const [st, sub, lv, ev, , cm, wl, lvl, sec, poll, ext] = res;
+      const [st, sub, lv, ev, , cm, wl, lvl, sec, poll, ext, pity] = res;
+      if (typeof pity === "number") S.pity = pity;
       apply(st); S.sub = sub || {}; S.evSrv = ev && ev.until ? { t: ev.theme, until: T(ev.until) } : null;
       if (cm) S.comm = cm;
       if (ext) { S.seriesClaimed = ext.series || []; S.adv = ext.advent || null; S.mySeasons = ext.seasons || []; S.cotm = ext.cotm || null; S.hunt = ext.hunt || null; S.me = ext.me || {}; S.loyal = ext.loyalty || null; S.myst = ext.mystery || null; S.combos = ext.combos || []; S.barn = ext.barn || null; S.signed = {}; for (const [id, n] of ext.signed || []) S.signed[id] = n; }
@@ -323,7 +324,8 @@
     b.n++; b.last = t;
     const p = $("#packbtn"); if (p) { p.classList.remove("shake"); void p.offsetWidth; p.classList.add("shake"); }
     blip((kind === "pro" ? 500 : 380) + (b.n - 1) * 40, .15);
-    try { const res = await rpc("open_pack", { kind }); b.cards.push(...res.filter(x => CARS[x.id])); }
+    try { const res = await rpc("open_pack", { kind }); b.cards.push(...res.filter(x => CARS[x.id]));
+      if (kind === "normal" && typeof S.pity === "number") S.pity = res.some(x => CARS[x.id] && CARS[x.id].r === "L") ? 0 : S.pity + 1; }
     catch (x) { b.err = b.err || x; }
     b.done++;
     if (b.done < b.n) return;                                            // d'autres paquets sont encore en route

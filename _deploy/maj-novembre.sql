@@ -1,5 +1,75 @@
--- Paddock : événements automatiques chaque semaine (32 thèmes qui tournent tout seuls)
+-- Paddock, mise à jour de novembre : événements automatiques (32 thèmes) + légendaire garantie au 50e paquet
+-- Peut être relancé sans risque.
 begin;
+
+-- ===== légendaire garantie =====
+alter table public.wallets add column if not exists pity int not null default 0;
+
+create or replace function public.get_pity() returns int language sql stable security definer set search_path = public as $$
+  select coalesce((select pity from wallets where user_id = _uid()), 0)
+$$;
+revoke all on function public.get_pity() from public, anon;
+grant execute on function public.get_pity() to authenticated;
+
+create or replace function public.open_pack(kind text default 'normal') returns jsonb language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); w wallets; pro boolean := _is_pro(u); n int; ids int[] := '{}'; t int := _ev_theme();
+        c int; h boolean; i int; res jsonb := '[]'::jsonb; isnew boolean; got_holo boolean := false;
+begin
+  perform _sync_packs(u);
+  select * into w from wallets where user_id = u for update;
+  if kind = 'normal' then
+    if w.packs < 1 then raise exception 'Plus de paquet disponible. Le prochain arrive bientôt.'; end if;
+    update wallets set packs = packs - 1, pack_ts = case when w.packs >= 10 then now() else pack_ts end, full_notified = false where user_id = u;
+    n := 5;
+  elsif kind = 'pro' then
+    if not pro then raise exception 'Le pack Paddock Pro est réservé aux membres Paddock Pro.'; end if;
+    -- recharge chaque jour à minuit (heure de Paris)
+    if w.pro_pack_ts is not null and (w.pro_pack_ts at time zone 'Europe/Paris')::date >= (now() at time zone 'Europe/Paris')::date then raise exception 'Votre prochain pack Paddock Pro n''est pas encore prêt.'; end if;
+    update wallets set pro_pack_ts = now(), pro_notified = false where user_id = u;
+    n := 10;
+  elsif kind = 'event' then
+    if w.ev_pack_ts is not null and w.ev_pack_ts > now() - (case when pro then interval '12 hours' else interval '24 hours' end) then raise exception 'Votre prochain paquet d''événement n''est pas encore prêt.'; end if;   -- Paddock Pro : 2 par jour
+    update wallets set ev_pack_ts = now() where user_id = u;
+    if t = 0 then
+      select id into c from cards where rarity = 'ED' order by random() limit 1;
+      if c is not null then ids := ids || c; end if;
+      n := 4;
+    else
+      ids := ids || _draw_ev(t, true);
+      for i in 1..4 loop ids := ids || _draw_ev(t, false); end loop;
+      n := 0;
+    end if;
+  else raise exception 'Type de paquet inconnu.'; end if;
+  -- pack Paddock Pro : la 1re carte est une ultra rare ou une légendaire garantie (20 % de légendaire)
+  if kind = 'pro' then ids := ids || _draw_pro_top(); n := n - 1; end if;
+  -- Paddock Pro : paquets normaux un peu plus généreux
+  for i in 1..n loop ids := ids || case when kind = 'pro' then _draw(true) when pro then _draw_vip() else _draw(false) end; end loop;
+  -- légendaire garantie : au plus tard au 50e paquet normal sans légendaire
+  if kind = 'normal' then
+    if exists (select 1 from cards where id = any(ids) and rarity = 'L') then
+      update wallets set pity = 0 where user_id = u;
+    elsif coalesce(w.pity, 0) >= 49 then
+      select id into c from cards where rarity = 'L' order by random() limit 1;
+      if c is not null then ids[1] := c; end if;
+      update wallets set pity = 0 where user_id = u;
+    else
+      update wallets set pity = coalesce(pity, 0) + 1 where user_id = u;
+    end if;
+  end if;
+  foreach c in array ids loop
+    h := random() < case when kind = 'pro' then 0.05 else 0.03 end;
+    got_holo := got_holo or h;
+    isnew := _give(u, c, h);
+    res := res || jsonb_build_array(jsonb_build_object('id', c, 'holo', h, 'new', isnew));
+  end loop;
+  perform _stat_inc(u, 'packs'); perform _wk_inc(u, 'packs'); perform _comm_inc(u);
+  if got_holo then perform _notify(u, 'Vous avez obtenu une carte brillante !'); end if;
+  return res;
+end $$;
+revoke all on function public.open_pack(text) from public, anon;
+grant execute on function public.open_pack(text) to authenticated;
+
+-- ===== événements automatiques =====
 
 -- quelles voitures appartiennent à quel thème (10 et plus : nouveaux thèmes)
 create or replace function public._ev_ok(t int, brand text, hp int, vmax int, y1 int, body text) returns boolean language sql immutable as $$
