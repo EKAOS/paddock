@@ -99,7 +99,7 @@
       const res = await Promise.all([rpc("get_state"), rpc("get_sub").catch(() => null), rpc("get_levels").catch(() => []),
         rpc("get_event").catch(() => null), vis ? rpc("ping").catch(() => null) : null,
         rpc("get_community").catch(() => null), rpc("get_wish").catch(() => null), rpc("get_level").catch(() => null),
-        rpc("get_secrets").catch(() => null), rpc("get_poll").catch(() => undefined), rpc("get_extras").catch(() => null), rpc("get_pity").catch(() => null), rpc("get_bonus").catch(() => null)]);
+        rpc("get_secrets").catch(() => null), rpc("get_poll").catch(() => undefined), rpc("get_extras").catch(() => null), rpc("get_pity").catch(() => null), rpc("get_bonus").catch(() => null), rpc("get_numbered").catch(() => null), rpc("get_social").catch(() => null)]);
       applyAll(res, true);
       try { localStorage.setItem(OKEY, JSON.stringify({ t: Date.now(), r: res.slice(0, 8) })); } catch (e) {}
       if (window.OFFLINE) { window.OFFLINE = false; setTimeout(() => toast("De retour en ligne."), 200); }
@@ -108,7 +108,9 @@
   // applique les réponses du serveur (ou la dernière copie gardée pour le mode hors ligne)
   function applyAll(res, live) {
     {
-      const [st, sub, lv, ev, , cm, wl, lvl, sec, poll, ext, pity, bonus] = res;
+      const [st, sub, lv, ev, , cm, wl, lvl, sec, poll, ext, pity, bonus, numb, social] = res;
+      if (Array.isArray(numb)) { S.numb = {}; for (const [id, n] of numb) S.numb[id] = n; }
+      if (social && typeof social === "object") S.social = social;
       if (bonus && typeof bonus === "object") S.bonus = bonus;
       if (typeof pity === "number") S.pity = pity;
       apply(st); S.sub = sub || {}; S.evSrv = ev && ev.until ? { t: ev.theme, until: T(ev.until) } : null;
@@ -327,6 +329,7 @@
     const p = $("#packbtn"); if (p) { p.classList.remove("shake"); void p.offsetWidth; p.classList.add("shake"); }
     blip((kind === "pro" ? 500 : 380) + (b.n - 1) * 40, .15);
     try { const res = await rpc("open_pack", { kind }); b.cards.push(...res.filter(x => CARS[x.id]));
+      for (const x of res) if (x.num) { S.numb = S.numb || {}; S.numb[x.id] = x.num; setTimeout(() => toast(`Carte numérotée N° ${x.num} / 100 : ${CARS[x.id].n} !`), 1500); }
       if (kind === "normal" && typeof S.pity === "number") S.pity = res.some(x => CARS[x.id] && CARS[x.id].r === "L") ? 0 : S.pity + 1; }
     catch (x) { b.err = b.err || x; }
     b.done++;
@@ -695,6 +698,14 @@
     open: act(async () => { if (!S.packs) return toast("Plus de paquet disponible pour l'instant."); await openKind("normal"); }),
     openpro: act(async () => { await openKind("pro"); }),
     openev: act(async () => { await openKind("event"); }),
+    giftsend: act(async (el, d) => { await rpc("send_gift", { nm: d.f }); toast(`Paquet offert à ${d.f} !`); blip(880, .12); await sync(); closeModal(); openTdy("gift"); render(true); }),
+    duelnew: act(async (el, d) => { await rpc("duel_create", { nm: d.f }); toast(`Défi lancé contre ${d.f} !`); await sync(); closeModal(); openTdy("duel"); render(true); }),
+    duelopen: act(async (el, d) => {
+      el.disabled = true; const r = await rpc("duel_open", { did: +d.id });
+      const rv = packOrder(r.cards.filter(id => CARS[id]).map(id => ({ id, new: !S.col[id], holo: false })));
+      closeModal(); U.reveal = rv; blip(700, .12); _go("reveal"); toast(`Votre score : ${r.score} points`); sync().then(() => render(true)).catch(() => {});
+    }),
+    dhook: act(async () => { const v = (document.getElementById("dhook") || {}).value || ""; const r = await rpc("set_discord_hook", { url: v.trim() }); toast(r.hook ? "Discord relié : le code du jour vient d'être publié." : "Discord détaché."); await sync(); render(true); }),
     daily: act(async () => { const r = await rpc("claim_daily"); blip(780); toast(`Jour ${r.day} : ${dailyTxt({ c: r.coins, p: r.packs })}`); await after(); }),
     wkclaim: act(async (el, d) => { const n = await rpc("claim_week", { i: +d.i }); toast(`+${n} pistons`); await after(); }),
     claim: act(async (el, d) => { const n = await rpc("claim_ach", { i: +d.i }); toast(`+${n} pistons`); await after(); }),
