@@ -19,13 +19,6 @@
 .serchip.on{background:var(--gold);border-color:var(--gold);color:#1a1306}
 .serchip.s2:not(.on){border-color:#6b1e27;color:#e9cf96}
 .serchip .s2spark{font-style:normal;color:var(--gold)}.serchip.on .s2spark{color:#1a1306}
-/* Série 02 : ambiance course — fibre de carbone discrète, damiers et titres en italique */
-body.s2:not(.light){background-color:var(--bg);background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.018) 0 2px,transparent 2px 4px),repeating-linear-gradient(-45deg,rgba(0,0,0,.35) 0 2px,transparent 2px 4px);background-attachment:fixed}
-body.s2 .pagehead h1,body.s2 .packview h1{font-style:italic;letter-spacing:.05em}
-body.s2 .pagehead::before{width:30px;height:8px;top:17px;background:conic-gradient(var(--gold) 25%,transparent 0 50%,var(--gold) 0 75%,transparent 0) 0 0/8px 8px;opacity:.9}
-body.s2 .heye::after{width:40px;height:6px;background:conic-gradient(var(--gold) 25%,transparent 0 50%,var(--gold) 0 75%,transparent 0) 0 0/6px 6px;opacity:.75;-webkit-mask:linear-gradient(90deg,transparent,#000);mask:linear-gradient(90deg,transparent,#000)}
-body.s2 .nav button.on::before{height:4px;background:conic-gradient(var(--gold) 25%,transparent 0 50%,var(--gold) 0 75%,transparent 0) 0 0/4px 4px}
-body.s2 .topbar::before{font-style:italic}
 </style>
 
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -4474,7 +4467,7 @@ function showTuto(i=0){const [ic,t,p]=TUTO[i];const last=i===TUTO.length-1;
  <div class="row" style="width:100%">${i?`<button class="btn ghost grow" data-act="tuto" data-i="${i-1}">Retour</button>`:`<button class="btn ghost grow" data-act="tutoend">Passer</button>`}<button class="btn green grow" data-act="${last?"tutoend":"tuto"}" data-i="${i+1}">${last?"C'est parti !":"Suivant"}</button></div></div>`,1)}
 function maybeTuto(){if(S&&S.user&&!tutoDone()&&!document.querySelector(".overlay"))setTimeout(()=>{if(!tutoDone()&&!document.querySelector(".overlay"))showTuto(0)},500)}
 function render(keep){
- document.body.classList.toggle("light",!!(S&&S.set.light));document.body.classList.toggle("s2",S2_ON);document.body.classList.toggle("inapp",IN_APP);document.body.classList.toggle("playbill",!!window.PLAYBILL);
+ document.body.classList.toggle("light",!!(S&&S.set.light));document.body.classList.toggle("inapp",IN_APP);document.body.classList.toggle("playbill",!!window.PLAYBILL);
  {const d=new Date(),m=d.getMonth(),j=d.getDate();document.body.classList.toggle("halloween",(m===9&&j>=20)||(m===10&&j<=2));const xm=!!window.NOEL_FORCE||m===11||(m===0&&j<=6);{const on=xm&&S&&S.user&&U.view==="packs";document.body.classList.toggle("flakeson",!!on);let fl=document.getElementById("flakes");
   if(on&&!fl){fl=document.createElement("div");fl.id="flakes";fl.setAttribute("aria-hidden","true");const F=["❄\uFE0E","❅\uFE0E","❆\uFE0E"];fl.innerHTML=Array.from({length:26},()=>{const s=10+Math.random()*20;return`<i style="left:${(Math.random()*100).toFixed(1)}%;font-size:${s.toFixed(0)}px;opacity:${(.45+Math.random()*.5).toFixed(2)};animation-duration:${(9+Math.random()*10+(30-s)/3).toFixed(1)}s;animation-delay:-${(Math.random()*18).toFixed(1)}s">${F[Math.floor(Math.random()*3)]}</i>`}).join("");document.body.appendChild(fl)}
   else if(!on&&fl)fl.remove()}document.body.classList.toggle("noel",xm);if(xm&&!document.getElementById("snow")){const sn=document.createElement("div");sn.id="snow";sn.setAttribute("aria-hidden","true");sn.innerHTML=Array.from({length:28},()=>`<i style="left:${(Math.random()*100).toFixed(1)}%;animation-duration:${(7+Math.random()*9).toFixed(1)}s;animation-delay:-${(Math.random()*12).toFixed(1)}s;width:${(3+Math.random()*4).toFixed(1)}px;height:${(3+Math.random()*4).toFixed(1)}px;opacity:${(.35+Math.random()*.5).toFixed(2)}"></i>`).join("");document.body.appendChild(sn)}}
