@@ -1013,6 +1013,11 @@ body.light .mtile.tg.on svg,body.light .dwal .wi svg,body.light .dpt.best>svg{co
 .tab{margin:0!important;flex:1 0 auto;border:0!important;border-radius:9px;padding:9px 12px;font-size:12.5px}
 .tab.on{background:var(--panel2);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2),inset 0 -2px 0 var(--green)}
 .panel.empty>svg:first-child{width:64px;height:64px;padding:14px;box-sizing:border-box;border-radius:20px;color:var(--green);background:rgba(207,178,122,.08);border:1px solid rgba(207,178,122,.25);box-shadow:0 0 28px -8px rgba(207,178,122,.45)}
+.overlay .oddsh>span{display:none}.overlay .oddsh{justify-content:flex-end}
+.hmini{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 2px 0;font-size:12.5px;color:var(--muted)}
+.hpity{display:flex;align-items:center;gap:7px;min-width:0}.hpity svg{width:14px;height:14px;flex:none;color:var(--green)}.hpity b{color:var(--text,#fff);font-weight:700}.hpity.hot b{color:var(--green)}
+.hodds{flex:none;background:none;border:1px solid var(--line2);color:var(--muted);font:inherit;font-size:12px;padding:5px 11px;border-radius:99px;cursor:pointer}
+.tdmore{display:block;width:100%;margin-top:8px;padding:11px;border-radius:14px;border:1px dashed var(--line2);background:none;color:var(--muted);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
 .pity{display:flex;align-items:center;gap:12px;margin:12px 0 0;padding:11px 14px;border-radius:14px;border:1px solid var(--line2);background:linear-gradient(180deg,var(--panel2),var(--panel))}
 .pity .pi{width:34px;height:34px;flex:none;border-radius:10px;display:grid;place-items:center;background:rgba(207,178,122,.09);border:1px solid rgba(207,178,122,.28)}
 .pity .pi svg{width:18px;height:18px;color:var(--green)}
@@ -4263,8 +4268,10 @@ setInterval(()=>{try{if(!S||!S.user||patchPopSeen()||!tutoDone()||(window.introS
 const PITY_N=50;
 function pityHTML(){if(typeof S.pity!=="number")return"";const n=Math.min(PITY_N-1,Math.max(0,S.pity)),left=PITY_N-n,pct=n/PITY_N*100;
  return`<div class="pity ${left<=5?"hot":""}"><span class="pi">${I.star}</span><div class="grow"><div class="pt"><b>Légendaire garantie${NB()}</b><em>${left===1?"au prochain paquet !":`dans ${left} paquets max.`}</em></div><div class="pb"><i style="width:${pct.toFixed(1)}%"></i></div></div></div>`}
+function pityMini(){if(typeof S.pity!=="number")return"<span></span>";const n=Math.min(PITY_N-1,Math.max(0,S.pity)),left=PITY_N-n;return`<span class="hpity ${left<=5?"hot":""}">${I.star}<span>Légendaire garantie ${left===1?"<b>au prochain paquet</b>":`dans <b>${left}</b> paquets`}</span></span>`}
+function oddsModal(){modal(`<h2><span>Chances par carte</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2>${oddsHTML()}${pityHTML()}`)}
 function heroH(eye,title,sub,stats,after){return`<div class="hhead hx"><div class="heye">${eye}</div><h1>${title}</h1>${sub?`<p>${sub}</p>`:""}${stats&&stats.length?`<div class="hdash">${stats.map(([ic,v,l,hot])=>`<div class="hd${hot?" hot":""}"><div class="hi">${ic}</div><b class="${String(v).length>8?"hl":""}">${v}</b><span>${l}</span></div>`).join("")}</div>`:""}${after?`<div class="hrow">${after}</div>`:""}</div>`}
-V.packs=()=>{refillPacks();const tz=teaser(),td=tdyList(),nt=td.filter(x=>x.todo).length,fd="";return`${installBar()}<div class="packview hx">
+V.packs=()=>{refillPacks();const tz=teaser(),td=tdyList(),nt=td.filter(x=>x.todo).length,fd="",tdTop=(nt?td.filter(x=>x.todo):td).slice(0,4),tdShown=U.allTdy?td:tdTop,tdMore=td.length>tdTop.length;return`${installBar()}<div class="packview hx">
  <div class="heye">Série ${S2_ON?"02":"01"}${S2_ON?" "+NB():""}</div><h1>Ouvrir un paquet</h1>
  ${dashHTML()}
  <div class="stage"><div class="beam"></div><div class="floor"></div>${tz.map((id,k)=>`<div class="fan f${k+1}" aria-hidden="true">${cardHTML(id,{})}</div>`).join("")}<div class="dust" aria-hidden="true">${DUST}</div>
@@ -4272,12 +4279,12 @@ V.packs=()=>{refillPacks();const tz=teaser(),td=tdyList(),nt=td.filter(x=>x.todo
   <button class="hhelp" data-act="how" aria-label="Comment ça marche ?">${I.help}</button></div>
  ${S.packs?'<div class="swipehint">Glissez pour ouvrir</div>':""}
  <button class="cta openbtn" data-act="open" ${S.packs>0?"":"disabled"}>${S.packs?`Ouvrir un paquet<em>× ${S.packs}</em>`:"Plus de paquet pour l'instant"}</button>
- <div class="pronote" id="packnext">${S.packs<10?packNextTxt():(meVip()?"Paddock Pro : un paquet toutes les 3 minutes":"Un paquet toutes les 10 minutes · 3 minutes avec Paddock Pro")}</div>
- ${pityHTML()}
+ <div class="pronote" id="packnext">${S.packs<10?packNextTxt():(meVip()?"Paddock Pro : un paquet toutes les 3 minutes":"1 paquet toutes les 10 min · 3 min avec Pro")}</div>
+ <div class="hmini">${pityMini()}<button class="hodds" data-act="odds">Voir les chances</button></div>
  ${wrapBanner()}
- ${oddsHTML()}
+ <div class="mgt">Aujourd'hui${nt?`<span class="tbadge">${nt} à faire</span>`:""}</div><div class="tts">${tdShown.map(ttTile).join("")}</div>
+ ${tdMore?`<button class="tdmore" data-act="alltdy">${U.allTdy?"Voir moins":`Tout voir (${td.length})`}</button>`:""}
  <div class="mgt">Autres paquets</div><div class="mps">${mpList()}</div>
- <div class="mgt">Aujourd'hui${nt?`<span class="tbadge">${nt} à faire</span>`:""}</div><div class="tts">${td.map(ttTile).join("")}</div>
  ${fd?`<div class="hfeed">${fd}</div>`:""}</div>`};
 function revealFx(r,holo,id){const big=r==="L"||r==="ED";if(big||r==="UR"){if(!(id!=null&&S.set.sound&&realSound(id))){if(id!=null)engineFor(id);else engineRev(big?1:.55)}}if(!big&&r!=="UR"&&!holo)return;
  try{if(navigator.vibrate)navigator.vibrate(big?[80,60,80,60,220]:[60,40,90])}catch(e){}
@@ -4802,7 +4809,7 @@ document.addEventListener("click",e=>{
  close:closeModal,closebg:closeModal,
  more:()=>{const G=[["Moi",[["profile","Profil",I.user],["shop","Boutique",I.coins],["ranking","Classement",I.medal]]],["Social",[["friends","Amis",I.users],["messages","Messages",I.chat],["guild","Écurie",I.flag]]],["Jeu",[["battle","Bataille",I.swords],["atelier","Atelier",I.tool],["encyclo","Encyclopédie",I.book],["all","Toutes les cartes",I.globe],["stats","Statistiques",I.chart],["achievements","Palmarès",I.trophy]]],["Réglages et communauté",[["settings","Paramètres",I.gear],...(isMod(S.user.name)?[["mod","Modération",I.shield]]:[])]]];
   modal(`<div class="mnu">${G.map(([g,L])=>`<div class="mgt">${g}</div><div class="mgrid">${L.map(([v,l,ic])=>`<button class="mtile ${isLocked(v)?"lk":""} ${v==="shop"?"hot":""}" data-act="go" data-v="${v}">${ic}<span>${l}</span>${isLocked(v)?`<span class="lockt">🔒 niveau ${lockLv(v)}</span>`:""}${v==="messages"&&unreadCount()?`<span class="menubadge" aria-label="${unreadCount()} nouveau${unreadCount()>1?"x":""}">${Math.min(99,unreadCount())}</span>`:""}</button>`).join("")}${g==="Réglages et communauté"?`<a class="mtile hot" href="https://discord.gg/y9gnffGVMh" target="_blank" rel="noopener" style="grid-column:span ${L.length>1?1:2};text-decoration:none">${I.chat}<span>Discord officiel</span>${L.length>1?"":"<small>Codes cadeaux et entraide</small>"}</a>`:""}</div>`).join("")}</div>`)},
- how:()=>showTuto(0),
+ odds:()=>oddsModal(),alltdy:()=>{U.allTdy=!U.allTdy;render()},how:()=>showTuto(0),
  tuto:()=>showTuto(+d.i),
  tutoend:()=>{try{localStorage.setItem(tutoKey(),"1")}catch(e){}closeModal()},
  howold:()=>modal(`<h2><span>Comment ça marche ?</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2><div class="stack" style="color:var(--muted)"><p style="margin:0">Chaque carte est une vraie voiture. Un paquet contient 5 cartes tirées au sort.</p><p style="margin:0"><b style="color:var(--text)">Rareté</b> : elle dépend du nombre de vues de l\'article Wikipédia de la voiture sur les 60 derniers jours. Plus une voiture est recherchée, plus sa carte est rare. De la plus rare à la plus courante : L, UR, SR, R, PC, C.</p><p style="margin:0"><b style="color:var(--text)">Attaque</b> : la puissance en chevaux. <b style="color:var(--text)">Défense</b> : la vitesse de pointe en km/h.</p><p style="margin:0">Vous avez 10 paquets maximum. Un paquet se recharge toutes les 10 minutes, ou toutes les 3 minutes pour les membres Paddock Pro. Les membres Paddock Pro ont en plus un pack Paddock Pro de 10 cartes chaque jour (recharge à minuit), avec une ultra rare ou légendaire garantie et 3,5 fois plus de légendaires.</p><div class="rcount">${RAR.map(r=>`<span><i style="background:var(--c${r})"></i>${r} ${ODDS.find(o=>o[0]===r)[1]}%</span>`).join("")}</div><p style="margin:0">Chaque carte a 3 % de chances d'être <b style="color:var(--text)">brillante</b> (5 % dans le pack Paddock Pro). Les cartes <b style="color:#f43f5e">ED</b> sont des éditions limitées, disponibles seulement pendant les événements.</p></div>`),
