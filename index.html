@@ -886,7 +886,7 @@ body.light .mtile.hot{border-color:rgba(138,109,54,.5);background:linear-gradien
 .floor::after{content:"";position:absolute;inset:16px 34px;border-radius:50%;border:1px solid rgba(241,220,171,.45)}
 .packw{position:relative;z-index:3;margin-bottom:18px;animation:hfloat 4.5s ease-in-out infinite}.stage .pack{position:relative;margin:0;display:block}.stage .pack svg{width:auto;height:296px}
 @keyframes hfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-.sheen{position:absolute;inset:14px 8px;overflow:hidden;border-radius:6px;pointer-events:none}.sheen::after{content:"";position:absolute;top:-20%;bottom:-20%;width:46%;left:0;background:linear-gradient(100deg,transparent,rgba(255,255,255,.16),transparent);transform:translateX(-150%) skewX(-18deg);animation:hsheen 3.6s ease-in-out infinite;will-change:transform}
+.sheen{position:absolute;inset:14px 8px;overflow:hidden;border-radius:18px;pointer-events:none}.sheen::after{content:"";position:absolute;top:-20%;bottom:-20%;width:46%;left:0;background:linear-gradient(100deg,transparent,rgba(255,255,255,.16),transparent);transform:translateX(-150%) skewX(-18deg);animation:hsheen 3.6s ease-in-out infinite;will-change:transform}
 @keyframes hsheen{0%,55%{transform:translateX(-150%) skewX(-18deg)}100%{transform:translateX(350%) skewX(-18deg)}}
 .fan{position:absolute;z-index:1;width:136px;top:92px;filter:brightness(.7);pointer-events:none}.fan .card{box-shadow:0 18px 30px -10px #000}.fan.f1{left:0;transform:rotate(-14deg)}.fan.f2{right:0;transform:rotate(14deg)}
 .fan .c-desc,.fan .c-stats,.fan .addtag{display:none}.fan .c-title{font-size:11px}.fan .c-body{padding:7px 8px}
@@ -3365,18 +3365,18 @@ const S2_FROM=4327,S2_ON=RAW.length>S2_FROM;const serieOf=id=>id>=S2_FROM?2:1;  
 const PACKSVG2=`<svg viewBox="0 0 200 300" aria-hidden="true"><defs>
 <linearGradient id="pk2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b1119"/><stop offset=".5" stop-color="#2a070b"/><stop offset="1" stop-color="#140305"/></linearGradient>
 <linearGradient id="pkr2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1dcaa"/><stop offset=".5" stop-color="#a88a52"/><stop offset="1" stop-color="#e3c88f"/></linearGradient>
-<linearGradient id="pks2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+<linearGradient id="pks2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><clipPath id="pkc2"><rect x="12" y="12" width="176" height="276" rx="18"/></clipPath></defs><g clip-path="url(#pkc2)">
 <path d="M12 12 H188 V288 H12 Z" fill="url(#pk2)"/>
 <path d="M78 12 H92 V288 H78Z M108 12 H122 V288 H108Z" fill="#000" opacity=".22"/>
 <path d="M12 12 ${Array.from({length:29},(_,i)=>`L${12+i*6+3} ${i%2?12:16}`).join(" ")} L188 12 L188 20 L12 20Z" fill="#3a0a10"/>
 <path d="M12 288 ${Array.from({length:29},(_,i)=>`L${12+i*6+3} ${i%2?288:284}`).join(" ")} L188 288 L188 280 L12 280Z" fill="#3a0a10"/>
-<rect x="22" y="30" width="156" height="240" rx="4" fill="none" stroke="url(#pkr2)" stroke-width="1.4"/>
+<rect x="22" y="30" width="156" height="240" rx="10" fill="none" stroke="url(#pkr2)" stroke-width="1.4"/>
 <path d="M-40 300 L120 0 H170 L10 300Z" fill="url(#pks2)"/>
 <text x="100" y="62" text-anchor="middle" fill="#e9cf96" font-family="Archivo,Arial,sans-serif" font-size="9" font-weight="700" letter-spacing="4">SÉRIE 02</text>
 <text x="100" y="178" text-anchor="middle" fill="url(#pkr2)" font-family="Archivo,Arial,sans-serif" font-size="96" font-weight="800" font-stretch="125%" letter-spacing="-2">02</text>
 <text x="100" y="222" text-anchor="middle" fill="#f2efe8" font-family="Archivo,Arial,sans-serif" font-size="17" font-weight="800" letter-spacing="6">PADDOCK</text>
 <path d="M70 234 H130" stroke="url(#pkr2)" stroke-width="1"/>
-<text x="100" y="250" text-anchor="middle" fill="#c9a8a0" font-family="Manrope,Arial,sans-serif" font-size="8" font-weight="600" letter-spacing="2.5">5 VOITURES</text></svg>`;
+<text x="100" y="250" text-anchor="middle" fill="#c9a8a0" font-family="Manrope,Arial,sans-serif" font-size="8" font-weight="600" letter-spacing="2.5">5 VOITURES</text></g></svg>`;
 const PACKSVG1=`<svg viewBox="0 0 200 300" aria-hidden="true"><defs>
 <linearGradient id="pk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#26262b"/><stop offset=".45" stop-color="#121214"/><stop offset=".55" stop-color="#18181b"/><stop offset="1" stop-color="#0b0b0c"/></linearGradient>
 <linearGradient id="pkr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1dcaa"/><stop offset=".5" stop-color="#a88a52"/><stop offset="1" stop-color="#e3c88f"/></linearGradient>
