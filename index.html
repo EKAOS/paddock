@@ -4282,9 +4282,9 @@ V.packs=()=>{refillPacks();const tz=teaser(),td=tdyList(),nt=td.filter(x=>x.todo
  <div class="pronote" id="packnext">${S.packs<10?packNextTxt():(meVip()?"Paddock Pro : un paquet toutes les 3 minutes":"1 paquet toutes les 10 min · 3 min avec Pro")}</div>
  <div class="hmini">${pityMini()}<button class="hodds" data-act="odds">Voir les chances</button></div>
  ${wrapBanner()}
+ <div class="mgt">Autres paquets</div><div class="mps">${mpList()}</div>
  <div class="mgt">Aujourd'hui${nt?`<span class="tbadge">${nt} à faire</span>`:""}</div><div class="tts">${tdShown.map(ttTile).join("")}</div>
  ${tdMore?`<button class="tdmore" data-act="alltdy">${U.allTdy?"Voir moins":`Tout voir (${td.length})`}</button>`:""}
- <div class="mgt">Autres paquets</div><div class="mps">${mpList()}</div>
  ${fd?`<div class="hfeed">${fd}</div>`:""}</div>`};
 function revealFx(r,holo,id){const big=r==="L"||r==="ED";if(big||r==="UR"){if(!(id!=null&&S.set.sound&&realSound(id))){if(id!=null)engineFor(id);else engineRev(big?1:.55)}}if(!big&&r!=="UR"&&!holo)return;
  try{if(navigator.vibrate)navigator.vibrate(big?[80,60,80,60,220]:[60,40,90])}catch(e){}
