@@ -2297,3 +2297,18 @@ end $$;
 revoke all on function public._flash_hour(date) from public, anon, authenticated;
 revoke all on function public.flash_trade(text) from public, anon;
 grant execute on function public.flash_trade(text) to authenticated;
+
+-- ===== Prestige : 20 écussons au lieu de 5 (les écussons VI à XX restent secrets dans le jeu tant qu'on ne les a pas) =====
+create or replace function public.do_prestige() returns jsonb language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); p profiles; c int;
+begin
+  select * into p from profiles where id = u for update;
+  if p.prestige >= 20 then raise exception 'Vous avez déjà le dernier écusson de prestige.'; end if;
+  if _lvl(p.xp) < 30 then raise exception 'Le prestige se débloque au niveau 30.'; end if;
+  update profiles set xp = 0, prestige = prestige + 1 where id = u;
+  update wallets set packs = packs + 10 where user_id = u;
+  select id into c from cards where rarity = 'L' order by random() limit 1;
+  perform _give_signed(u, c);
+  perform _notify(u, 'Prestige ' || (p.prestige + 1) || ' : nouvel écusson ! 10 paquets et une légendaire signée vous attendent.');
+  return jsonb_build_object('prestige', p.prestige + 1, 'card', c);
+end $$;
