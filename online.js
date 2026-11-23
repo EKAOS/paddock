@@ -344,6 +344,7 @@
     if (b.done < b.n) return;                                            // un toucher de plus est arrivé entre-temps : il terminera
     b.closed = true; burst = null;
     const q = $("#packbtn"); if (q) q.classList.remove("shake");
+    if (rv && q) { q.classList.add("tear"); await wait(430); }
     if (!rv) throw b.err || new Error("Ouverture impossible pour l'instant.");
     U.reveal = rv; U.reveal.packs = b.n;
     blip(700, .12); _go("reveal"); sync().then(() => {}).catch(() => {});
@@ -707,7 +708,7 @@
     lvgo: act(async () => { const L = U.lv; L.busy = true; try { await rpc("live_pick", { bid: L.id, picks: L.pick }); await livePoll(true); } finally { L.busy = false; } }),
     lvmove: act(async (el, d) => { const L = U.lv; if (L.busy) return; L.busy = true; try { await rpc("live_move", { bid: L.id, stat: d.s }); await livePoll(true); } finally { L.busy = false; } }),
     lvquit: () => { U.lv = null; U.btab = "live"; window.go("battle"); },
-    open: act(async () => { if (!(S.packs > 0)) return toast("Plus de paquet disponible pour l'instant."); await openKind("normal"); }),
+    open: act(async () => { if (window.askTilt) askTilt(); if (!(S.packs > 0)) return toast("Plus de paquet disponible pour l'instant."); await openKind("normal"); }),
     openpro: act(async () => { await openKind("pro"); }),
     openev: act(async () => { await openKind("event"); }),
     giftsend: act(async (el, d) => { await rpc("send_gift", { nm: d.f }); toast(`Paquet offert à ${d.f} !`); blip(880, .12); await sync(); closeModal(); openTdy("gift"); render(true); }),
