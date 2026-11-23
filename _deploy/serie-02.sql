@@ -2221,3 +2221,43 @@ begin
 end $$;
 revoke all on function public.open_pack(text) from public, anon;
 grant execute on function public.open_pack(text) to authenticated;
+
+-- ===== Pass Saison 02 : paliers débloqués en collectionnant les voitures de la Série 02 =====
+alter table public.wallets add column if not exists s2pass int[] not null default '{}';
+create or replace function public.get_s2pass() returns jsonb language sql stable security definer set search_path = public as $$
+  select coalesce(to_jsonb(s2pass), '[]'::jsonb) from wallets where user_id = _uid();
+$$;
+create or replace function public.claim_s2pass(i int) returns jsonb language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); need int[] := '{10,25,50,100,175,250,400,600,900,1300}';
+        kind text[] := '{coins,packs,coins,packs,coins,packs,coins,leg,packs,coins}'; amt int[] := '{50,2,150,3,300,5,500,1,8,1000}';
+        owned int; c int;
+begin
+  if u is null then raise exception 'Connectez-vous pour récupérer cette récompense.'; end if;
+  if i is null or i < 1 or i > 10 then raise exception 'Palier inconnu.'; end if;
+  select count(*) into owned from inventory where user_id = u and card_id >= 4327 and n > 0;
+  if owned < need[i] then raise exception 'Palier pas encore atteint : % voitures de la Série 02 nécessaires.', need[i]; end if;
+  update wallets set s2pass = s2pass || i where user_id = u and not (i = any(s2pass));
+  if not found then raise exception 'Récompense déjà récupérée.'; end if;
+  if kind[i] = 'coins' then update wallets set coins = coins + amt[i] where user_id = u;
+  elsif kind[i] = 'packs' then update wallets set packs = packs + amt[i] where user_id = u;
+  else
+    select id into c from cards where id >= 4327 and rarity = 'L' order by random() limit 1;
+    if c is not null then perform _give(u, c, false); end if;
+  end if;
+  return jsonb_build_object('kind', kind[i], 'amt', amt[i], 'card', c, 'claimed', (select to_jsonb(s2pass) from wallets where user_id = u));
+end $$;
+
+-- ===== Autodle : 25 pistons une fois par jour quand la voiture du jour est trouvée =====
+create table if not exists public.autodle (user_id uuid not null references auth.users(id) on delete cascade, day date not null, primary key (user_id, day));
+alter table public.autodle enable row level security;
+create or replace function public.claim_autodle() returns jsonb language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); d date := (now() at time zone 'Europe/Paris')::date; rc int;
+begin
+  if u is null then raise exception 'Connectez-vous pour gagner des pistons.'; end if;
+  insert into autodle values (u, d) on conflict do nothing;
+  get diagnostics rc = row_count;
+  if rc > 0 then update wallets set coins = coins + 25 where user_id = u; end if;
+  return jsonb_build_object('paid', rc > 0, 'coins', (select coins from wallets where user_id = u));
+end $$;
+revoke all on function public.get_s2pass(), public.claim_s2pass(int), public.claim_autodle() from public, anon;
+grant execute on function public.get_s2pass(), public.claim_s2pass(int), public.claim_autodle() to authenticated;

@@ -19,6 +19,23 @@
 .serchip.on{background:var(--gold);border-color:var(--gold);color:#1a1306}
 .serchip.s2:not(.on){border-color:#6b1e27;color:#e9cf96}
 .serchip .s2spark{font-style:normal;color:var(--gold)}.serchip.on .s2spark{color:#1a1306}
+.s2pt{display:block;font-family:var(--f-head);font-size:21px;text-transform:uppercase;letter-spacing:.03em;margin-top:6px}
+.s2ps{color:var(--muted);font-size:13.5px;margin:6px 0 0;line-height:1.45}
+.s2pbig{display:flex;align-items:baseline;justify-content:center;gap:8px}.s2pbig b{font-family:var(--f-head);font-size:40px;font-stretch:120%;color:var(--gold)}.s2pbig span{color:var(--muted);font-size:13px}
+.s2pbar{height:8px;border-radius:6px;background:var(--panel2);overflow:hidden}.s2pbar i{display:block;height:100%;background:linear-gradient(90deg,#a88a52,#f1dcab);border-radius:6px}
+.s2pnx{text-align:center;color:var(--muted);font-size:12.5px}
+.s2pl{display:grid;gap:8px}.s2pr{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.s2pr.ok{border-color:var(--gold);box-shadow:0 0 0 1px rgba(214,180,106,.25) inset}.s2pr.got{opacity:.6}
+.s2pr b{display:block;font-size:14px}.s2pr small{color:var(--muted);font-size:12.5px}.s2pr .btn{padding:8px 12px;font-size:13px}
+.s2pn{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:800 12px var(--f-head);background:var(--panel2);color:var(--gold);flex:0 0 auto}
+.s2pd{display:inline-flex;align-items:center;gap:4px;color:var(--gold);font-size:12px;font-weight:700}.s2pd svg{width:14px;height:14px}.s2plk{opacity:.6}
+.dlph{position:relative;aspect-ratio:16/10;border-radius:14px;overflow:hidden;background:var(--panel2);border:1px solid var(--line)}.dlph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;transition:filter .5s}.dlph svg{position:absolute;inset:0;width:100%;height:100%}
+.dlin{position:relative}.dlsug{display:grid;gap:4px;margin-top:6px}.dlsb{text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:14px}.dlsb small{color:var(--dim);margin-left:6px}.dlnone{color:var(--dim);font-size:13px;padding:6px 2px}
+.dlleft{text-align:center;color:var(--muted);font-size:12.5px}
+.dll{display:grid;gap:8px}.adr{border:1px solid var(--line);border-radius:12px;padding:9px 10px;background:var(--panel)}.adr b{font-size:13.5px;display:block;margin-bottom:6px}
+.dcs{display:flex;flex-wrap:wrap;gap:5px}.dc{font-size:11.5px;font-weight:700;padding:4px 8px;border-radius:8px}.dc.y{background:rgba(74,222,128,.16);color:#86efac}.dc.n{background:var(--panel2);color:var(--muted)}
+.dlend{text-align:center;padding:12px;border-radius:12px;background:var(--panel2);font-size:14px;line-height:1.5}.dlend.w{background:rgba(74,222,128,.12)}
+.dlleg{text-align:center;color:var(--dim);font-size:11.5px}
 </style>
 
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -3722,7 +3739,49 @@ function mpList(){const out=[],pv=meVip(),pr=pv&&proReady();
  const I0=evInfo(),e=EVS[I0.t];if(e){const rd=evReady(),nx=(S.evPackTs||0)+evStep();out.push(mpTile("ev",hexRgb(e.ac).join(","),`hue-rotate(${hexHue(e.ac)-40}deg) saturate(1.8)`,`Paquet ${e.k}`,rd?"Gratuit aujourd'hui":`Dans <span data-end="${nx}">${fmtLeft(nx-now())}</span>`,rd?"PRÊT":null))}
  const c=commState();if(c){const pct=Math.min(100,c.packs/c.target*100);const rdy=c.prev||(c.done&&!c.claimed&&c.mine>0);out.push(mpTile("comm","96,165,250","hue-rotate(168deg) saturate(1.6)","Communauté",rdy?"Paquet à récupérer":`${fmt(c.packs)} / ${fmt(c.target)}`,rdy?"PRÊT":c.done?"ATTEINT":null,rdy?null:pct))}
  return out.join("")}
+
+/* ---------- Pass Saison 02 : collectionner les voitures de la Série 02 débloque des paliers ---------- */
+const S2PASS=[[10,"coins",50],[25,"packs",2],[50,"coins",150],[100,"packs",3],[175,"coins",300],[250,"packs",5],[400,"coins",500],[600,"leg",1],[900,"packs",8],[1300,"coins",1000]];
+function s2Owned(){if(!S||!S.col)return 0;let n=0;for(const k in S.col)if(+k>=S2_FROM&&S.col[k]>0)n++;return n}
+const s2Claimed=()=>(S&&S.s2pass)||[];
+const s2Rew=t=>t[1]==="coins"?`${fmt(t[2])} pistons`:t[1]==="packs"?`${t[2]} paquets`:"1 légendaire de la Série 02";
+const s2Ready=()=>{const n=s2Owned(),c=s2Claimed();return S2PASS.filter((t,i)=>n>=t[0]&&!c.includes(i+1)).length};
+function s2passPanel(){const n=s2Owned(),c=s2Claimed(),nx=S2PASS.find(t=>n<t[0]),prev=[...S2PASS].reverse().find(t=>n>=t[0]);const lo=prev?prev[0]:0,hi=nx?nx[0]:lo,pct=nx?Math.round((n-lo)/(hi-lo)*100):100;
+ return`<div class="stack s2pp"><div style="text-align:center"><div class="heye">Série 02 ${NB()}</div><b class="s2pt">Pass Saison 02</b><p class="s2ps">Collectionnez les voitures de la Série 02 : chaque palier débloque une récompense.</p></div>
+ <div class="s2pbig"><b>${fmt(n)}</b><span>voiture${n>1?"s":""} de la Série 02</span></div>
+ <div class="s2pbar"><i style="width:${pct}%"></i></div><div class="s2pnx">${nx?`Prochain palier : ${fmt(nx[0])} voitures · encore ${fmt(nx[0]-n)}`:"Tous les paliers sont atteints, bravo !"}</div>
+ <div class="s2pl">${S2PASS.map((t,i)=>{const ok=n>=t[0],got=c.includes(i+1);return`<div class="s2pr ${got?"got":ok?"ok":""}"><span class="s2pn">${i+1}</span><div class="grow"><b>${fmt(t[0])} voitures</b><small>${s2Rew(t)}</small></div>${got?`<span class="s2pd">${I.check} Récupéré</span>`:ok?`<button class="btn green" data-act="s2claim" data-i="${i+1}">Récupérer</button>`:`<span class="s2plk">🔒</span>`}</div>`}).join("")}</div></div>`}
+function s2ClaimLocal(i){const t=S2PASS[i-1];if(!t||s2Owned()<t[0]||s2Claimed().includes(i))return null;S.s2pass=[...s2Claimed(),i];let card=null;
+ if(t[1]==="coins")S.coins+=t[2];else if(t[1]==="packs")S.packs+=t[2];else{card=rnd(BYR.L.filter(x=>x>=S2_FROM));own(card)}save();return{kind:t[1],amt:t[2],card}}
+function s2Done(t,card){blip(880);toast(card!=null?`Palier atteint : ${CARS[card].n} (légendaire) rejoint votre collection !`:`Palier atteint : +${s2Rew(t)} !`);openTdy("s2p")}
+
+/* ---------- Autodle : deviner chaque jour une voiture de la Série 02 ---------- */
+const DLE_KEY="paddock-autodle",DLE_MAX=6,DLE_PRIZE=25;
+function dlePool(){return CARS.filter(c=>c.id>=S2_FROM&&c.th&&["L","UR","SR","R"].includes(c.r)).map(c=>c.id)}
+function dleDay(){return parisDay(now())}
+function dleTarget(){const p=dlePool();if(!p.length)return null;const d=dleDay();let h=2166136261;for(const ch of String(d))h=Math.imul(h^ch.charCodeAt(0),16777619);return p[Math.abs(h)%p.length]}
+function dleState(){let st=null;try{st=JSON.parse(localStorage.getItem(DLE_KEY)||"null")}catch(e){}if(!st||st.d!==dleDay())st={d:dleDay(),g:[],won:false,paid:false};return st}
+function dleSave(st){try{localStorage.setItem(DLE_KEY,JSON.stringify(st))}catch(e){}}
+function dleDone(){const st=dleState();return st.won||st.g.length>=DLE_MAX}
+const DLE_R=["C","PC","R","SR","UR","L","ED"];
+function dleRow(id,tg){const a=CARS[id],b=CARS[tg];const ar=(x,y)=>x===y?"✓":x<y?"↑":"↓";const ch=(ok,t)=>`<span class="dc ${ok?"y":"n"}">${t}</span>`;
+ return`<div class="adr"><b>${esc(a.n)}</b><div class="dcs">${ch(a.b===b.b,esc(a.b))}${ch(a.y1===b.y1,`${a.y1} ${ar(a.y1,b.y1)}`)}${ch(Math.abs(a.hp-b.hp)<=5,`${fmt(a.hp)} ch ${Math.abs(a.hp-b.hp)<=5?"✓":ar(a.hp,b.hp)}`)}${ch(a.t===b.t,esc(tlabel(a.t,a.y1)[0]))}${ch(a.r===b.r,RSHORT[a.r])}</div></div>`}
+function autodlePanel(){const tg=dleTarget();if(tg==null)return"";const st=dleState(),done=st.won||st.g.length>=DLE_MAX,blur=done?0:Math.max(0,22-st.g.length*4);const c=CARS[tg];
+ return`<div class="stack dle"><div style="text-align:center"><div class="heye">Un jeu par jour ${NB()}</div><b class="s2pt">Autodle</b><p class="s2ps">Devinez la voiture du jour, choisie dans la Série 02. ${DLE_MAX} essais : la photo se dévoile à chaque erreur.</p></div>
+ <div class="dlph"><img src="${esc(c.th)}" alt="" referrerpolicy="no-referrer" style="filter:blur(${blur}px)${done?"":" grayscale(.35)"}" onerror="this.remove()">${carSVG(c)}</div>
+ ${done?`<div class="dlend ${st.won?"w":""}">${st.won?`Trouvée en ${st.g.length} essai${st.g.length>1?"s":""} ! ${st.paid?`+${DLE_PRIZE} pistons`:""}`:"Perdu…"} C'était la <b>${esc(c.n)}</b>. Nouvelle voiture demain.</div>`
+ :`<div class="dlin"><input class="input" id="dleq" placeholder="Tapez une marque ou un modèle…" autocomplete="off" oninput="dleSuggest(this.value)"><div id="dlesug" class="dlsug"></div></div><div class="dlleft">${DLE_MAX-st.g.length} essai${DLE_MAX-st.g.length>1?"s":""} restant${DLE_MAX-st.g.length>1?"s":""}</div>`}
+ <div class="dll">${st.g.slice().reverse().map(id=>dleRow(id,tg)).join("")}</div>
+ <div class="dlleg">✓ juste · ↑ plus récente / plus puissante · ↓ plus ancienne / moins puissante</div></div>`}
+window.dleSuggest=function(q){const box=document.getElementById("dlesug");if(!box)return;q=(q||"").trim().toLowerCase();if(q.length<2){box.innerHTML="";return}
+ const st=dleState(),out=[];for(const c of CARS){if(c.id>=S2_FROM&&c.n.toLowerCase().includes(q)&&!st.g.includes(c.id)){out.push(c);if(out.length>=6)break}}
+ box.innerHTML=out.length?out.map(c=>`<button class="dlsb" data-act="dleg" data-id="${c.id}">${esc(c.n)} <small>${c.y1}</small></button>`).join(""):`<div class="dlnone">Aucune voiture de la Série 02 ne correspond.</div>`};
+function dleGuess(id){const tg=dleTarget(),st=dleState();if(tg==null||st.won||st.g.length>=DLE_MAX||st.g.includes(id))return;st.g.push(id);if(id===tg){st.won=true;blip(990,.2)}else blip(330,.08);dleSave(st);
+ if(st.won&&!st.paid){const pay=window.OA&&OA.dlewin?OA.dlewin():Promise.resolve((S.coins+=DLE_PRIZE,save(),true));Promise.resolve(pay).then(ok=>{if(ok){st.paid=true;dleSave(st);toast(`Bravo ! +${DLE_PRIZE} pistons`)}openTdy("dle")}).catch(()=>openTdy("dle"));return}
+ openTdy("dle")}
 function tdyList(){const L=[];
+ if(S2_ON){const n=s2Owned(),r=s2Ready(),nx=S2PASS.find(t=>n<t[0]);L.push({k:"s2p",nw:1,n:"Pass Saison 02",a:"#e9c98a",ic:I.medal||I.star,sub:`${fmt(n)} voiture${n>1?"s":""} Série 02`,tag:r?"À RÉCUPÉRER":`PALIER ${s2Claimed().length}/${S2PASS.length}`,todo:r>0,bar:nx?n/nx[0]:1});
+  const st=dleState(),dn=st.won||st.g.length>=DLE_MAX;if(dleTarget()!=null)L.push({k:"dle",nw:1,n:"Autodle",a:"#86efac",ic:I.search||I.help,sub:dn?(st.won?"Trouvée ! Revenez demain":"Revenez demain"):"Devinez la voiture du jour",tag:dn?(st.won?"TROUVÉE":"FAIT"):"À JOUER",todo:!dn})}
  {const b=bonusState();if(b){L.push({k:"wheel",nw:1,n:"Roue du garage",a:"#f1dcab",ic:I.spark||I.star,sub:b.wheel?"Revenez demain":"Un tour gratuit",tag:b.wheel?"FAIT":"À TOURNER",todo:!b.wheel});
   if(S.social){const g=S.social,todoD=(g.duels||[]).filter(d=>!d.done&&!d.mine).length;L.push({k:"gift",nw:1,n:"Cadeau à un ami",a:"#f9a8d4",ic:I.gift,sub:g.gift?`Offert à ${esc(g.gift)}`:"Offrez un paquet",tag:g.gift?"OFFERT":"GRATUIT",todo:!g.gift&&S.friends.length>0});
    L.push({k:"duel",nw:1,n:"Défis d'ouverture",a:"#93c5fd",ic:I.swords,sub:todoD?`${todoD} paquet${todoD>1?"s":""} à ouvrir`:"Défiez vos amis",tag:todoD?"À OUVRIR":"+100 PISTONS",todo:todoD>0})}
@@ -3743,7 +3802,7 @@ function cheatPanel(){const q=U.chq||"";return`<div class="cht"><div class="chsc
  <div class="pad"><div class="dpad"><button data-act="chpad" data-k="H" class="pu" aria-label="Haut">▲</button><button data-act="chpad" data-k="G" class="pl" aria-label="Gauche">◀</button><i></i><button data-act="chpad" data-k="D" class="pr" aria-label="Droite">▶</button><button data-act="chpad" data-k="B" class="pd" aria-label="Bas">▼</button></div>
  <div class="abtn"><button data-act="chpad" data-k="X" aria-label="Bouton B">B</button><button data-act="chpad" data-k="A" aria-label="Bouton A">A</button></div></div>
  <p class="fine" style="text-align:center;margin-top:12px">Un code vu sur nos réseaux ? Tapez-le au-dessus.<br>Chaque code ne marche qu'une fois par compte.</p></div>`}
-const TDYH={gift:()=>giftPanel(),duel:()=>duelPanel(),wheel:()=>wheelPanel(),surp:()=>surprisePanel(),cheat:()=>cheatPanel(),sacc:()=>accPanel(),sinv:()=>invPanel(),sblk:()=>blocksHTML(),liv:()=>livPanel(),tit:()=>titPanel(),plate:()=>platePanel(),seek:()=>seekPanel(),adv:()=>advPanel(),hunt:()=>huntPanel(),cotm:()=>cotmPanel(),mys:()=>mysteryPanel(),loy:()=>loyaltyPanel(),poll:()=>pollPanel(),gar:()=>garagePanel(),comm:()=>commPanel(),pro:()=>proPanel(),
+const TDYH={s2p:()=>s2passPanel(),dle:()=>autodlePanel(),gift:()=>giftPanel(),duel:()=>duelPanel(),wheel:()=>wheelPanel(),surp:()=>surprisePanel(),cheat:()=>cheatPanel(),sacc:()=>accPanel(),sinv:()=>invPanel(),sblk:()=>blocksHTML(),liv:()=>livPanel(),tit:()=>titPanel(),plate:()=>platePanel(),seek:()=>seekPanel(),adv:()=>advPanel(),hunt:()=>huntPanel(),cotm:()=>cotmPanel(),mys:()=>mysteryPanel(),loy:()=>loyaltyPanel(),poll:()=>pollPanel(),gar:()=>garagePanel(),comm:()=>commPanel(),pro:()=>proPanel(),
  ev:()=>evPanel()+'<button class="linkbtn" data-act="evcal" style="display:block;margin:12px auto 0">Voir le calendrier des événements</button>'};
 function openTdy(k){const f=TDYH[k],h=f?f():"";if(!h)return;modal(`<div class="tdym" data-k="${k}">${h}</div><button class="btn ghost block" data-act="close" style="margin-top:12px">Fermer</button>`);const m=document.querySelector("#layer .tdym");if(m){m._h=h;m.parentNode.classList.add("sheet")}}
 // la fiche ouverte suit les changements (vote enregistré, case ouverte, paquet récupéré…)
@@ -4745,7 +4804,7 @@ document.addEventListener("click",e=>{
  supshop:()=>{closeModal();go("shop");const k=d.s||"";setTimeout(()=>{const h=[...document.querySelectorAll("#app .mgt,#app .label,#app h3,#app h2")].find(x=>x.textContent.trim().toUpperCase()===k);if(h)h.scrollIntoView({behavior:"smooth",block:"start"});else window.scrollTo(0,0)},120)},
  theme:()=>{S.set.light=!S.set.light;save();render()},
  accent:()=>{try{localStorage.setItem("paddock-accent",d.k)}catch(e){}applyAccent(d.k);render(true)},
- wheelspin:()=>wheelSpin(),surpclaim:()=>surpriseClaim(),sharepk:()=>sharePack(),
+ wheelspin:()=>wheelSpin(),s2claim:()=>{const r=s2ClaimLocal(+d.i);if(r)s2Done(S2PASS[+d.i-1],r.card)},dleg:()=>dleGuess(+d.id),surpclaim:()=>surpriseClaim(),sharepk:()=>sharePack(),
  saveacc:()=>{const n=$("#suser").value.trim(),m=$("#semail").value.trim();if(n.length<3)return toast("Le nom doit faire au moins 3 caractères.");if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(m))return toast("Adresse e-mail invalide.");if(n!==S.user.name){if(!meVip())return toast("Changer de pseudo est réservé aux membres Paddock Pro.");if(now()<nameNext())return toast(`Prochain changement possible dans ${fmtLeft(nameNext()-now())}.`);if(!/^[A-Za-z0-9_.\-]{3,20}$/.test(n))return toast("Le pseudo doit faire 3 à 20 caractères : lettres, chiffres, _ . -");if(S.acc[n])return toast("Ce nom est déjà pris.");S.user.nameTs=now();S.acc[n]=S.acc[S.user.name]||{};delete S.acc[S.user.name]}S.user.name=n;S.user.email=m;save();toast("Sauvegardé.");render()},
  buy:()=>modal(`<h2><span>${fmt(+d.n)} pistons · ${esc(d.p)}</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2><p style="color:var(--muted)">Le paiement n'est pas encore branché : aucun montant n'a été débité. Pour encaisser de vrais paiements, le jeu doit tourner sur un serveur relié à un prestataire de paiement comme Stripe.</p><button class="btn ghost block" data-act="close">Compris</button>`,1),
  logout:()=>{modal(`<h2>Se déconnecter ?</h2><p style="color:var(--muted)">Votre partie reste enregistrée sur cet appareil.</p><div class="row"><button class="btn ghost grow" data-act="close">Annuler</button><button class="btn danger grow" data-act="logout2">Déconnexion</button></div>`,1)},

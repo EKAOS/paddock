@@ -99,7 +99,7 @@
       const res = await Promise.all([rpc("get_state"), rpc("get_sub").catch(() => null), rpc("get_levels").catch(() => []),
         rpc("get_event").catch(() => null), vis ? rpc("ping").catch(() => null) : null,
         rpc("get_community").catch(() => null), rpc("get_wish").catch(() => null), rpc("get_level").catch(() => null),
-        rpc("get_secrets").catch(() => null), rpc("get_poll").catch(() => undefined), rpc("get_extras").catch(() => null), rpc("get_pity").catch(() => null), rpc("get_bonus").catch(() => null), rpc("get_numbered").catch(() => null), rpc("get_social").catch(() => null), rpc("get_ach2").catch(() => null), rpc("get_secrets2").catch(() => null)]);
+        rpc("get_secrets").catch(() => null), rpc("get_poll").catch(() => undefined), rpc("get_extras").catch(() => null), rpc("get_pity").catch(() => null), rpc("get_bonus").catch(() => null), rpc("get_numbered").catch(() => null), rpc("get_social").catch(() => null), rpc("get_ach2").catch(() => null), rpc("get_secrets2").catch(() => null), rpc("get_s2pass").catch(() => null)]);
       applyAll(res, true);
       try { localStorage.setItem(OKEY, JSON.stringify({ t: Date.now(), r: res.slice(0, 8) })); } catch (e) {}
       if (window.OFFLINE) { window.OFFLINE = false; setTimeout(() => toast("De retour en ligne."), 200); }
@@ -108,9 +108,10 @@
   // applique les réponses du serveur (ou la dernière copie gardée pour le mode hors ligne)
   function applyAll(res, live) {
     {
-      const [st, sub, lv, ev, , cm, wl, lvl, sec, poll, ext, pity, bonus, numb, social, ach2, sec2] = res;
+      const [st, sub, lv, ev, , cm, wl, lvl, sec, poll, ext, pity, bonus, numb, social, ach2, sec2, s2p] = res;
       apply(st); // crée S (connexion fraîche : S est null) avant d'y écrire quoi que ce soit
       if (ach2 && typeof ach2 === "object") S.ach2 = ach2;
+      if (Array.isArray(s2p)) S.s2pass = s2p;
       if (sec2 && typeof sec2 === "object") { if (S.sec2) Object.keys(sec2).forEach(k => { if (!S.sec2[k]) sec2Unlocked(k); }); S.sec2 = sec2; }
       if (Array.isArray(numb)) { S.numb = {}; for (const [id, n] of numb) S.numb[id] = n; }
       if (social && typeof social === "object") S.social = social;
@@ -579,6 +580,11 @@
     mbuy: act(async () => {
       const r = await rpc("merchant_buy"); U.merch = r; blip(880); toast(`${CARS[r.card].n} rejoint votre collection !`); await after("shop");
     }),
+    // Pass Saison 02 et Autodle (Série 02)
+    s2claim: act(async (el, d) => {
+      const r = await rpc("claim_s2pass", { i: +d.i }); S.s2pass = r.claimed || S.s2pass; await after(); s2Done(S2PASS[+d.i - 1], r.card);
+    }),
+    dlewin: () => rpc("claim_autodle").then(r => { if (r && r.coins != null) S.coins = r.coins; render(true); return !!(r && r.paid); }),
     serclaim: act(async (el, d) => {
       const n = await rpc("claim_series", { sk: d.k }); blip(880); toast(`Série complétée : +${n} paquets !`); await after();
     }),
