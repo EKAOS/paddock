@@ -19,6 +19,16 @@
 .serchip.on{background:var(--gold);border-color:var(--gold);color:#1a1306}
 .serchip.s2:not(.on){border-color:#6b1e27;color:#e9cf96}
 .serchip .s2spark{font-style:normal;color:var(--gold)}.serchip.on .s2spark{color:#1a1306}
+/* Série 02 : une touche rouge course sur le thème or */
+body.s2:not(.light){background:radial-gradient(130% 38% at 50% -6%,rgba(122,16,28,.30),transparent 62%),var(--bg);background-attachment:fixed}
+body.s2.light{background:radial-gradient(130% 34% at 50% -6%,rgba(179,32,46,.08),transparent 62%),var(--bg);background-attachment:fixed}
+body.s2 .topbar::before{order:-2;margin-right:0}body.s2 .topbar::after{content:"S02";order:-1;margin-right:auto;margin-left:-2px;font:800 9px/1 var(--f-head);letter-spacing:.12em;padding:4px 6px;border-radius:6px;background:#3b0d12;color:#f1dcaa;border:1px solid rgba(214,180,106,.6);box-shadow:0 0 12px rgba(179,32,46,.35)}
+body.s2 .logo::after{content:"S02";margin-left:9px;font:800 9px/1 var(--f-head);font-stretch:100%;letter-spacing:.12em;padding:4px 6px;border-radius:6px;background:#3b0d12;color:#f1dcaa;border:1px solid rgba(214,180,106,.6);box-shadow:0 0 12px rgba(179,32,46,.35)}
+body.s2 .pagehead::before{width:34px;background:linear-gradient(90deg,var(--gold) 0 55%,#b3202e 55%)}
+body.s2 .nav button.on::before{background:linear-gradient(90deg,#b3202e,var(--gold),#b3202e)}
+body.s2 .nav{box-shadow:inset 0 1px 0 rgba(179,32,46,.4)}
+body.s2:not(.light) .panel{border-color:color-mix(in srgb,var(--line) 72%,#6b1e27)}
+body.s2 .btn.green{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 18px -8px rgba(179,32,46,.55)}
 </style>
 
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -4467,7 +4477,7 @@ function showTuto(i=0){const [ic,t,p]=TUTO[i];const last=i===TUTO.length-1;
  <div class="row" style="width:100%">${i?`<button class="btn ghost grow" data-act="tuto" data-i="${i-1}">Retour</button>`:`<button class="btn ghost grow" data-act="tutoend">Passer</button>`}<button class="btn green grow" data-act="${last?"tutoend":"tuto"}" data-i="${i+1}">${last?"C'est parti !":"Suivant"}</button></div></div>`,1)}
 function maybeTuto(){if(S&&S.user&&!tutoDone()&&!document.querySelector(".overlay"))setTimeout(()=>{if(!tutoDone()&&!document.querySelector(".overlay"))showTuto(0)},500)}
 function render(keep){
- document.body.classList.toggle("light",!!(S&&S.set.light));document.body.classList.toggle("inapp",IN_APP);document.body.classList.toggle("playbill",!!window.PLAYBILL);
+ document.body.classList.toggle("light",!!(S&&S.set.light));document.body.classList.toggle("s2",S2_ON);document.body.classList.toggle("inapp",IN_APP);document.body.classList.toggle("playbill",!!window.PLAYBILL);
  {const d=new Date(),m=d.getMonth(),j=d.getDate();document.body.classList.toggle("halloween",(m===9&&j>=20)||(m===10&&j<=2));const xm=!!window.NOEL_FORCE||m===11||(m===0&&j<=6);{const on=xm&&S&&S.user&&U.view==="packs";document.body.classList.toggle("flakeson",!!on);let fl=document.getElementById("flakes");
   if(on&&!fl){fl=document.createElement("div");fl.id="flakes";fl.setAttribute("aria-hidden","true");const F=["❄\uFE0E","❅\uFE0E","❆\uFE0E"];fl.innerHTML=Array.from({length:26},()=>{const s=10+Math.random()*20;return`<i style="left:${(Math.random()*100).toFixed(1)}%;font-size:${s.toFixed(0)}px;opacity:${(.45+Math.random()*.5).toFixed(2)};animation-duration:${(9+Math.random()*10+(30-s)/3).toFixed(1)}s;animation-delay:-${(Math.random()*18).toFixed(1)}s">${F[Math.floor(Math.random()*3)]}</i>`}).join("");document.body.appendChild(fl)}
   else if(!on&&fl)fl.remove()}document.body.classList.toggle("noel",xm);if(xm&&!document.getElementById("snow")){const sn=document.createElement("div");sn.id="snow";sn.setAttribute("aria-hidden","true");sn.innerHTML=Array.from({length:28},()=>`<i style="left:${(Math.random()*100).toFixed(1)}%;animation-duration:${(7+Math.random()*9).toFixed(1)}s;animation-delay:-${(Math.random()*12).toFixed(1)}s;width:${(3+Math.random()*4).toFixed(1)}px;height:${(3+Math.random()*4).toFixed(1)}px;opacity:${(.35+Math.random()*.5).toFixed(2)}"></i>`).join("");document.body.appendChild(sn)}}
