@@ -1954,7 +1954,7 @@ function supportModal(){try{localStorage.setItem("paddock-support",SUPPORT_V)}ca
  <p class="supt">Merci à toute la communauté ❤️</p>`}
  <div class="stack" style="margin-top:6px">${pro?`<button class="btn green block" data-act="close">Avec plaisir</button>`:canBuy?`<button class="cta whgo" data-act="supshop" data-s="PADDOCK PRO">Découvrir Paddock Pro</button><button class="btn outline-green block" data-act="supshop" data-s="PISTONS">Acheter des pistons</button><button class="btn ghost block" data-act="close">Plus tard</button>`:`<button class="cta whgo" data-act="invite">Inviter des amis</button><button class="btn ghost block" data-act="close">Plus tard</button>`}</div></div>`)}
 setInterval(()=>{try{if(!S||!S.user||S.loggedOut||supportSeen()||!patchPopSeen()||!tutoDone()||document.querySelector(".overlay,#layer .modal,.g3d")||(window.ONLINE&&!S.user.since))return;if(document.querySelector("#layer")&&document.querySelector("#layer").children.length)return;supportModal()}catch(e){}},2500);
-setInterval(()=>{try{if(!S||!S.user||patchPopSeen()||!tutoDone()||document.querySelector(".overlay,.g3d")||(document.querySelector("#layer")&&document.querySelector("#layer").children.length))return;patchPop()}catch(e){}},2000);
+setInterval(()=>{try{if(!S||!S.user||patchPopSeen()||!tutoDone()||(window.introS02Seen&&!window.introS02Seen())||document.querySelector(".overlay,.g3d")||(document.querySelector("#layer")&&document.querySelector("#layer").children.length))return;patchPop()}catch(e){}},2000);
 const PITY_N=50;
 function pityHTML(){if(typeof S.pity!=="number")return"";const n=Math.min(PITY_N-1,Math.max(0,S.pity)),left=PITY_N-n,pct=n/PITY_N*100;
  return`<div class="pity ${left<=5?"hot":""}"><span class="pi">${I.star}</span><div class="grow"><div class="pt"><b>Légendaire garantie${NB()}</b><em>${left===1?"au prochain paquet !":`dans ${left} paquets max.`}</em></div><div class="pb"><i style="width:${pct.toFixed(1)}%"></i></div></div></div>`}
@@ -2714,5 +2714,161 @@ setInterval(()=>{if(S&&S.user&&!S.loggedOut)tick()},1000);
 }
 </script>
 <script src="online.js"></script>
+<!-- ===== Intro Série 02 : présentée une fois par appareil au premier chargement après la mise à jour ===== -->
+<style>
+.s2i{position:fixed;inset:0;z-index:9000;background:radial-gradient(120% 80% at 50% 0%,#1a1611 0%,#0a0a0b 60%);color:var(--text,#f2efe8);display:flex;flex-direction:column;overflow:hidden;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);font-family:var(--f-body,"Manrope",system-ui,sans-serif);opacity:0;animation:s2in .45s ease forwards;touch-action:pan-y}
+.s2i.out{animation:s2out .35s ease forwards}
+@keyframes s2in{to{opacity:1}}@keyframes s2out{to{opacity:0;transform:scale(1.02)}}
+.s2i .s2top{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 0;min-height:44px}
+.s2i .s2eye{font-family:var(--f-head,"Archivo",sans-serif);font-size:11px;font-weight:700;letter-spacing:.32em;color:var(--gold,#d6b46a);text-transform:uppercase}
+.s2i .s2skip{background:none;border:0;color:var(--muted,#9b978e);font:600 14px var(--f-body,"Manrope",sans-serif);padding:10px 4px;cursor:pointer}
+.s2i .s2track{flex:1;display:flex;transition:transform .5s cubic-bezier(.65,0,.35,1);min-height:0}
+.s2i .s2s{flex:0 0 100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 26px;box-sizing:border-box;text-align:center;min-height:0}
+.s2i .s2v{position:relative;width:100%;max-width:340px;height:min(46vh,360px);display:grid;place-items:center;margin-bottom:8px}
+.s2i h2{font-family:var(--f-head,"Archivo",sans-serif);font-size:25px;line-height:1.12;text-transform:uppercase;letter-spacing:.03em;font-stretch:118%;margin:6px 0 10px;text-wrap:balance}
+.s2i h2.big{font-size:44px;letter-spacing:.08em;background:linear-gradient(100deg,#f1dcaa 0%,#a88a52 40%,#f6e6bf 55%,#c9a865 100%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:s2gl 3.2s ease-in-out infinite}
+@keyframes s2gl{0%,100%{background-position:100% 0}50%{background-position:0 0}}
+.s2i p{color:var(--muted,#9b978e);font-size:15.5px;line-height:1.55;margin:0;max-width:330px}
+.s2i p b{color:var(--text,#f2efe8)}
+.s2i .s2bot{padding:14px 22px 22px;display:grid;gap:14px}
+.s2i .s2dots{display:flex;justify-content:center;gap:7px}
+.s2i .s2dots i{width:7px;height:7px;border-radius:4px;background:#3a3830;transition:all .3s}
+.s2i .s2dots i.on{width:24px;background:var(--gold,#d6b46a)}
+.s2i .s2go{appearance:none;border:0;border-radius:16px;padding:17px;font:800 15px var(--f-head,"Archivo",sans-serif);letter-spacing:.14em;text-transform:uppercase;color:#1a1306;background:linear-gradient(180deg,#ecd6a4,#c7a86a);box-shadow:0 8px 30px -8px rgba(214,180,106,.55);cursor:pointer}
+.s2i .s2go:active{transform:scale(.98)}
+/* le paquet Série 02 */
+.s2pk{width:150px;height:225px;position:relative;filter:drop-shadow(0 24px 40px rgba(0,0,0,.6))}
+.s2pk svg{width:100%;height:100%;display:block}
+.s2pk .sh{position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);background-size:250% 100%;mix-blend-mode:screen;animation:s2sh 2.8s ease-in-out infinite;border-radius:3px}
+@keyframes s2sh{0%{background-position:120% 0}60%,100%{background-position:-60% 0}}
+.s2beam{position:absolute;left:50%;top:-6%;width:220px;height:110%;transform:translateX(-50%);background:linear-gradient(180deg,rgba(241,220,170,.22),rgba(241,220,170,0) 80%);clip-path:polygon(38% 0,62% 0,100% 100%,0 100%);opacity:0}
+.s2floor{position:absolute;bottom:4%;left:50%;width:220px;height:34px;transform:translateX(-50%);border-radius:50%;border:1px solid rgba(214,180,106,.45);box-shadow:0 0 40px rgba(214,180,106,.25) inset;opacity:0}
+.s2dust i{position:absolute;width:3px;height:3px;border-radius:2px;background:#e9cf96;opacity:0}
+.s2s.on .s2dust i{animation:s2du 3.4s ease-in-out infinite}
+@keyframes s2du{0%{opacity:0;transform:translateY(10px)}40%{opacity:.8}100%{opacity:0;transform:translateY(-50px)}}
+.s2s.on .s2beam{animation:s2fade .9s .2s ease forwards}.s2s.on .s2floor{animation:s2fade .9s .5s ease forwards}
+@keyframes s2fade{to{opacity:1}}
+.s2s .rise{opacity:0;transform:translateY(60px) scale(.9)}
+.s2s.on .rise{animation:s2rise 1s .15s cubic-bezier(.2,.9,.25,1.15) forwards,s2fl 4s 1.2s ease-in-out infinite}
+@keyframes s2rise{to{opacity:1;transform:none}}
+@keyframes s2fl{0%,100%{translate:0 0}50%{translate:0 -8px}}
+.s2s .txt{opacity:0;transform:translateY(12px)}
+.s2s.on .txt{animation:s2rise .6s .35s ease forwards}.s2s.on .txt+.txt{animation-delay:.5s}
+/* 01 → 02 */
+.s2swap{position:relative;width:260px;height:240px}
+.s2swap .s2pk{position:absolute;top:8px;left:55px}
+.s2swap .p1{opacity:1}.s2s.on .s2swap .p1{animation:s2p1 1.1s .2s cubic-bezier(.6,0,.4,1) forwards}
+@keyframes s2p1{to{transform:translateX(-95px) rotate(-12deg) scale(.78);opacity:.28;filter:grayscale(1) drop-shadow(0 20px 30px rgba(0,0,0,.6))}}
+.s2swap .p2{opacity:0;transform:rotateY(90deg)}.s2s.on .s2swap .p2{animation:s2p2 .8s 1s cubic-bezier(.2,.9,.25,1.2) forwards}
+@keyframes s2p2{to{opacity:1;transform:translateX(30px) rotate(5deg)}}
+.s2swap .tag{position:absolute;right:-6px;top:-4px;background:var(--gold,#d6b46a);color:#1a1306;font:800 11px var(--f-head,"Archivo",sans-serif);letter-spacing:.14em;padding:6px 10px;border-radius:20px;opacity:0;transform:scale(.4)}
+.s2s.on .s2swap .tag{animation:s2pop .5s 1.7s cubic-bezier(.2,.9,.25,1.4) forwards}
+@keyframes s2pop{to{opacity:1;transform:none}}
+/* cartes */
+.s2c{width:118px;height:168px;border-radius:13px;background:linear-gradient(180deg,#1d1a15,#0f0e0c);border:2px solid var(--b,#6c6658);box-shadow:0 14px 30px rgba(0,0,0,.55);overflow:hidden;position:relative;text-align:left}
+.s2c .ph{height:72px;background:radial-gradient(90% 90% at 50% 100%,#3a3428,#16140f);display:grid;place-items:center}
+.s2c .ph svg{width:84%;opacity:.85}
+.s2c .rr{position:absolute;left:7px;top:7px;font:800 7.5px var(--f-head,"Archivo",sans-serif);letter-spacing:.12em;color:#1a1306;background:var(--b,#6c6658);padding:3px 6px;border-radius:9px}
+.s2c b{display:block;font:700 11px var(--f-head,"Archivo",sans-serif);margin:9px 9px 3px;color:#f2efe8}
+.s2c small{display:block;font-size:9px;color:#8f8a80;margin:0 9px}
+.s2c .q{font:800 40px var(--f-head,"Archivo",sans-serif);color:#e9cf96;text-shadow:0 0 20px rgba(233,207,150,.6)}
+.s2c .st{position:absolute;bottom:8px;left:9px;right:9px;display:flex;justify-content:space-between;font:700 10px var(--f-head,"Archivo",sans-serif);color:#cfcabe;border-top:1px solid #2a2722;padding-top:6px}
+.s2fan{position:relative;width:300px;height:250px}
+.s2fan .s2c{position:absolute;left:91px;top:40px;opacity:0}
+.s2s.on .s2fan .s2c{animation:s2deal .7s cubic-bezier(.2,.9,.25,1.15) forwards}
+.s2s.on .s2fan .s2c:nth-child(1){--x:-96px;--r:-14deg;--y:22px;animation-delay:.25s}
+.s2s.on .s2fan .s2c:nth-child(2){--x:0px;--r:0deg;--y:0px;animation-delay:.45s;z-index:2}
+.s2s.on .s2fan .s2c:nth-child(3){--x:96px;--r:14deg;--y:22px;animation-delay:.65s}
+@keyframes s2deal{from{opacity:0;transform:translateY(120px) scale(.6)}to{opacity:1;transform:translate(var(--x),var(--y)) rotate(var(--r))}}
+.s2fan .s2c:nth-child(2){overflow:visible}.s2fan .s2c:nth-child(2) .ph{border-radius:11px 11px 0 0}.s2fan .nv{position:absolute;top:-11px;right:-9px;z-index:3;font:800 9px var(--f-head,"Archivo",sans-serif);letter-spacing:.12em;background:#f1dcaa;color:#1a1306;padding:4px 7px;border-radius:9px;box-shadow:0 0 16px rgba(241,220,170,.6)}
+/* badge de série */
+.s2one{position:relative}
+.s2one .s2c{width:170px;height:240px;border-radius:17px}
+.s2one .s2c .ph{height:106px}
+.s2one .s2c b{font-size:15px;margin:13px 12px 4px}.s2one .s2c small{font-size:11px;margin:0 12px}.s2one .s2c .rr{font-size:9px;left:10px;top:10px;padding:4px 8px}
+.s2one .s2c .st{font-size:13px;left:12px;right:12px;bottom:11px;padding-top:8px}
+.s2bd{position:absolute;right:10px;top:80px;font:800 10px var(--f-head,"Archivo",sans-serif);letter-spacing:.1em;color:#f1dcaa;background:#3b0d12;border:1px solid #d6b46a;padding:4px 8px;border-radius:8px;z-index:2}
+.s2s.on .s2bd{animation:s2bp 1.6s .7s ease-in-out infinite}
+@keyframes s2bp{0%,100%{box-shadow:0 0 0 0 rgba(214,180,106,.7)}50%{box-shadow:0 0 0 9px rgba(214,180,106,0)}}
+.s2lens{position:absolute;right:-2px;top:44px;width:92px;height:92px;border-radius:50%;border:2px solid var(--gold,#d6b46a);box-shadow:0 0 30px rgba(214,180,106,.35),inset 0 0 20px rgba(214,180,106,.15);opacity:0;transform:scale(1.6)}
+.s2s.on .s2lens{animation:s2ln .7s .45s cubic-bezier(.2,.9,.25,1.2) forwards}
+@keyframes s2ln{to{opacity:1;transform:none}}
+/* filtre */
+.s2flt{width:100%;max-width:270px}
+.s2chips{display:flex;gap:6px;justify-content:center;margin-bottom:14px;position:relative}
+.s2chips span{white-space:nowrap;font:700 11px var(--f-head,"Archivo",sans-serif);letter-spacing:.08em;text-transform:uppercase;padding:9px 12px;border-radius:20px;border:1px solid #2f2f35;color:#9b978e;transition:all .3s}
+.s2chips span.on{background:var(--gold,#d6b46a);border-color:var(--gold,#d6b46a);color:#1a1306}
+.s2grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.s2grid i{aspect-ratio:.72;border-radius:7px;background:linear-gradient(180deg,#24211b,#121110);border:1.5px solid #3a362e;transition:opacity .4s,transform .4s,border-color .4s;position:relative}
+.s2grid i.b{border-color:#8a2a32}
+.s2grid i.b::after{content:"02";position:absolute;right:4px;top:4px;font:800 7px var(--f-head,"Archivo",sans-serif);color:#f1dcaa;background:#3b0d12;border:1px solid #d6b46a;padding:1px 3px;border-radius:3px}
+.s2grid.f2 i:not(.b){opacity:.12;transform:scale(.9)}
+.s2grid.f2 i.b{border-color:#d6b46a;box-shadow:0 0 14px rgba(214,180,106,.3)}
+.s2tap{position:absolute;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.28);border:2px solid rgba(255,255,255,.7);pointer-events:none;opacity:0;top:2px}
+@media (max-height:640px){.s2i .s2v{height:38vh}.s2i h2{font-size:21px}.s2i h2.big{font-size:36px}.s2i p{font-size:14px}}
+@media (prefers-reduced-motion:reduce){.s2i *{animation-duration:.01s!important;animation-iteration-count:1!important}}
+</style>
+<script>
+(function(){
+ const KEY="paddock-intro-s02";
+ // Mettre à true le jour de la sortie de la Série 02 (l'intro s'affiche alors une fois par appareil).
+ window.SERIE02_LIVE=window.SERIE02_LIVE||false;
+ const force=/[?&#]intro-?s02/.test(location.search+location.hash);
+ window.introS02Seen=()=>{if(force)return !!window.__s2shown;if(!window.SERIE02_LIVE)return true;try{return localStorage.getItem(KEY)==="1"}catch(e){return true}};
+ const PACK=(id)=>`<svg viewBox="0 0 200 300" aria-hidden="true"><defs>
+<linearGradient id="${id}b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b1119"/><stop offset=".5" stop-color="#2a070b"/><stop offset="1" stop-color="#140305"/></linearGradient>
+<linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1dcaa"/><stop offset=".5" stop-color="#a88a52"/><stop offset="1" stop-color="#e3c88f"/></linearGradient></defs>
+<path d="M12 12 H188 V288 H12 Z" fill="url(#${id}b)"/>
+<path d="M78 12 H92 V288 H78Z M108 12 H122 V288 H108Z" fill="#000" opacity=".22"/>
+<path d="M12 12 L15 16 L21 12 L27 16 L33 12 L39 16 L45 12 L51 16 L57 12 L63 16 L69 12 L75 16 L81 12 L87 16 L93 12 L99 16 L105 12 L111 16 L117 12 L123 16 L129 12 L135 16 L141 12 L147 16 L153 12 L159 16 L165 12 L171 16 L177 12 L183 16 L188 12 L188 20 L12 20Z" fill="#3a0a10"/>
+<path d="M12 288 L15 284 L21 288 L27 284 L33 288 L39 284 L45 288 L51 284 L57 288 L63 284 L69 288 L75 284 L81 288 L87 284 L93 288 L99 284 L105 288 L111 284 L117 288 L123 284 L129 288 L135 284 L141 288 L147 284 L153 288 L159 284 L165 288 L171 284 L177 288 L183 284 L188 288 L188 280 L12 280Z" fill="#3a0a10"/>
+<rect x="22" y="30" width="156" height="240" rx="4" fill="none" stroke="url(#${id}g)" stroke-width="1.4"/>
+<text x="100" y="62" text-anchor="middle" fill="#e9cf96" font-family="Archivo,Arial,sans-serif" font-size="9" font-weight="700" letter-spacing="4">SÉRIE 02</text>
+<text x="100" y="178" text-anchor="middle" fill="url(#${id}g)" font-family="Archivo,Arial,sans-serif" font-size="96" font-weight="800" font-stretch="125%" letter-spacing="-2">02</text>
+<text x="100" y="222" text-anchor="middle" fill="#f2efe8" font-family="Archivo,Arial,sans-serif" font-size="17" font-weight="800" letter-spacing="6">PADDOCK</text>
+<path d="M70 234 H130" stroke="url(#${id}g)" stroke-width="1"/>
+<text x="100" y="250" text-anchor="middle" fill="#c9a8a0" font-family="Manrope,Arial,sans-serif" font-size="8" font-weight="600" letter-spacing="2.5">5 VOITURES</text></svg><i class="sh"></i>`;
+ const PACK01=`<svg viewBox="0 0 200 300" aria-hidden="true"><defs><linearGradient id="s1b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#26262b"/><stop offset="1" stop-color="#0b0b0c"/></linearGradient></defs><path d="M12 12 H188 V288 H12 Z" fill="url(#s1b)"/><rect x="22" y="30" width="156" height="240" rx="4" fill="none" stroke="#a88a52" stroke-width="1.2"/><text x="100" y="62" text-anchor="middle" fill="#cfb27a" font-family="Archivo,Arial,sans-serif" font-size="9" font-weight="700" letter-spacing="4">SÉRIE 01</text><g transform="translate(100 146)" stroke="#c9a865" fill="none"><circle r="34" stroke-width="1.5"/><circle r="22" stroke-width="4"/></g><text x="100" y="222" text-anchor="middle" fill="#f2efe8" font-family="Archivo,Arial,sans-serif" font-size="17" font-weight="800" letter-spacing="6">PADDOCK</text></svg>`;
+ const CAR=`<svg viewBox="0 0 120 44" aria-hidden="true"><path d="M6 32c0-6 4-9 12-10l14-8c6-3 14-4 26-4 12 0 20 3 28 10l14 3c8 2 12 5 12 9v4H6z" fill="#cfc4ad"/><path d="M38 15c6-3 12-3 20-3l-2 9H30zM62 12c8 0 14 2 20 8H60z" fill="#2c2a26"/><circle cx="30" cy="36" r="7" fill="#151412" stroke="#8d8776" stroke-width="2"/><circle cx="92" cy="36" r="7" fill="#151412" stroke="#8d8776" stroke-width="2"/></svg>`;
+ const dust=Array.from({length:10},(_,i)=>`<i style="left:${8+((i*37)%84)}%;top:${30+((i*23)%55)}%;animation-delay:-${(i*.37).toFixed(2)}s"></i>`).join("");
+ const SL=[
+  {v:`<div class="s2beam"></div><div class="s2floor"></div><div class="s2dust">${dust}</div><div class="s2pk rise">${PACK("s2a")}</div>`,
+   h:`<h2 class="big txt">Série 02</h2>`,p:`Une nouvelle vague de voitures arrive dans Paddock. <b>Votre collection repart pour un tour.</b>`},
+  {v:`<div class="s2swap"><div class="s2pk p1">${PACK01}</div><div class="s2pk p2">${PACK("s2b")}<span class="tag">NOUVEAU</span></div></div>`,
+   h:`<h2 class="txt">Un tout nouveau paquet</h2>`,p:`Les paquets de la Série 02 changent de robe. <b>Rouge course et or</b>, toujours 5 voitures à l'intérieur.`},
+  {v:`<div class="s2fan"><div class="s2c" style="--b:#7a7565"><div class="ph"><span class="q">?</span></div><b>Voiture mystère</b><small>Série 02</small></div><div class="s2c" style="--b:#d6b46a"><span class="nv">NOUVEAU</span><div class="ph"><span class="q">?</span></div><b>Voiture mystère</b><small>Série 02</small></div><div class="s2c" style="--b:#9d88e0"><div class="ph"><span class="q">?</span></div><b>Voiture mystère</b><small>Série 02</small></div></div>`,
+   h:`<h2 class="txt">De nouvelles voitures</h2>`,p:`Des modèles qui n'étaient pas encore dans le jeu rejoignent les paquets. <b>Qui les trouvera en premier ?</b>`},
+  {v:`<div class="s2one rise"><div class="s2c" style="--b:#d6b46a"><span class="rr">LÉGENDAIRE</span><span class="s2bd">SÉRIE 02</span><div class="ph">${CAR}</div><b>Votre prochaine pépite</b><small>Série 02</small><div class="st"><span>⚔ 300</span><span>🛡 250</span></div></div><div class="s2lens"></div></div>`,
+   h:`<h2 class="txt">La série sur chaque carte</h2>`,p:`Un badge indique de quelle série vient la voiture. <b>Un coup d'œil suffit.</b>`},
+  {v:`<div class="s2flt"><div class="s2chips"><span class="on">Toutes</span><span>Série 01</span><span>Série 02</span><i class="s2tap"></i></div><div class="s2grid">${Array.from({length:12},(_,i)=>`<i class="${[1,4,6,9,10].includes(i)?"b":""}"></i>`).join("")}</div></div>`,
+   h:`<h2 class="txt">Filtrez par série</h2>`,p:`Dans la Collection, un nouveau filtre affiche la <b>Série 01</b>, la <b>Série 02</b> ou les deux.`}
+ ];
+ let el=null,i=0,timer=null;
+ function close(open){if(!el)return;try{localStorage.setItem(KEY,"1")}catch(e){}window.__s2shown=1;const d=el;el=null;clearInterval(timer);d.classList.add("out");setTimeout(()=>d.remove(),360);
+  if(open)try{if(typeof go==="function")go("packs");else{U.view="packs";render()}}catch(e){}}
+ function show(k){i=Math.max(0,Math.min(SL.length-1,k));el.querySelector(".s2track").style.transform=`translateX(${-100*i}%)`;
+  el.querySelectorAll(".s2s").forEach((s,n)=>{s.classList.remove("on");if(n===i){void s.offsetWidth;s.classList.add("on")}});
+  el.querySelectorAll(".s2dots i").forEach((d,n)=>d.classList.toggle("on",n===i));
+  const last=i===SL.length-1;el.querySelector(".s2go").textContent=last?"Ouvrir un paquet":"Suivant";el.querySelector(".s2skip").style.visibility=last?"hidden":"visible";
+  clearInterval(timer);if(i===4)filtre();
+  try{if(typeof blip==="function")blip(i===SL.length-1?660:520,.06)}catch(e){}}
+ function filtre(){const ch=el.querySelectorAll(".s2chips span"),g=el.querySelector(".s2grid"),tap=el.querySelector(".s2tap");let on=false;
+  const step=()=>{on=!on;const tgt=ch[on?2:0];tap.style.transition="none";tap.style.left=(tgt.offsetLeft+tgt.offsetWidth/2-15)+"px";tap.style.opacity="1";tap.animate([{transform:"scale(1.4)",opacity:0},{transform:"scale(1)",opacity:1},{transform:"scale(.8)",opacity:0}],{duration:700});
+   setTimeout(()=>{ch.forEach((c,n)=>c.classList.toggle("on",n===(on?2:0)));g.classList.toggle("f2",on)},260)};
+  setTimeout(step,900);timer=setInterval(step,2400)}
+ window.showIntroS02=function(){if(el)return;el=document.createElement("div");el.className="s2i";el.setAttribute("role","dialog");el.setAttribute("aria-label","Nouveautés de la Série 02");
+  el.innerHTML=`<div class="s2top"><span class="s2eye">Mise à jour</span><button class="s2skip">Passer</button></div><div class="s2track">${SL.map(s=>`<section class="s2s"><div class="s2v">${s.v}</div>${s.h}<p class="txt">${s.p}</p></section>`).join("")}</div><div class="s2bot"><div class="s2dots">${SL.map(()=>"<i></i>").join("")}</div><button class="s2go">Suivant</button></div>`;
+  document.body.appendChild(el);
+  el.querySelector(".s2skip").onclick=()=>close(false);
+  el.querySelector(".s2go").onclick=()=>{if(i===SL.length-1)close(true);else show(i+1)};
+  let x0=null;el.addEventListener("touchstart",e=>{x0=e.touches[0].clientX},{passive:true});
+  el.addEventListener("touchend",e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>45)show(i+(dx<0?1:-1))});
+  requestAnimationFrame(()=>show(0))};
+ // au premier chargement après la sortie : une seule fois, après le tutoriel, avant l'annonce de mise à jour
+ setInterval(()=>{try{if(window.introS02Seen()||el)return;if(typeof S!=="undefined"&&(!S||!S.user))return;if(typeof tutoDone==="function"&&!tutoDone())return;if(document.querySelector(".overlay,.g3d")||(document.querySelector("#layer")&&document.querySelector("#layer").children.length))return;window.showIntroS02()}catch(e){}},1500);
+})();
+</script>
+<!-- ===== fin de l'intro Série 02 ===== -->
+
 </body>
 </html>
