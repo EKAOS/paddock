@@ -2805,6 +2805,22 @@ setInterval(()=>{if(S&&S.user&&!S.loggedOut)tick()},1000);
 .s2grid.f2 i:not(.b){opacity:.12;transform:scale(.9)}
 .s2grid.f2 i.b{border-color:#d6b46a;box-shadow:0 0 14px rgba(214,180,106,.3)}
 .s2tap{position:absolute;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.28);border:2px solid rgba(255,255,255,.7);pointer-events:none;opacity:0;top:2px}
+.s2ttl{position:absolute;inset:0;z-index:5;background:#050505;display:grid;place-items:center;overflow:hidden;cursor:pointer}
+.s2ttl.bye{animation:s2tb .7s ease forwards}@keyframes s2tb{to{opacity:0;transform:scale(1.08);visibility:hidden}}
+.s2ttl .gh{position:absolute;font:800 min(78vw,420px)/1 var(--f-head,"Archivo",sans-serif);font-stretch:125%;color:transparent;-webkit-text-stroke:1px rgba(214,180,106,.16);letter-spacing:-.04em;opacity:0;transform:scale(1.25);animation:s2gh 3.4s .2s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes s2gh{30%{opacity:1}to{opacity:1;transform:scale(1)}}
+.s2ttl .sw{position:absolute;top:0;bottom:0;width:45%;left:-60%;background:linear-gradient(100deg,transparent,rgba(241,220,170,.16),transparent);transform:skewX(-18deg);animation:s2sw 1.6s 1.1s ease-in-out forwards}
+@keyframes s2sw{to{left:120%}}
+.s2ttl .in{position:relative;text-align:center}
+.s2ttl .pr{font:700 11px var(--f-head,"Archivo",sans-serif);letter-spacing:.5em;color:#8f8a80;text-transform:uppercase;opacity:0;animation:s2fade .8s .3s ease forwards;padding-left:.5em}
+.s2ttl h1{margin:14px 0 0;font:800 clamp(40px,13vw,64px)/1 var(--f-head,"Archivo",sans-serif);font-stretch:122%;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.s2ttl h1 span{display:inline-block;opacity:0;transform:translateY(26px);filter:blur(8px);background:linear-gradient(180deg,#fbf0d3,#d6b46a 55%,#9c7d45);-webkit-background-clip:text;background-clip:text;color:transparent;animation:s2lt .7s cubic-bezier(.2,.9,.25,1.1) forwards}
+@keyframes s2lt{to{opacity:1;transform:none;filter:none}}
+.s2ttl .ln{height:1px;width:0;margin:18px auto 0;background:linear-gradient(90deg,transparent,#d6b46a,transparent);animation:s2ln2 1s 1.5s ease forwards}
+@keyframes s2ln2{to{width:220px}}
+.s2ttl .tg{margin-top:14px;font:600 14px var(--f-body,"Manrope",sans-serif);color:#b9b3a6;opacity:0;animation:s2fade .8s 1.9s ease forwards}
+.s2ttl .fl{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(255,240,205,.55),transparent 60%);opacity:0;animation:s2fl2 .9s 1.25s ease-out forwards}
+@keyframes s2fl2{20%{opacity:1}to{opacity:0}}
 @media (max-height:640px){.s2i .s2v{height:38vh}.s2i h2{font-size:21px}.s2i h2.big{font-size:36px}.s2i p{font-size:14px}}
 @media (prefers-reduced-motion:reduce){.s2i *{animation-duration:.01s!important;animation-iteration-count:1!important}}
 </style>
@@ -2857,13 +2873,17 @@ setInterval(()=>{if(S&&S.user&&!S.loggedOut)tick()},1000);
    setTimeout(()=>{ch.forEach((c,n)=>c.classList.toggle("on",n===(on?2:0)));g.classList.toggle("f2",on)},260)};
   setTimeout(step,900);timer=setInterval(step,2400)}
  window.showIntroS02=function(){if(el)return;el=document.createElement("div");el.className="s2i";el.setAttribute("role","dialog");el.setAttribute("aria-label","Nouveautés de la Série 02");
-  el.innerHTML=`<div class="s2top"><span class="s2eye">Mise à jour</span><button class="s2skip">Passer</button></div><div class="s2track">${SL.map(s=>`<section class="s2s"><div class="s2v">${s.v}</div>${s.h}<p class="txt">${s.p}</p></section>`).join("")}</div><div class="s2bot"><div class="s2dots">${SL.map(()=>"<i></i>").join("")}</div><button class="s2go">Suivant</button></div>`;
+  const mot="La Série 2";let k=0;const lettres=[...mot].map(c=>c===" "?"<span>&nbsp;</span>":`<span style="animation-delay:${(.45+.07*(k++)).toFixed(2)}s">${c}</span>`).join("");
+  el.innerHTML=`<div class="s2ttl"><div class="gh">02</div><div class="fl"></div><i class="sw"></i><div class="in"><div class="pr">Paddock présente</div><h1>${lettres}</h1><div class="ln"></div><div class="tg">De nouvelles voitures entrent en piste</div></div></div><div class="s2top"><span class="s2eye">Mise à jour</span><button class="s2skip">Passer</button></div><div class="s2track">${SL.map(s=>`<section class="s2s"><div class="s2v">${s.v}</div>${s.h}<p class="txt">${s.p}</p></section>`).join("")}</div><div class="s2bot"><div class="s2dots">${SL.map(()=>"<i></i>").join("")}</div><button class="s2go">Suivant</button></div>`;
   document.body.appendChild(el);
   el.querySelector(".s2skip").onclick=()=>close(false);
   el.querySelector(".s2go").onclick=()=>{if(i===SL.length-1)close(true);else show(i+1)};
   let x0=null;el.addEventListener("touchstart",e=>{x0=e.touches[0].clientX},{passive:true});
   el.addEventListener("touchend",e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>45)show(i+(dx<0?1:-1))});
-  requestAnimationFrame(()=>show(0))};
+  const ttl=el.querySelector(".s2ttl");let fini=false;
+  const suite=()=>{if(fini||!el)return;fini=true;ttl.classList.add("bye");setTimeout(()=>ttl.remove(),750);show(0)};
+  ttl.onclick=suite;setTimeout(suite,3600);
+  try{if(typeof blip==="function"){blip(330,.18);setTimeout(()=>blip(495,.18),450);setTimeout(()=>blip(660,.3),1250)}}catch(e){}};
  // au premier chargement après la sortie : une seule fois, après le tutoriel, avant l'annonce de mise à jour
  setInterval(()=>{try{if(window.introS02Seen()||el)return;if(typeof S!=="undefined"&&(!S||!S.user))return;if(typeof tutoDone==="function"&&!tutoDone())return;if(document.querySelector(".overlay,.g3d")||(document.querySelector("#layer")&&document.querySelector("#layer").children.length))return;window.showIntroS02()}catch(e){}},1500);
 })();
