@@ -1041,7 +1041,7 @@ body.light .mtile.tg.on svg,body.light .dwal .wi svg,body.light .dpt.best>svg{co
 <script src="config.js"></script>
 <script>(function(){var d=new Date(),m=d.getMonth(),j=d.getDate(),e=document.getElementById("splash");if((m===9&&j>=20)||(m===10&&j<=2))e.className="hw";else if(m===11||(m===0&&j<=6))e.className="xm";
 var t0=Date.now(),done=false;function hide(){if(done)return;done=true;var w=Math.max(0,1400-(Date.now()-t0));setTimeout(function(){e.classList.add("out");setTimeout(function(){e.remove()},600)},w)}
-window.paddockReady=hide;document.addEventListener("DOMContentLoaded",function(){var a=document.getElementById("app");if(!a)return hide();if(a.children.length)return hide();new MutationObserver(function(_,o){if(a.children.length){o.disconnect();hide()}}).observe(a,{childList:true})});setTimeout(hide,8000)})();</script>
+window.paddockReady=hide;var wait=function(){return window.ONLINE&&!window.__booted};document.addEventListener("DOMContentLoaded",function(){var a=document.getElementById("app");if(!a)return hide();if(a.children.length&&!wait())return hide();new MutationObserver(function(_,o){if(a.children.length&&!wait()){o.disconnect();hide()}}).observe(a,{childList:true})});setTimeout(hide,8000)})();</script>
 <div class="app" id="app"></div>
 <div id="sbar" aria-hidden="true"></div><nav class="nav hidden" id="nav"><div class="nav-in" id="navin"></div></nav>
 <div id="layer"></div>

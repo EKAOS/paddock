@@ -925,11 +925,13 @@
       if (h.get("type") === "recovery") setTimeout(() => modal(`<h2>Nouveau mot de passe</h2><div class="stack"><input class="input" id="npw" type="password" placeholder="8 caractères minimum" autocomplete="new-password"><button class="btn green block" data-act="newpw">Enregistrer</button></div>`, 1), 400);
     }
     if (!SB || !KEY) {
+      window.__booted = true;
       $("#app").innerHTML = `<div class="panel empty" style="margin-top:40px"><b>Configuration manquante</b>Renseignez l'adresse et la clé publique Supabase dans le fichier config.js.</div>`; return;
     }
     S = null;
     if (sess) { try { await sync(); } catch (e) { if (!sess || !offlineBoot()) { if (!sess) S = null; } } }
     render();
+    window.__booted = true; if (window.paddockReady) window.paddockReady();   // l'écran de chargement reste jusqu'ici : plus de page de connexion qui clignote
     if (S && S.user) namePending();
     const pm = location.hash.match(/^#profil-(.+)$/);
     if (pm) {
