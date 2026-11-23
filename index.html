@@ -36,6 +36,8 @@
 .dcs{display:flex;flex-wrap:wrap;gap:5px}.dc{font-size:11.5px;font-weight:700;padding:4px 8px;border-radius:8px}.dc.y{background:rgba(74,222,128,.16);color:#86efac}.dc.n{background:var(--panel2);color:var(--muted)}
 .dlend{text-align:center;padding:12px;border-radius:12px;background:var(--panel2);font-size:14px;line-height:1.5}.dlend.w{background:rgba(74,222,128,.12)}
 .dlleg{text-align:center;color:var(--dim);font-size:11.5px}
+.flh{text-align:center;padding:10px;border-radius:12px;background:var(--panel2);font-size:13.5px;color:var(--muted)}.flh.on{background:rgba(252,165,165,.12);color:var(--text)}
+.flr{min-width:34px;height:28px;padding:0 6px;border-radius:8px;border:1px solid;display:grid;place-items:center;font:800 11px var(--f-head);flex:0 0 auto}
 </style>
 
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -3398,7 +3400,7 @@ const uniq=()=>Object.keys(S.col).length;
 const total=()=>Object.values(S.col).reduce((a,b)=>a+b,0);
 
 /* ---------- notes de mise à jour ---------- */
-const PATCHES=[{"title": "La Série 02", "d": "2026-11-23", "v": "s02", "sum": "La Série 02 arrive : 2 150 nouvelles voitures, un nouveau paquet, le Pass Saison 02 et l'Autodle, un jeu par jour.", "items": ["2 150 nouvelles voitures dans la Série 02 : Citroën C15 et ID, Renault Espace II, III et IV, Audi A4 et A6 de plusieurs générations, Ferrari de Formule 1, Koenigsegg Agera S, Tyrrell P34 à six roues…", "Nouveau paquet Série 02, rouge course et or, toujours 5 voitures", "Dans les paquets, plus de chances de tomber sur une voiture de la Série 02", "La série (S01 ou S02) est indiquée sur chaque carte", "Nouveau filtre par série dans la Collection","Pass Saison 02 : 10 paliers de récompenses (pistons, paquets, une légendaire) en collectionnant les voitures de la Série 02","Autodle : chaque jour, devinez la voiture mystère de la Série 02 en 6 essais et gagnez 25 pistons", "Une intro animée et en musique pour découvrir la Série 02"]}];
+const PATCHES=[{"title": "La Série 02", "d": "2026-11-23", "v": "s02", "sum": "La Série 02 arrive : 2 150 nouvelles voitures, un nouveau paquet, le Pass Saison 02 et l'Autodle, un jeu par jour.", "items": ["2 150 nouvelles voitures dans la Série 02 : Citroën C15 et ID, Renault Espace II, III et IV, Audi A4 et A6 de plusieurs générations, Ferrari de Formule 1, Koenigsegg Agera S, Tyrrell P34 à six roues…", "Nouveau paquet Série 02, rouge course et or, toujours 5 voitures", "Dans les paquets, plus de chances de tomber sur une voiture de la Série 02", "La série (S01 ou S02) est indiquée sur chaque carte", "Nouveau filtre par série dans la Collection","Pass Saison 02 : 10 paliers de récompenses (pistons, paquets, une légendaire) en collectionnant les voitures de la Série 02","Autodle : chaque jour, devinez la voiture mystère de la Série 02 en 6 essais et gagnez 25 pistons","Échange flash : une heure par jour, échangez 3 doublons contre une carte de la rareté au-dessus (3 fois par jour)", "Une intro animée et en musique pour découvrir la Série 02"]}];
 const PKEY_SEEN="paddock-patch-seen";
 function patchSeen(){try{return localStorage.getItem(PKEY_SEEN)===PATCHES[0].v}catch(e){return true}}
 function markPatchSeen(){try{localStorage.setItem(PKEY_SEEN,PATCHES[0].v)}catch(e){}}
@@ -3779,8 +3781,29 @@ window.dleSuggest=function(q){const box=document.getElementById("dlesug");if(!bo
 function dleGuess(id){const tg=dleTarget(),st=dleState();if(tg==null||st.won||st.g.length>=DLE_MAX||st.g.includes(id))return;st.g.push(id);if(id===tg){st.won=true;blip(990,.2)}else blip(330,.08);dleSave(st);
  if(st.won&&!st.paid){const pay=window.OA&&OA.dlewin?OA.dlewin():Promise.resolve((S.coins+=DLE_PRIZE,save(),true));Promise.resolve(pay).then(ok=>{if(ok){st.paid=true;dleSave(st);toast(`Bravo ! +${DLE_PRIZE} pistons`)}openTdy("dle")}).catch(()=>openTdy("dle"));return}
  openTdy("dle")}
+
+/* ---------- Échange flash : une heure par jour, 3 doublons contre une carte de la rareté au-dessus ---------- */
+const FL_NEXT={C:"PC",PC:"R",R:"SR",SR:"UR",UR:"L"},FL_MAX=3,FL_COST=3;
+function flDays(){const [y,m,d]=parisDay(now()).split("-").map(Number);return Math.round((Date.UTC(y,m-1,d)-Date.UTC(2026,0,1))/864e5)}
+const flHour=()=>12+((flDays()*7+3)%11);
+function flParisHour(){const p=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Paris",hour:"numeric",hourCycle:"h23"}).formatToParts(new Date(now())).find(x=>x.type==="hour");return p?+p.value%24:-1}
+const flOpen=()=>flParisHour()===flHour();
+function flUsed(){const f=S&&S.flash;return f&&f.d===parisDay(now())?f.n:0}
+function flSpare(r){let n=0;for(const k in S.col){const id=+k;if(CARS[id]&&CARS[id].r===r)n+=Math.max(0,S.col[k]-1-((S.holo&&S.holo[id])||0))}return n}
+function flashPanel(){const h=flHour(),open=flOpen(),left=FL_MAX-flUsed();
+ return`<div class="stack"><div style="text-align:center"><div class="heye">Une heure par jour ${NB()}</div><b class="s2pt">Échange flash</b><p class="s2ps">Chaque jour, pendant une heure, échangez ${FL_COST} doublons contre une carte de la rareté au-dessus. La moitié du temps, c'est une voiture de la Série 02.</p></div>
+ <div class="flh ${open?"on":""}">${open?`<b>Ouvert maintenant</b> · jusqu'à ${h+1} h · ${left} échange${left>1?"s":""} restant${left>1?"s":""}`:`Aujourd'hui de <b>${h} h à ${h+1} h</b>`}</div>
+ <div class="s2pl">${Object.keys(FL_NEXT).map(r=>{const sp=flSpare(r),ok=open&&left>0&&sp>=FL_COST;return`<div class="s2pr ${ok?"ok":""}"><span class="flr" style="color:var(--c${r});border-color:var(--c${r})">${RSHORT[r]}</span><div class="grow"><b>${FL_COST} doublons → 1 ${RNAME?RNAME[FL_NEXT[r]]:RSHORT[FL_NEXT[r]]}</b><small>${fmt(sp)} doublon${sp>1?"s":""} disponible${sp>1?"s":""}</small></div><button class="btn green" data-act="flash" data-r="${r}" ${ok?"":"disabled"}>Échanger</button></div>`}).join("")}</div>
+ <div style="color:var(--dim);font-size:12px;text-align:center">Les cartes brillantes ne sont jamais utilisées, et il vous reste toujours au moins un exemplaire de chaque voiture.</div></div>`}
+function flashLocal(r){if(!flOpen()||flUsed()>=FL_MAX||flSpare(r)<FL_COST||!FL_NEXT[r])return null;let need=FL_COST;
+ const ids=Object.keys(S.col).map(Number).filter(id=>CARS[id].r===r).map(id=>[id,S.col[id]-1-((S.holo&&S.holo[id])||0)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);
+ for(const[id,sp]of ids){if(!need)break;const k=Math.min(need,sp);own(id,-k);need-=k}
+ const nx=FL_NEXT[r],pool=Math.random()<.5?BYR[nx].filter(x=>x>=S2_FROM):[];const id=rnd(pool.length?pool:BYR[nx]);const isnew=!S.col[id];own(id);
+ S.flash={d:parisDay(now()),n:flUsed()+1};save();return{id,new:isnew}}
+function flashDone(r){blip(900,.25);modal(`<h2><span>Échange réussi</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2>${cardHTML(r.id,{big:true,isnew:r.new})}<button class="btn green block" style="margin-top:14px" data-act="tdy" data-k="flash">Continuer</button>`);render(true)}
 function tdyList(){const L=[];
  if(S2_ON){const n=s2Owned(),r=s2Ready(),nx=S2PASS.find(t=>n<t[0]);L.push({k:"s2p",nw:1,n:"Pass Saison 02",a:"#e9c98a",ic:I.medal||I.star,sub:`${fmt(n)} voiture${n>1?"s":""} Série 02`,tag:r?"À RÉCUPÉRER":`PALIER ${s2Claimed().length}/${S2PASS.length}`,todo:r>0,bar:nx?n/nx[0]:1});
+  {const h=flHour(),op=flOpen(),left=FL_MAX-flUsed();L.push({k:"flash",nw:1,n:"Échange flash",a:"#fca5a5",ic:I.swap,sub:op?`Ouvert jusqu'à ${h+1} h`:`Aujourd'hui de ${h} h à ${h+1} h`,tag:op?(left>0?"OUVERT":"FAIT"):"BIENTÔT",todo:op&&left>0})}
   const st=dleState(),dn=st.won||st.g.length>=DLE_MAX;if(dleTarget()!=null)L.push({k:"dle",nw:1,n:"Autodle",a:"#86efac",ic:I.search||I.help,sub:dn?(st.won?"Trouvée ! Revenez demain":"Revenez demain"):"Devinez la voiture du jour",tag:dn?(st.won?"TROUVÉE":"FAIT"):"À JOUER",todo:!dn})}
  {const b=bonusState();if(b){L.push({k:"wheel",nw:1,n:"Roue du garage",a:"#f1dcab",ic:I.spark||I.star,sub:b.wheel?"Revenez demain":"Un tour gratuit",tag:b.wheel?"FAIT":"À TOURNER",todo:!b.wheel});
   if(S.social){const g=S.social,todoD=(g.duels||[]).filter(d=>!d.done&&!d.mine).length;L.push({k:"gift",nw:1,n:"Cadeau à un ami",a:"#f9a8d4",ic:I.gift,sub:g.gift?`Offert à ${esc(g.gift)}`:"Offrez un paquet",tag:g.gift?"OFFERT":"GRATUIT",todo:!g.gift&&S.friends.length>0});
@@ -3802,7 +3825,7 @@ function cheatPanel(){const q=U.chq||"";return`<div class="cht"><div class="chsc
  <div class="pad"><div class="dpad"><button data-act="chpad" data-k="H" class="pu" aria-label="Haut">▲</button><button data-act="chpad" data-k="G" class="pl" aria-label="Gauche">◀</button><i></i><button data-act="chpad" data-k="D" class="pr" aria-label="Droite">▶</button><button data-act="chpad" data-k="B" class="pd" aria-label="Bas">▼</button></div>
  <div class="abtn"><button data-act="chpad" data-k="X" aria-label="Bouton B">B</button><button data-act="chpad" data-k="A" aria-label="Bouton A">A</button></div></div>
  <p class="fine" style="text-align:center;margin-top:12px">Un code vu sur nos réseaux ? Tapez-le au-dessus.<br>Chaque code ne marche qu'une fois par compte.</p></div>`}
-const TDYH={s2p:()=>s2passPanel(),dle:()=>autodlePanel(),gift:()=>giftPanel(),duel:()=>duelPanel(),wheel:()=>wheelPanel(),surp:()=>surprisePanel(),cheat:()=>cheatPanel(),sacc:()=>accPanel(),sinv:()=>invPanel(),sblk:()=>blocksHTML(),liv:()=>livPanel(),tit:()=>titPanel(),plate:()=>platePanel(),seek:()=>seekPanel(),adv:()=>advPanel(),hunt:()=>huntPanel(),cotm:()=>cotmPanel(),mys:()=>mysteryPanel(),loy:()=>loyaltyPanel(),poll:()=>pollPanel(),gar:()=>garagePanel(),comm:()=>commPanel(),pro:()=>proPanel(),
+const TDYH={flash:()=>flashPanel(),s2p:()=>s2passPanel(),dle:()=>autodlePanel(),gift:()=>giftPanel(),duel:()=>duelPanel(),wheel:()=>wheelPanel(),surp:()=>surprisePanel(),cheat:()=>cheatPanel(),sacc:()=>accPanel(),sinv:()=>invPanel(),sblk:()=>blocksHTML(),liv:()=>livPanel(),tit:()=>titPanel(),plate:()=>platePanel(),seek:()=>seekPanel(),adv:()=>advPanel(),hunt:()=>huntPanel(),cotm:()=>cotmPanel(),mys:()=>mysteryPanel(),loy:()=>loyaltyPanel(),poll:()=>pollPanel(),gar:()=>garagePanel(),comm:()=>commPanel(),pro:()=>proPanel(),
  ev:()=>evPanel()+'<button class="linkbtn" data-act="evcal" style="display:block;margin:12px auto 0">Voir le calendrier des événements</button>'};
 function openTdy(k){const f=TDYH[k],h=f?f():"";if(!h)return;modal(`<div class="tdym" data-k="${k}">${h}</div><button class="btn ghost block" data-act="close" style="margin-top:12px">Fermer</button>`);const m=document.querySelector("#layer .tdym");if(m){m._h=h;m.parentNode.classList.add("sheet")}}
 // la fiche ouverte suit les changements (vote enregistré, case ouverte, paquet récupéré…)
@@ -4804,7 +4827,7 @@ document.addEventListener("click",e=>{
  supshop:()=>{closeModal();go("shop");const k=d.s||"";setTimeout(()=>{const h=[...document.querySelectorAll("#app .mgt,#app .label,#app h3,#app h2")].find(x=>x.textContent.trim().toUpperCase()===k);if(h)h.scrollIntoView({behavior:"smooth",block:"start"});else window.scrollTo(0,0)},120)},
  theme:()=>{S.set.light=!S.set.light;save();render()},
  accent:()=>{try{localStorage.setItem("paddock-accent",d.k)}catch(e){}applyAccent(d.k);render(true)},
- wheelspin:()=>wheelSpin(),s2claim:()=>{const r=s2ClaimLocal(+d.i);if(r)s2Done(S2PASS[+d.i-1],r.card)},dleg:()=>dleGuess(+d.id),surpclaim:()=>surpriseClaim(),sharepk:()=>sharePack(),
+ wheelspin:()=>wheelSpin(),s2claim:()=>{const r=s2ClaimLocal(+d.i);if(r)s2Done(S2PASS[+d.i-1],r.card)},dleg:()=>dleGuess(+d.id),flash:()=>{const r=flashLocal(d.r);if(r)flashDone(r)},surpclaim:()=>surpriseClaim(),sharepk:()=>sharePack(),
  saveacc:()=>{const n=$("#suser").value.trim(),m=$("#semail").value.trim();if(n.length<3)return toast("Le nom doit faire au moins 3 caractères.");if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(m))return toast("Adresse e-mail invalide.");if(n!==S.user.name){if(!meVip())return toast("Changer de pseudo est réservé aux membres Paddock Pro.");if(now()<nameNext())return toast(`Prochain changement possible dans ${fmtLeft(nameNext()-now())}.`);if(!/^[A-Za-z0-9_.\-]{3,20}$/.test(n))return toast("Le pseudo doit faire 3 à 20 caractères : lettres, chiffres, _ . -");if(S.acc[n])return toast("Ce nom est déjà pris.");S.user.nameTs=now();S.acc[n]=S.acc[S.user.name]||{};delete S.acc[S.user.name]}S.user.name=n;S.user.email=m;save();toast("Sauvegardé.");render()},
  buy:()=>modal(`<h2><span>${fmt(+d.n)} pistons · ${esc(d.p)}</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2><p style="color:var(--muted)">Le paiement n'est pas encore branché : aucun montant n'a été débité. Pour encaisser de vrais paiements, le jeu doit tourner sur un serveur relié à un prestataire de paiement comme Stripe.</p><button class="btn ghost block" data-act="close">Compris</button>`,1),
  logout:()=>{modal(`<h2>Se déconnecter ?</h2><p style="color:var(--muted)">Votre partie reste enregistrée sur cet appareil.</p><div class="row"><button class="btn ghost grow" data-act="close">Annuler</button><button class="btn danger grow" data-act="logout2">Déconnexion</button></div>`,1)},

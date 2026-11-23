@@ -2224,8 +2224,12 @@ grant execute on function public.open_pack(text) to authenticated;
 
 -- ===== Pass Saison 02 : paliers débloqués en collectionnant les voitures de la Série 02 =====
 alter table public.wallets add column if not exists s2pass int[] not null default '{}';
+-- (la table des échanges flash est créée plus bas ; get_s2pass renvoie aussi le nombre d'échanges flash du jour)
+create table if not exists public.flash_trades (user_id uuid not null references auth.users(id) on delete cascade, day date not null, n int not null default 0, primary key (user_id, day));
+alter table public.flash_trades enable row level security;
 create or replace function public.get_s2pass() returns jsonb language sql stable security definer set search_path = public as $$
-  select coalesce(to_jsonb(s2pass), '[]'::jsonb) from wallets where user_id = _uid();
+  select jsonb_build_object('pass', coalesce((select to_jsonb(s2pass) from wallets where user_id = _uid()), '[]'::jsonb),
+                            'flash', coalesce((select n from flash_trades where user_id = _uid() and day = (now() at time zone 'Europe/Paris')::date), 0));
 $$;
 create or replace function public.claim_s2pass(i int) returns jsonb language plpgsql security definer set search_path = public as $$
 declare u uuid := _uid(); need int[] := '{10,25,50,100,175,250,400,600,900,1300}';
@@ -2261,3 +2265,35 @@ begin
 end $$;
 revoke all on function public.get_s2pass(), public.claim_s2pass(int), public.claim_autodle() from public, anon;
 grant execute on function public.get_s2pass(), public.claim_s2pass(int), public.claim_autodle() to authenticated;
+
+-- ===== Échange flash : une heure par jour (entre 12 h et 23 h, la même pour tous), 3 doublons contre 1 carte de la rareté au-dessus, 3 fois par jour =====
+create or replace function public._flash_hour(d date) returns int language sql immutable as $$ select 12 + (((d - date '2026-01-01') * 7 + 3) % 11) $$;
+create or replace function public.flash_trade(r text) returns jsonb language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); t timestamp := now() at time zone 'Europe/Paris'; d date := t::date; nxt text; done int; need int := 3; rec record; take int; c int; isnew boolean;
+begin
+  if u is null then raise exception 'Connectez-vous pour échanger.'; end if;
+  if extract(hour from t)::int <> _flash_hour(d) then raise exception 'L''échange flash n''est pas ouvert en ce moment.'; end if;
+  nxt := case r when 'C' then 'PC' when 'PC' then 'R' when 'R' then 'SR' when 'SR' then 'UR' when 'UR' then 'L' end;
+  if nxt is null then raise exception 'Cette rareté ne peut pas être échangée.'; end if;
+  select n into done from flash_trades where user_id = u and day = d;
+  if coalesce(done, 0) >= 3 then raise exception 'Vous avez déjà fait vos 3 échanges flash aujourd''hui.'; end if;
+  -- on prend les doublons les plus nombreux d'abord ; les brillantes et le dernier exemplaire ne sont jamais utilisés
+  for rec in select i.card_id, i.n - 1 - coalesce((to_jsonb(i) ->> 'holo')::int, 0) as spare
+             from inventory i join cards k on k.id = i.card_id
+             where i.user_id = u and k.rarity = r and i.n - 1 - coalesce((to_jsonb(i) ->> 'holo')::int, 0) > 0
+             order by 2 desc loop
+    exit when need = 0;
+    take := least(need, rec.spare);
+    update inventory set n = n - take where user_id = u and card_id = rec.card_id;
+    need := need - take;
+  end loop;
+  if need > 0 then raise exception 'Il faut 3 doublons de cette rareté.'; end if;
+  if random() < 0.5 then select id into c from cards where rarity = nxt and id >= 4327 order by random() limit 1; end if;
+  if c is null then select id into c from cards where rarity = nxt order by random() limit 1; end if;
+  isnew := _give(u, c, false);
+  insert into flash_trades values (u, d, 1) on conflict (user_id, day) do update set n = flash_trades.n + 1;
+  return jsonb_build_object('id', c, 'new', isnew, 'left', 2 - coalesce(done, 0));
+end $$;
+revoke all on function public._flash_hour(date) from public, anon, authenticated;
+revoke all on function public.flash_trade(text) from public, anon;
+grant execute on function public.flash_trade(text) to authenticated;

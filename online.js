@@ -111,7 +111,7 @@
       const [st, sub, lv, ev, , cm, wl, lvl, sec, poll, ext, pity, bonus, numb, social, ach2, sec2, s2p] = res;
       apply(st); // crée S (connexion fraîche : S est null) avant d'y écrire quoi que ce soit
       if (ach2 && typeof ach2 === "object") S.ach2 = ach2;
-      if (Array.isArray(s2p)) S.s2pass = s2p;
+      if (s2p && typeof s2p === "object") { S.s2pass = s2p.pass || []; S.flash = { d: parisDay(now()), n: s2p.flash || 0 }; }
       if (sec2 && typeof sec2 === "object") { if (S.sec2) Object.keys(sec2).forEach(k => { if (!S.sec2[k]) sec2Unlocked(k); }); S.sec2 = sec2; }
       if (Array.isArray(numb)) { S.numb = {}; for (const [id, n] of numb) S.numb[id] = n; }
       if (social && typeof social === "object") S.social = social;
@@ -581,6 +581,9 @@
       const r = await rpc("merchant_buy"); U.merch = r; blip(880); toast(`${CARS[r.card].n} rejoint votre collection !`); await after("shop");
     }),
     // Pass Saison 02 et Autodle (Série 02)
+    flash: act(async (el, d) => {
+      const r = await rpc("flash_trade", { r: d.r }); S.flash = { d: parisDay(now()), n: FL_MAX - (r.left ?? 0) }; await sync(); flashDone(r);
+    }),
     s2claim: act(async (el, d) => {
       const r = await rpc("claim_s2pass", { i: +d.i }); S.s2pass = r.claimed || S.s2pass; await after(); s2Done(S2PASS[+d.i - 1], r.card);
     }),
