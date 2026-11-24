@@ -342,9 +342,10 @@
     // les photos se chargent pendant que le paquet s'ouvre : plus de carte vide au moment de la découvrir
     if (rv) await Promise.all([Promise.race([preload(rv.ids.slice(0, 10)), wait(700)]), wait(Math.max(0, 650 - (Date.now() - b.last)))]);
     if (b.done < b.n) return;                                            // un toucher de plus est arrivé entre-temps : il terminera
+    const q = $("#packbtn");
+    if (rv && q) { q.classList.remove("shake"); q.classList.add("tear"); await wait(430); if (b.done < b.n) { q.classList.remove("tear"); return; } }
     b.closed = true; burst = null;
-    const q = $("#packbtn"); if (q) q.classList.remove("shake");
-    if (rv && q) { q.classList.add("tear"); await wait(430); }
+    if (q) q.classList.remove("shake");
     if (!rv) throw b.err || new Error("Ouverture impossible pour l'instant.");
     U.reveal = rv; U.reveal.packs = b.n;
     blip(700, .12); _go("reveal"); sync().then(() => {}).catch(() => {});
