@@ -2231,19 +2231,38 @@ create table if not exists public.s2_ach (user_id uuid not null references auth.
 alter table public.s2_ach enable row level security;
 alter table public.profiles add column if not exists plate_dep text;
 alter table public.inventory add column if not exists vint int not null default 0;
+alter table public.wallets add column if not exists s2prem boolean not null default false;
+alter table public.wallets add column if not exists s2passp int[] not null default '{}';
+create table if not exists public.evening_packs (user_id uuid not null references auth.users(id) on delete cascade, day date not null, primary key (user_id, day));
+alter table public.evening_packs enable row level security;
+create table if not exists public.login_streak (user_id uuid primary key references auth.users(id) on delete cascade, last date not null, cur int not null default 1, best int not null default 1);
+alter table public.login_streak enable row level security;
 create table if not exists public.advent_bonus (user_id uuid not null references auth.users(id) on delete cascade, yr int not null, primary key (user_id, yr));
 alter table public.advent_bonus enable row level security;
 -- (la table des échanges flash est créée plus bas ; get_s2pass renvoie aussi le nombre d'échanges flash du jour)
 create table if not exists public.flash_trades (user_id uuid not null references auth.users(id) on delete cascade, day date not null, n int not null default 0, primary key (user_id, day));
 alter table public.flash_trades enable row level security;
-create or replace function public.get_s2pass() returns jsonb language sql stable security definer set search_path = public as $$
-  select jsonb_build_object('pass', coalesce((select to_jsonb(s2pass) from wallets where user_id = _uid()), '[]'::jsonb),
-                            'flash', coalesce((select n from flash_trades where user_id = _uid() and day = (now() at time zone 'Europe/Paris')::date), 0),
-                            'ach', coalesce((select jsonb_agg(k) from s2_ach where user_id = _uid()), '[]'::jsonb),
-                            'dep', (select plate_dep from profiles where id = _uid()),
-                            'vint', (select coalesce(jsonb_object_agg(card_id::text, least(vint, n)), '{}'::jsonb) from inventory where user_id = _uid() and vint > 0 and n > 0),
-                            'advb', exists (select 1 from advent_bonus where user_id = _uid() and yr = extract(year from now() at time zone 'Europe/Paris')::int));
-$$;
+create or replace function public.get_s2pass() returns jsonb language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); d date := (now() at time zone 'Europe/Paris')::date; st login_streak;
+begin
+  if u is null then return null; end if;
+  -- série de connexion : +1 si la dernière visite date d'hier, sinon on repart de 1
+  select * into st from login_streak where user_id = u for update;
+  if not found then insert into login_streak(user_id, last, cur, best) values (u, d, 1, 1) returning * into st;
+  elsif st.last < d then
+    update login_streak set cur = case when last = d - 1 then cur + 1 else 1 end, best = greatest(best, case when last = d - 1 then cur + 1 else 1 end), last = d where user_id = u returning * into st;
+  end if;
+  return jsonb_build_object('pass', coalesce((select to_jsonb(s2pass) from wallets where user_id = u), '[]'::jsonb),
+    'passp', coalesce((select to_jsonb(s2passp) from wallets where user_id = u), '[]'::jsonb),
+    'prem', coalesce((select s2prem from wallets where user_id = u), false),
+    'flash', coalesce((select n from flash_trades where user_id = u and day = d), 0),
+    'ach', coalesce((select jsonb_agg(k) from s2_ach where user_id = u), '[]'::jsonb),
+    'dep', (select plate_dep from profiles where id = u),
+    'vint', (select coalesce(jsonb_object_agg(card_id::text, least(vint, n)), '{}'::jsonb) from inventory where user_id = u and vint > 0 and n > 0),
+    'advb', exists (select 1 from advent_bonus where user_id = u and yr = extract(year from now() at time zone 'Europe/Paris')::int),
+    'eve', (select to_char(day, 'YYYY-MM-DD') from evening_packs where user_id = u and day = d),
+    'streak', jsonb_build_object('cur', st.cur, 'best', st.best));
+end $$;
 create or replace function public.claim_s2pass(i int) returns jsonb language plpgsql security definer set search_path = public as $$
 declare u uuid := _uid(); need int[] := '{10,25,50,100,175,250,400,600,900,1300}';
         kind text[] := '{coins,packs,coins,packs,coins,packs,coins,leg,packs,coins}'; amt int[] := '{25,2,75,3,150,5,250,1,8,500}';
@@ -2372,22 +2391,28 @@ grant execute on function public.claim_s2ach(text), public.set_plate_dep(text), 
 
 -- ===== Calendrier de l'Avent 2026 : les voitures à gagner viennent de la Série 02, et cadeau du 25 =====
 create or replace function public.claim_advent() returns jsonb language plpgsql security definer set search_path = public as $$
-declare u uuid := _uid(); d int := _adv_today(); y int := extract(year from now() at time zone 'Europe/Paris')::int; r text[]; c int; isnew boolean;
+declare u uuid := _uid(); d int := _adv_today(); y int := extract(year from now() at time zone 'Europe/Paris')::int; r text[]; c int; c2 int; isnew boolean; isnew2 boolean; mx int := 1;
 begin
   if d is null then raise exception 'Le calendrier de l''Avent est ouvert du 1er au 24 décembre.'; end if;
   insert into advent(user_id, yr, day) values (u, y, d) on conflict do nothing;
   if not found then raise exception 'Vous avez déjà ouvert la case d''aujourd''hui. Revenez demain !'; end if;
   select array_agg(x) into r from unnest(_adv(d)) x;
+  if _is_pro(u) then mx := 2; end if;   -- Paddock Pro : chaque case est doublée
   if r[1] = 'c' then
-    update wallets set coins = coins + r[2]::int where user_id = u;
-    return jsonb_build_object('day', d, 'coins', r[2]::int);
+    update wallets set coins = coins + r[2]::int * mx where user_id = u;
+    return jsonb_build_object('day', d, 'coins', r[2]::int * mx);
   elsif r[1] = 'p' then
-    update wallets set packs = packs + r[2]::int where user_id = u;
-    return jsonb_build_object('day', d, 'packs', r[2]::int);
+    update wallets set packs = packs + r[2]::int * mx where user_id = u;
+    return jsonb_build_object('day', d, 'packs', r[2]::int * mx);
   else
     select id into c from cards where rarity = r[1] and id >= 4327 order by random() limit 1;
     if c is null then select id into c from cards where rarity = r[1] order by random() limit 1; end if;
     isnew := _give(u, c, false);
+    if mx = 2 then
+      select id into c2 from cards where rarity = r[1] and id >= 4327 order by random() limit 1;
+      isnew2 := _give(u, c2, false);
+      return jsonb_build_object('day', d, 'card', c, 'new', isnew, 'card2', c2, 'new2', isnew2);
+    end if;
     return jsonb_build_object('day', d, 'card', c, 'new', isnew);
   end if;
 end $$;
@@ -2405,3 +2430,59 @@ begin
 end $$;
 revoke all on function public.claim_advent_bonus() from public, anon;
 grant execute on function public.claim_advent_bonus() to authenticated;
+
+
+-- ===== Pass Saison 02 : ligne Premium (achat unique), bonus Paddock Pro, paquet du soir, série de connexion =====
+create or replace function public.claim_s2pass_p(i int) returns jsonb language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); need int[] := '{10,25,50,100,175,250,400,600,900,1300}';
+        kind text[] := '{packs,coins,packs,ur,packs,coins,leg,packs,leg,packs}'; amt int[] := '{2,100,3,1,5,300,1,10,1,15}';
+        owned int; c int;
+begin
+  if u is null then raise exception 'Connectez-vous pour récupérer cette récompense.'; end if;
+  if i is null or i < 1 or i > 10 then raise exception 'Palier inconnu.'; end if;
+  if not coalesce((select s2prem from wallets where user_id = u), false) then raise exception 'Le Pass Premium n''est pas activé sur ce compte.'; end if;
+  select count(*) into owned from inventory where user_id = u and card_id >= 4327 and n > 0;
+  if owned < need[i] then raise exception 'Palier pas encore atteint : % voitures de la Série 02 nécessaires.', need[i]; end if;
+  update wallets set s2passp = s2passp || i where user_id = u and not (i = any(s2passp));
+  if not found then raise exception 'Récompense déjà récupérée.'; end if;
+  if kind[i] = 'coins' then update wallets set coins = coins + amt[i] where user_id = u;
+  elsif kind[i] = 'packs' then update wallets set packs = packs + amt[i] where user_id = u;
+  else
+    select id into c from cards where id >= 4327 and rarity = case kind[i] when 'ur' then 'UR' else 'L' end order by random() limit 1;
+    perform _give(u, c, false);
+  end if;
+  return jsonb_build_object('claimed', (select to_jsonb(s2passp) from wallets where user_id = u), 'card', c);
+end $$;
+create or replace function public.claim_s2pass_pro() returns jsonb language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); owned int;
+begin
+  if u is null then raise exception 'Connectez-vous.'; end if;
+  if not _is_pro(u) then raise exception 'Ce bonus est réservé aux membres Paddock Pro.'; end if;
+  select count(*) into owned from inventory where user_id = u and card_id >= 4327 and n > 0;
+  if owned < 300 then raise exception 'Palier pas encore atteint : 300 voitures de la Série 02 nécessaires.'; end if;
+  update wallets set s2pass = s2pass || 11 where user_id = u and not (11 = any(s2pass));
+  if not found then raise exception 'Bonus déjà récupéré.'; end if;
+  update wallets set packs = packs + 5 where user_id = u;
+  return jsonb_build_object('claimed', (select to_jsonb(s2pass) from wallets where user_id = u));
+end $$;
+-- appelée par le paiement (fonctions create-checkout / webhook Stripe / play-verify) avec la clé serveur, jamais par les joueurs
+create or replace function public.grant_s2premium(u uuid) returns void language sql security definer set search_path = public as $$
+  update wallets set s2prem = true where user_id = u;
+$$;
+create or replace function public.claim_evening() returns jsonb language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); t timestamp := now() at time zone 'Europe/Paris';
+begin
+  if u is null then raise exception 'Connectez-vous.'; end if;
+  if extract(hour from t) not between 20 and 21 then raise exception 'Le paquet du soir se récupère entre 20 h et 22 h.'; end if;
+  insert into evening_packs(user_id, day) values (u, t::date) on conflict do nothing;
+  if not found then raise exception 'Paquet du soir déjà récupéré. À demain 20 h !'; end if;
+  update wallets set packs = packs + 1 where user_id = u;
+  return jsonb_build_object('ok', true);
+end $$;
+create or replace function public.get_streak(name text) returns jsonb language sql stable security definer set search_path = public as $$
+  select jsonb_build_object('cur', case when s.last >= (now() at time zone 'Europe/Paris')::date - 1 then s.cur else 0 end, 'best', s.best)
+  from profiles p join login_streak s on s.user_id = p.id where lower(p.username) = lower(name) and not p.banned limit 1;
+$$;
+revoke all on function public.claim_s2pass_p(int), public.claim_s2pass_pro(), public.claim_evening(), public.get_streak(text), public.grant_s2premium(uuid) from public, anon, authenticated;
+grant execute on function public.claim_s2pass_p(int), public.claim_s2pass_pro(), public.claim_evening(), public.get_streak(text) to authenticated;
+grant execute on function public.grant_s2premium(uuid) to service_role;
