@@ -1094,6 +1094,37 @@ body.light .mtile.tg.on svg,body.light .dwal .wi svg,body.light .dpt.best>svg{co
 .s2ar .btn{padding:8px 14px;font-size:13px;flex:none}.s2aok{color:var(--green);font-weight:800;font-size:18px}
 .s2ar.got{opacity:.7}.s2ar.rdy .s2ae{border-color:var(--green);background:rgba(207,178,122,.12)}
 .pftb{display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 4px;margin-left:4px;border-radius:9px;background:var(--green);color:#1a1408;font-size:10.5px;vertical-align:1px}
+
+/* cartes vintage */
+.card.vint .c-img img,.card.vint .c-img svg{filter:grayscale(1) sepia(.45) contrast(1.12) brightness(.95)}
+.card.vint .c-img::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(ellipse at center,transparent 55%,rgba(40,24,8,.55)),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");mix-blend-mode:multiply}
+.card.vint{border-color:#b08a5a!important;box-shadow:0 0 0 1px rgba(176,138,90,.5),0 8px 24px rgba(120,80,30,.25)}
+.card.vint .c-body{background:linear-gradient(180deg,#2a2118,#1a140e)}
+.vinttag{position:absolute;bottom:8px;left:10px;z-index:4;background:#e9dcc0;color:#3b2a14;font:800 10.5px/1 Georgia,"Times New Roman",serif;padding:4px 9px;border-radius:3px;letter-spacing:.18em;border:1px solid #8a6a3c;transform:rotate(-3deg)}
+.vintban{font:700 12px/1 Georgia,"Times New Roman",serif;letter-spacing:.14em;text-transform:uppercase;color:#e9dcc0;background:#3b2a14;border:1px solid #8a6a3c;padding:7px 12px;border-radius:4px}
+.oddsx{color:var(--muted);font-size:13px;margin:12px 2px 0;text-align:center}
+/* calendrier de l'Avent */
+.advp{background:linear-gradient(160deg,#2a0d12,#120607 60%,#0b0b0c);border-color:#7f1d1d}
+.advh{font-family:var(--f-head);font-size:17px;color:#fee2e2}.advpill{color:#fca5a5;border-color:#991b1b;background:#1f0d10}.advs{color:#fca5a5;font-size:13.5px}
+.advg2{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;perspective:700px}
+.advd{position:relative;aspect-ratio:3/4;border-radius:9px}.advd.big{grid-column:span 2;aspect-ratio:auto;height:100%;min-height:52px}
+.advin{position:absolute;inset:0;border-radius:9px;background:#140809;border:1px solid #5b1a1f;display:grid;place-items:center;align-content:center;gap:2px;text-align:center;padding:2px}
+.advin span{font-size:17px}.advin small{font-size:8.5px;line-height:1.1;color:#fecaca}
+.advdoor{position:absolute;inset:0;border-radius:9px;transform-origin:left center;transition:transform .7s cubic-bezier(.3,.8,.3,1);backface-visibility:hidden;display:grid;place-items:center;align-content:center;gap:1px;
+ background:linear-gradient(135deg,#b91c1c,#7f1d1d);border:1px solid #dc2626;box-shadow:inset 0 0 0 2px rgba(254,226,226,.08)}
+.advdoor::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:5px;margin-left:-2.5px;background:linear-gradient(180deg,#f5d27a,#a88a52)}
+.advdoor::after{content:"";position:absolute;top:50%;left:0;right:0;height:5px;margin-top:-2.5px;background:linear-gradient(90deg,#f5d27a,#a88a52)}
+.advdoor b{position:relative;z-index:1;font-family:var(--f-head);font-size:15px;color:#fff;background:#7f1d1d;border-radius:6px;padding:1px 5px}.advdoor i{position:relative;z-index:1;font-style:normal;font-size:11px}
+.advd.o .advdoor{transform:rotateY(-112deg)}.advd.o.just .advdoor{animation:dopen .9s cubic-bezier(.3,.8,.3,1)}
+@keyframes dopen{from{transform:none}to{transform:rotateY(-112deg)}}
+.advd.m .advdoor{filter:grayscale(.8) brightness(.55)}.advd.l .advdoor{filter:brightness(.7)}
+.advd.t .advdoor{animation:dglow 1.6s ease-in-out infinite;border-color:#fde68a}
+@keyframes dglow{50%{box-shadow:0 0 0 2px rgba(253,230,138,.5),0 0 18px rgba(253,230,138,.55)}}
+.advd25{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;border:1px dashed #7f1d1d;background:rgba(20,8,9,.6)}
+.advd25 b{display:block;font-size:13.5px;color:#fee2e2}.advd25 small{display:block;font-size:12px;color:#fca5a5;margin-top:2px}.advt{font-size:24px}
+.advd25.t{border-style:solid;border-color:#fde68a;box-shadow:0 0 18px rgba(253,230,138,.25)}.advd25.o{opacity:.7}.advd25 .btn{flex:none;padding:8px 14px}
+.advbtn{background:#16a34a;color:#fff}
+@media (prefers-reduced-motion:reduce){.advd.t .advdoor,.advd.o.just .advdoor{animation:none}}
 /* ===== Série 02 : finitions ===== */
 .navbadge.nb-g{background:var(--green);color:#1a1408}
 .navdot{position:absolute;top:9px;right:28%;width:9px;height:9px;border-radius:50%;background:var(--red);box-shadow:0 0 0 2px rgba(10,10,11,.9)}
@@ -3484,12 +3515,12 @@ function prIcon(pr,big){pr=Math.max(1,Math.min(PRESTIGE_MAX,pr|0));const[c,l]=PR
 const prName=pr=>{pr=Math.max(1,Math.min(PRESTIGE_MAX,pr|0));return`Prestige ${PR_N[pr]} · ${PR_T[pr][2]}`};
 const prSecret=big=>`<svg class="pri prsec${big?" big":""}" viewBox="0 0 24 26" aria-hidden="true"><path d="M12 1.5 20.5 4.8V12c0 5.7-3.6 9.9-8.5 12.2C7.1 21.9 3.5 17.7 3.5 12V4.8Z" fill="#1c1c20" stroke="#3a3a40" stroke-width="1.3" stroke-dasharray="2 1.6"/><text x="12" y="16.4" text-anchor="middle" font-family="Archivo,Arial,sans-serif" font-size="9" font-weight="800" fill="#6b6b74">?</text></svg>`;
 function nm(n){const a=A(n);const isMe=S&&S.user&&n===S.user.name;const lv=isMe?myLevel().lv:a.lv;const pr=isMe?(myMe().prestige||0):(a.pr||0);return`<span class="nm" data-name="${esc(n)}"><span class="nmt">${esc(n)}</span>${a.cert?BADGE.cert:""}${(a.mod||a.admin)&&!OWNER.test(n)?BADGE.mod:""}${a.vip?BADGE.vip:""}${lv?`<span class="lvc" title="Niveau ${lv}">${lv}</span>`:""}${pr?`<span class="prst" title="${prName(pr)}">${prIcon(pr)}</span>`:""}</span>`}
-function own(id,n=1){S.col[id]=(S.col[id]||0)+n;if(S.col[id]<=0)delete S.col[id];if(S.holo&&S.holo[id]>(S.col[id]||0)){if(S.col[id])S.holo[id]=S.col[id];else delete S.holo[id]}}
+function own(id,n=1){S.col[id]=(S.col[id]||0)+n;if(S.col[id]<=0)delete S.col[id];if(S.vint&&S.vint[id]>(S.col[id]||0)){if(S.col[id])S.vint[id]=S.col[id];else delete S.vint[id]}if(S.holo&&S.holo[id]>(S.col[id]||0)){if(S.col[id])S.holo[id]=S.col[id];else delete S.holo[id]}}
 const uniq=()=>Object.keys(S.col).length;
 const total=()=>Object.values(S.col).reduce((a,b)=>a+b,0);
 
 /* ---------- notes de mise à jour ---------- */
-const PATCHES=[{"title": "La Série 02", "d": "2026-11-23", "v": "s02", "sum": "La Série 02 arrive : 2 150 nouvelles voitures, un nouveau paquet, le Pass Saison 02 et l'Autodle, un jeu par jour.", "items": ["2 150 nouvelles voitures dans la Série 02 : Citroën C15 et ID, Renault Espace II, III et IV, Audi A4 et A6 de plusieurs générations, Ferrari de Formule 1, Koenigsegg Agera S, Tyrrell P34 à six roues…", "Nouveau paquet Série 02, rouge course et or, toujours 5 voitures", "Dans les paquets, plus de chances de tomber sur une voiture de la Série 02", "La série (S01 ou S02) est indiquée sur chaque carte", "Nouveau filtre par série dans la Collection","Pass Saison 02 : 10 paliers de récompenses (pistons, paquets, une légendaire) en collectionnant les voitures de la Série 02","Autodle : chaque jour, devinez la voiture mystère de la Série 02 en 6 essais et gagnez 25 pistons","Échange flash : une heure par jour, échangez 3 doublons contre une carte de la rareté au-dessus (3 fois par jour)", "Une intro animée et en musique pour découvrir la Série 02","Ouverture des paquets plus spectaculaire : le paquet se déchire et la carte se retourne avec un halo de sa rareté","Les cartes ultra rares et légendaires brillent et suivent l'inclinaison du téléphone","Recherche plus maligne dans la Collection : marque, modèle, année ou décennie (ex. « Porsche 90 »)","Le nombre de nouvelles cartes s'affiche sur l'onglet Collection","9 succès Série 02 à débloquer dans les Trophées du profil (Espace-temps, Six roues, Cocorico…), avec des pistons à la clé","Le département au choix sur votre plaque d'immatriculation, comme une vraie plaque","Bouton pour revenir en haut des longues listes, et transitions douces entre les pages","Accueil simplifié, profil réorganisé, nouvel écran de chargement et 20 rangs de prestige"]}];
+const PATCHES=[{"title": "La Série 02", "d": "2026-11-23", "v": "s02", "sum": "La Série 02 arrive : 2 150 nouvelles voitures, un nouveau paquet, le Pass Saison 02 et l'Autodle, un jeu par jour.", "items": ["2 150 nouvelles voitures dans la Série 02 : Citroën C15 et ID, Renault Espace II, III et IV, Audi A4 et A6 de plusieurs générations, Ferrari de Formule 1, Koenigsegg Agera S, Tyrrell P34 à six roues…", "Nouveau paquet Série 02, rouge course et or, toujours 5 voitures", "Dans les paquets, plus de chances de tomber sur une voiture de la Série 02", "La série (S01 ou S02) est indiquée sur chaque carte", "Nouveau filtre par série dans la Collection","Pass Saison 02 : 10 paliers de récompenses (pistons, paquets, une légendaire) en collectionnant les voitures de la Série 02","Autodle : chaque jour, devinez la voiture mystère de la Série 02 en 6 essais et gagnez 25 pistons","Échange flash : une heure par jour, échangez 3 doublons contre une carte de la rareté au-dessus (3 fois par jour)", "Une intro animée et en musique pour découvrir la Série 02","Ouverture des paquets plus spectaculaire : le paquet se déchire et la carte se retourne avec un halo de sa rareté","Les cartes ultra rares et légendaires brillent et suivent l'inclinaison du téléphone","Recherche plus maligne dans la Collection : marque, modèle, année ou décennie (ex. « Porsche 90 »)","Le nombre de nouvelles cartes s'affiche sur l'onglet Collection","9 succès Série 02 à débloquer dans les Trophées du profil (Espace-temps, Six roues, Cocorico…), avec des pistons à la clé","Le département au choix sur votre plaque d'immatriculation, comme une vraie plaque","Cartes vintage : 1 carte sur 50 sort en version noir et blanc d'époque, à collectionner","Calendrier de l'Avent relooké : des portes qui s'ouvrent, des voitures rares de la Série 02 à gagner, et un cadeau de Noël le 25 pour ceux qui ont ouvert les 24 cases","Bouton pour revenir en haut des longues listes, et transitions douces entre les pages","Accueil simplifié, profil réorganisé, nouvel écran de chargement et 20 rangs de prestige"]}];
 const PKEY_SEEN="paddock-patch-seen";
 function patchSeen(){try{return localStorage.getItem(PKEY_SEEN)===PATCHES[0].v}catch(e){return true}}
 function markPatchSeen(){try{localStorage.setItem(PKEY_SEEN,PATCHES[0].v)}catch(e){}}
@@ -3598,20 +3629,25 @@ function drawEv(t,top){const P=evPool(t);const by=r=>P.filter(id=>CARS[id].r===r
 const packStep=()=>(meVip()?3:10)*60*1000;
 function refillPacks(){const step=packStep();if(S.packs>=10){S.packTs=now();return}const k=Math.floor((now()-S.packTs)/step);if(k>0){S.packs=Math.min(10,S.packs+k);S.packTs+=k*step}}
 const today=()=>new Date().toISOString().slice(0,10);
-const HOLO_ODDS=.03,HOLO_PRO=.05;
+const HOLO_ODDS=.03,VINT_ODDS=.02,HOLO_PRO=.05;
 function revealPack(ids){ids.sort((a,b)=>RAR.indexOf(CARS[b].r)-RAR.indexOf(CARS[a].r));return ids.map((id,k)=>!S.col[id]&&!ids.slice(0,k).includes(id))}
 function evPanel(){const I0=evInfo(),e=EVS[I0.t],P=I0.t?evPool(I0.t):BYR.ED,have=P.filter(id=>S.col[id]).length;
  return`<div class="panel stack" style="width:100%;text-align:left;background:linear-gradient(135deg,${e.bg},#0b0b0c);border-color:${e.bd}"><div class="headrow"><b style="font-family:var(--f-head);font-size:17px;color:${e.tx}">${e.n}${I0.t>=10?NB("Nouveau thème"):""}</b><span class="pill" style="color:${e.t2};border-color:${e.bd};background:${e.bg}">ÉVÉNEMENT</span></div><div style="color:${e.t2};font-size:14px">${meVip()?"Deux paquets":"Un paquet"} ${e.k} gratuit${meVip()?"s":""} par jour : ${e.d}. Nouvel événement dans <b data-end="${I0.until}">${fmtLeft(I0.until-now())}</b>.</div><div style="color:var(--muted);font-size:13px">Collection ${e.k} : ${fmt(have)} / ${fmt(P.length)}</div>${evReady()?`<button class="btn block" style="background:${e.ac};color:#fff" data-act="openev">Ouvrir le paquet ${e.k}</button>`:`<button class="btn block" disabled style="background:${e.bg};color:${e.t2}">Prochain paquet ${e.k} dans <span data-end="${(S.evPackTs||0)+evStep()}">${fmtLeft((S.evPackTs||0)+evStep()-now())}</span></button>`}</div>`}
 // ---------- calendrier de l'Avent (1er au 24 décembre) ----------
 const ADV=[["c",100],["p",1],["c",150],["p",2],["c",200],["SR",1],["p",2],["c",250],["p",3],["c",300],["p",2],["UR",1],["c",350],["p",3],["c",400],["p",3],["c",450],["UR",1],["p",4],["c",500],["p",4],["c",600],["p",5],["L",1]];
 function advToday(){if(window.ADV_FORCE)return window.ADV_FORCE;if(window.ONLINE)return S.adv?S.adv.today:null;const f=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Paris",month:"2-digit",day:"2-digit"}).formatToParts(new Date());const m=+f.find(x=>x.type==="month").value,d=+f.find(x=>x.type==="day").value;return m===12&&d<=24?d:null}
+function advNoel(){if(window.ADV_FORCE===25)return true;const f=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Paris",month:"2-digit",day:"2-digit"}).formatToParts(new Date());return+f.find(x=>x.type==="month").value===12&&+f.find(x=>x.type==="day").value>=25}
+function advBonusGot(){return window.ONLINE?!!S.advB:!!(S.advBL&&S.advBL===new Date().getFullYear())}
 function advDays(){if(window.ONLINE)return(S.adv&&S.adv.days)||[];const y=new Date().getFullYear();return S.advL&&S.advL.y===y?S.advL.d:[]}
 const advIco=r=>r[0]==="c"?"🪙":r[0]==="p"?"📦":r[0]==="L"?"👑":"⭐";
-function advPanel(){const t=advToday();if(!t)return"";const got=advDays(),ok=got.includes(t);
- return`<div class="panel stack" style="width:100%;text-align:left;background:linear-gradient(135deg,#1f0d10,#0b0b0c);border-color:#991b1b"><div class="headrow"><b style="font-family:var(--f-head);font-size:17px;color:#fee2e2">Calendrier de l'Avent 🎄</b><span class="pill" style="color:#fca5a5;border-color:#991b1b;background:#1f0d10">${got.length} / 24</span></div>
- <div style="color:#fca5a5;font-size:14px">Une case à ouvrir chaque jour jusqu'au 24 décembre : pistons, paquets, voitures rares… et une légendaire le 24 !</div>
- <div class="advg">${ADV.map((r,i)=>{const d=i+1,o=got.includes(d);return`<div class="advc ${o?"o":d===t?"t":d<t?"m":""}"><b>${d}</b><span>${o?advIco(r):d===t?"🎁":d<t?"–":"🔒"}</span></div>`}).join("")}</div>
- ${ok?'<button class="btn ghost block" disabled>Case du jour ouverte · revenez demain</button>':`<button class="btn block" style="background:#16a34a;color:#fff" data-act="advopen">Ouvrir la case du ${t} décembre</button>`}</div>`}
+const advLab=r=>r[0]==="c"?r[1]+" pistons":r[0]==="p"?r[1]+" paquet"+(r[1]>1?"s":""):(r[0]==="L"?"Légendaire":r[0]==="UR"?"Ultra rare":"Super rare")+" S02";
+function advPanel(){const t=advToday(),noel=advNoel();if(!t&&!noel)return"";const got=advDays(),ok=t&&got.includes(t),all=got.length>=24,bg=advBonusGot(),just=U.advJust;U.advJust=0;
+ return`<div class="panel stack advp"><div class="headrow"><b class="advh">Calendrier de l'Avent 🎄</b><span class="pill advpill">${got.length} / 24</span></div>
+ <div class="advs">Une case par jour jusqu'au 24 décembre : pistons, paquets, voitures rares de la Série 02… et une légendaire le 24 ! Ouvrez les 24 cases pour débloquer le cadeau du 25.</div>
+ <div class="advg2">${ADV.map((r,i)=>{const d=i+1,o=got.includes(d),st=o?"o":t&&d===t?"t":t&&d<t||noel?"m":"l";
+  return`<div class="advd ${st}${o&&just===d?" just":""}${d===24?" big":""}"><div class="advin"><span>${advIco(r)}</span><small>${o?esc(advLab(r)):st==="m"?"Manquée":""}</small></div><div class="advdoor"><b>${d}</b>${st==="t"?"<i>🎁</i>":st==="l"?"<i>🔒</i>":""}</div></div>`}).join("")}</div>
+ <div class="advd25 ${noel&&all&&!bg?"t":bg?"o":""}"><span class="advt">🎄</span><div class="grow"><b>25 décembre · Cadeau de Noël${NB()}</b><small>${bg?"Récupéré, joyeux Noël !":all?"Une légendaire de la Série 02 vous attend":"Réservé à ceux qui ont ouvert les 24 cases"}</small></div>${noel&&all&&!bg?'<button class="btn green" data-act="advbonus">Ouvrir</button>':""}</div>
+ ${t?(ok?'<button class="btn ghost block" disabled>Case du jour ouverte · revenez demain</button>':`<button class="btn block advbtn" data-act="advopen">Ouvrir la case du ${t} décembre</button>`):""}</div>`}
 function evSchedule(n){const f=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Paris",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());const g=k=>+f.find(x=>x.type===k).value;
  const day=Date.UTC(g("year"),g("month")-1,g("day")),mon=day-((new Date(day).getUTCDay()+6)%7)*86400000,w=Math.round((mon-EV0)/WK),out=[];
  for(let k=0;k<n;k++){const m=mon+k*WK;let xm=false;for(let j=0;j<7;j++){const d=new Date(m+j*86400000);if(d.getUTCMonth()===11||(d.getUTCMonth()===0&&d.getUTCDate()<=6))xm=true}
@@ -3922,7 +3958,7 @@ function tdyList(){const L=[];
   if(S.social){const g=S.social,todoD=(g.duels||[]).filter(d=>!d.done&&!d.mine).length;L.push({k:"gift",nw:1,n:"Cadeau à un ami",a:"#f9a8d4",ic:I.gift,sub:g.gift?`Offert à ${esc(g.gift)}`:"Offrez un paquet",tag:g.gift?"OFFERT":"GRATUIT",todo:!g.gift&&S.friends.length>0});
    L.push({k:"duel",nw:1,n:"Défis d'ouverture",a:"#93c5fd",ic:I.swords,sub:todoD?`${todoD} paquet${todoD>1?"s":""} à ouvrir`:"Défiez vos amis",tag:todoD?"À OUVRIR":"+100 PISTONS",todo:todoD>0})}
   const s=surpriseInfo();L.push({k:"surp",nw:1,n:"Livraison surprise",a:"#fdba74",ic:I.box,sub:s.st==="here"?`Arrivée ! encore <span data-end="${s.b.sat+3600000}">${fmtLeft(s.left)}</span>`:s.st==="wait"?"Arrive aujourd'hui…":s.st==="got"?"Récupérée · demain":"Ratée · demain",tag:s.st==="here"?"ARRIVÉE !":s.st==="wait"?"EN ROUTE":s.st==="got"?"LIVRÉE":"RATÉE",todo:s.st==="here"})}}
- const at=advToday();if(at){const got=advDays(),ok=got.includes(at);L.push({k:"adv",n:"Calendrier de l'Avent",a:"#fca5a5",ic:I.gift,sub:ok?"Revenez demain":`Case du ${at} à ouvrir`,tag:ok?`${got.length} / 24`:"À OUVRIR",todo:!ok,bar:got.length/24})}
+ const at=advToday();if(!at&&advNoel()&&advDays().length>=24&&!advBonusGot())L.push({k:"adv",nw:1,n:"Cadeau de Noël",a:"#fca5a5",ic:I.gift,sub:"Une légendaire Série 02",tag:"À OUVRIR",todo:true});if(at){const got=advDays(),ok=got.includes(at);L.push({k:"adv",n:"Calendrier de l'Avent",a:"#fca5a5",ic:I.gift,sub:ok?"Revenez demain":`Case du ${at} à ouvrir`,tag:ok?`${got.length} / 24`:"À OUVRIR",todo:!ok,bar:got.length/24})}
  const c=cotmState();if(c&&c.opts&&c.opts.every(id=>CARS[id])){const td=c.mine==null;L.push({k:"cotm",n:"Carte du mois",a:"#f5d27a",ic:I.star,sub:td?`Votez pour ${nextMonthName(c.month)}`:"Vote enregistré",tag:td?"À FAIRE":"VOTÉ",todo:td})}
  const h=huntState(),hk=h&&huntKey(h);if(h&&HUNT_E[hk]){const n=(h.today||[]).length,m=huntN();L.push({k:"hunt",n:`Chasse aux ${HUNT_N[hk]}`,a:"#7dd3fc",ic:I.search,sub:n>=m?"Tout trouvé aujourd'hui":`${n} trouvé${n>1?"s":""} sur ${m}`,tag:`${Math.min(n,m)} / ${m}`,todo:n<m,pips:[Math.min(n,m),m]})}
  const my=mysteryState();if(my&&my.hint)L.push({k:"mys",n:"Voiture mystère",a:"#c4b5fd",ic:I.help,sub:my.found?"Trouvée cette semaine":"À deviner avant lundi",tag:my.found?"TROUVÉE":"5 PAQUETS",todo:false});
@@ -3977,11 +4013,11 @@ function merchPanel(){const m=merchState();if(!m)return'<div class="panel"><div 
 function openPack(pro,ev){if(!window.ONLINE&&S.user){const hh=new Date().getHours();if(hh===0)secretUnlock("minuit");if(hh===5)secretUnlock("aube");setTimeout(secretScanDemo,1500)}if(!window.ONLINE&&S.guild){const w=weekId(now());if(!S.gwk||S.gwk.w!==w)S.gwk={w,pts:0,me:0};S.gwk.pts++;S.gwk.me++}
  const et=ev?evInfo().t:0;let ids=ev&&et?[drawEv(et,1),...Array.from({length:4},()=>drawEv(et,0))]:(pro?[rnd(Math.random()<.2?BYR.L:BYR.UR),...Array.from({length:9},()=>drawId(true))]:Array.from({length:ev?4:5},()=>drawId(false)));if(ev&&!et)ids.unshift(rnd(BYR.ED));
  if(!pro&&!ev){if(ids.some(id=>CARS[id].r==="L"))S.pity=0;else if((S.pity||0)>=PITY_N-1){ids[0]=rnd(BYR.L);S.pity=0}else S.pity=(S.pity||0)+1}
- const fresh=revealPack(ids);const holo=ids.map(()=>Math.random()<(pro?HOLO_PRO:HOLO_ODDS));
- ids.forEach((id,k)=>{own(id);if(holo[k])S.holo[id]=(S.holo[id]||0)+1});S.stats.packs++;wkInc("packs");
+ const fresh=revealPack(ids);const holo=ids.map(()=>Math.random()<(pro?HOLO_PRO:HOLO_ODDS)),vint=ids.map((_,k)=>!holo[k]&&Math.random()<VINT_ODDS);
+ ids.forEach((id,k)=>{own(id);if(holo[k])S.holo[id]=(S.holo[id]||0)+1;if(vint[k]){S.vint=S.vint||{};S.vint[id]=(S.vint[id]||0)+1}});S.stats.packs++;wkInc("packs");
  if(holo.some(Boolean))notify("Vous avez obtenu une carte brillante !");
  if(pro)S.proTs=now();else if(ev)S.evPackTs=now();else{if(S.packs>=10)S.packTs=now();S.packs=Math.max(0,S.packs-1)}
- U.reveal={ids,fresh,holo,i:0};save();
+ U.reveal={ids,fresh,holo,vint,i:0};save();
 }
 function fmtLeft(ms){if(ms<=0)return"Terminée";const s=Math.floor(ms/1000),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),ss=s%60;if(d)return`${d}j ${h}h`;if(h)return`${h}h ${String(m).padStart(2,"0")}m`;return`${m}m ${String(ss).padStart(2,"0")}s`}
 const livePlayers=()=>PLAYERS.filter(p=>!isBan(p));
@@ -4057,10 +4093,10 @@ const SNAME={hp:"l'attaque",v:"la défense"},SU={hp:"ch",v:"km/h"};
 function bResTxt(r,a,z,s,who){const u=SU[s];const by=who?`${who} choisit ${SNAME[s]}. `:`Vous choisissez ${SNAME[s]}. `;return by+(r>0?`Manche gagnée : ${fmt(a)} ${u} contre ${fmt(z)} ${u}.`:r<0?`Manche perdue : ${fmt(a)} ${u} contre ${fmt(z)} ${u}.`:`Égalité à ${fmt(a)} ${u}.`)}
 function cardHTML(id,o={}){
  const c=CARS[id];const n=S&&S.col[id]||0;
- const isHolo=o.holo||(o.count&&S&&S.holo&&S.holo[id]);
+ const isHolo=o.holo||(o.count&&S&&S.holo&&S.holo[id]);const isVint=!isHolo&&(o.vint||(o.count&&S&&S.vint&&S.vint[id]));
  const lv=o.lv||((o.own||o.count)&&n?lvOf(id):1);
- return`<${o.tag||"div"} class="card r-${c.r} ${o.big?"big":""} ${isHolo?"holo":""} ${lv>1?"haslv":""} ${lv>=LVMAX?"evo":""} ${o.cls||""}" data-card="${id}" ${o.act?`data-act="${o.act}"`:""} ${o.tag==="button"?'type="button"':""}>
- <div class="c-img">${IMGMODE==="url"&&c.th?`<img class="phimg" src="${esc(c.th)}" alt="${esc(c.n)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">${carSVG(c)}`:carSVG(c)}<span class="badge"><i>${"<b></b>".repeat(RPIPS[c.r])}</i>${RSHORT[c.r]}</span>${o.star?`<span class="star ${S.fav.includes(id)?"on":""}" data-act="fav" data-id="${id}" role="button" aria-label="Favori">${S.fav.includes(id)?I.starf:I.star}</span>`:""}${o.count&&n>1?`<span class="count">×${n}</span>`:""}${isHolo?'<span class="holotag">✦ BRILLANTE</span>':o.isnew?'<span class="newtag">NOUVELLE</span>':""}${numTag(id)}${o.owned&&n?'<span class="owned-mark">Possédée</span>':""}${(o.own||o.count)&&n&&signedOf(id)?`<span class="sigtag">✍ SIGNÉE</span><span class="sig">${SIGNERS[id%SIGNERS.length]}</span>`:""}${isNewCar(id)&&!o.isnew?'<span class="addtag">✦ NOUVEAU</span>':""}</div>
+ return`<${o.tag||"div"} class="card r-${c.r} ${o.big?"big":""} ${isHolo?"holo":""} ${isVint?"vint":""} ${lv>1?"haslv":""} ${lv>=LVMAX?"evo":""} ${o.cls||""}" data-card="${id}" ${o.act?`data-act="${o.act}"`:""} ${o.tag==="button"?'type="button"':""}>
+ <div class="c-img">${IMGMODE==="url"&&c.th?`<img class="phimg" src="${esc(c.th)}" alt="${esc(c.n)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">${carSVG(c)}`:carSVG(c)}<span class="badge"><i>${"<b></b>".repeat(RPIPS[c.r])}</i>${RSHORT[c.r]}</span>${o.star?`<span class="star ${S.fav.includes(id)?"on":""}" data-act="fav" data-id="${id}" role="button" aria-label="Favori">${S.fav.includes(id)?I.starf:I.star}</span>`:""}${o.count&&n>1?`<span class="count">×${n}</span>`:""}${isHolo?'<span class="holotag">✦ BRILLANTE</span>':isVint?'<span class="vinttag">VINTAGE</span>':o.isnew?'<span class="newtag">NOUVELLE</span>':""}${numTag(id)}${o.owned&&n?'<span class="owned-mark">Possédée</span>':""}${(o.own||o.count)&&n&&signedOf(id)?`<span class="sigtag">✍ SIGNÉE</span><span class="sig">${SIGNERS[id%SIGNERS.length]}</span>`:""}${isNewCar(id)&&!o.isnew?'<span class="addtag">✦ NOUVEAU</span>':""}</div>
  <div class="c-body">${S2_ON?`<span class="sertag s${serieOf(id)}">S0${serieOf(id)}</span>`:""}${lv>1?`<span class="lvtag">${lv>=LVMAX?"★ ÉVO":"NIV "+lv}</span>`:""}<div class="c-title">${esc(c.n)}</div><div class="c-desc">${esc(o.big?c.long:c.desc)}</div>
  <div class="c-stats"><span>${I.atk}${fmt(effS(id,"hp",lv))} <small>ch</small></span><span>${I.def}${fmt(effS(id,"v",lv))} <small>km/h</small></span></div></div>${o.big?'<i class="glare" aria-hidden="true"></i>':""}</${o.tag||"div"}>`}
 // la grande carte pivote sous le doigt (ou la souris), avec un reflet ; les cartes brillantes scintillent
@@ -4332,7 +4368,7 @@ const PITY_N=50;
 function pityHTML(){if(typeof S.pity!=="number")return"";const n=Math.min(PITY_N-1,Math.max(0,S.pity)),left=PITY_N-n,pct=n/PITY_N*100;
  return`<div class="pity ${left<=5?"hot":""}"><span class="pi">${I.star}</span><div class="grow"><div class="pt"><b>Légendaire garantie${NB()}</b><em>${left===1?"au prochain paquet !":`dans ${left} paquets max.`}</em></div><div class="pb"><i style="width:${pct.toFixed(1)}%"></i></div></div></div>`}
 function pityMini(){if(typeof S.pity!=="number")return"<span></span>";const n=Math.min(PITY_N-1,Math.max(0,S.pity)),left=PITY_N-n;return`<span class="hpity ${left<=5?"hot":""}">${I.star}<span>Légendaire garantie ${left===1?"<b>au prochain paquet</b>":`dans <b>${left}</b> paquets`}</span></span>`}
-function oddsModal(){modal(`<h2><span>Chances par carte</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2>${oddsHTML()}${pityHTML()}`)}
+function oddsModal(){modal(`<h2><span>Chances par carte</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2>${oddsHTML()}${pityHTML()}<p class="oddsx">Chaque carte a aussi <b>3 %</b> de chances d'être <b>brillante</b> et <b>2 %</b> d'être <b>vintage</b>${NB()}.</p>`)}
 function heroH(eye,title,sub,stats,after){return`<div class="hhead hx"><div class="heye">${eye}</div><h1>${title}</h1>${sub?`<p>${sub}</p>`:""}${stats&&stats.length?`<div class="hdash">${stats.map(([ic,v,l,hot])=>`<div class="hd${hot?" hot":""}"><div class="hi">${ic}</div><b class="${String(v).length>8?"hl":""}">${v}</b><span>${l}</span></div>`).join("")}</div>`:""}${after?`<div class="hrow">${after}</div>`:""}</div>`}
 V.packs=()=>{refillPacks();const tz=teaser(),td=tdyList(),nt=td.filter(x=>x.todo).length,fd="",tdTop=(nt?td.filter(x=>x.todo):td).slice(0,4),tdShown=U.allTdy?td:tdTop,tdMore=td.length>tdTop.length;return`${installBar()}<div class="packview hx">
  <div class="heye">Série ${S2_ON?"02":"01"}${S2_ON?" "+NB():""}</div><h1>Ouvrir un paquet</h1>
@@ -4355,9 +4391,9 @@ function revealFx(r,holo,id){const big=r==="L"||r==="ED";if(big||r==="UR"){if(!(
  const col=r==="ED"?"#e43a4f":r==="L"?"#f5d27a":r==="UR"?"#f39d4d":"#f0abfc";const fx=document.createElement("div");fx.className="revfx"+(big?" big":"");fx.style.setProperty("--fx",col);
  fx.innerHTML=big?Array.from({length:26},(_,k)=>`<i style="left:${Math.random()*100}%;animation-delay:${(Math.random()*.5).toFixed(2)}s;animation-duration:${(1.4+Math.random()*1.2).toFixed(2)}s;transform:rotate(${Math.round(Math.random()*360)}deg)"></i>`).join(""):"";
  document.body.appendChild(fx);setTimeout(()=>fx.remove(),2800)}
-V.reveal=()=>{const R=U.reveal;const id=R.ids[R.i];const left=R.ids.length-1-R.i;const rr=CARS[id].r,hh=R.holo&&R.holo[R.i];R.fx=R.fx||{};if(!R.fx[R.i]){R.fx[R.i]=1;setTimeout(()=>revealFx(rr,hh,id),60)}return`<div class="reveal ${rr==="L"||rr==="ED"?"rv-legend":rr==="UR"?"rv-ur":""}" style="--rg:var(--c${rr})">
+V.reveal=()=>{const R=U.reveal;const id=R.ids[R.i];const left=R.ids.length-1-R.i;const rr=CARS[id].r,vv=!!(R.vint&&R.vint[R.i]),hh=(R.holo&&R.holo[R.i])||vv;R.fx=R.fx||{};if(!R.fx[R.i]){R.fx[R.i]=1;setTimeout(()=>revealFx(rr,hh,id),60)}return`<div class="reveal ${rr==="L"||rr==="ED"?"rv-legend":rr==="UR"?"rv-ur":""}" style="--rg:var(--c${rr})">
  <div class="ctr">Carte <b>${R.i+1}</b> / ${R.ids.length}</div>
- ${cardHTML(id,{big:true,star:true,isnew:R.fresh[R.i],holo:R.holo&&R.holo[R.i]})}
+ ${vv?'<div class="vintban">Carte vintage · 1 chance sur 50</div>':""}${cardHTML(id,{big:true,star:true,isnew:R.fresh[R.i],holo:R.holo&&R.holo[R.i],vint:vv})}
  <div class="dots"><button class="arrow" data-act="rprev" ${R.i?"":"disabled"} aria-label="Précédente">${I.left}</button>${R.ids.length>12?`<div class="rprog"><i style="width:${(R.i+1)/R.ids.length*100}%"></i></div>`:R.ids.map((_,k)=>`<i class="${k===R.i?"on":""}"></i>`).join("")}<button class="arrow" data-act="rnext" ${left?"":"disabled"} aria-label="Suivante">${I.right}</button></div>
  ${left?`<button class="btn dark" style="padding-inline:40px" data-act="rnext">Encore ${left} carte${left>1?"s":""}</button>`:`<div class="row"><button class="btn ghost" data-act="go" data-v="collection">Voir ma collection</button><button class="btn green" data-act="go" data-v="packs">Terminé</button></div><button class="linkbtn shpk" data-act="sharepk">${I.link} Partager mon ouverture${NB()}</button>`}
  ${R.ids.length>5?`<button class="linkbtn" data-act="rall">Tout afficher (${R.ids.length} cartes)</button>`:""}</div>`};
@@ -4891,7 +4927,7 @@ document.addEventListener("click",e=>{
   if(U.opening){const B=U.opening;if(B.tear||B.n>=Math.min(S.packs,10))return;B.n++;B.last=Date.now();blip(380+(B.n-1)*40,.15);if(p){p.classList.remove("shake");void p.offsetWidth;p.classList.add("shake")}return}
   const B=U.opening={n:1,last:Date.now(),tear:false};blip(380,.15);if(p)p.classList.add("shake");
   const fin=()=>{if(Date.now()-B.last<600)return setTimeout(fin,600-(Date.now()-B.last));B.tear=true;const q=$("#packbtn");if(q){q.classList.remove("shake");q.classList.add("tear")}blip(700,.12);
-   setTimeout(()=>{U.opening=false;const n=Math.min(B.n,S.packs,10);if(n<1)return render();const R={ids:[],fresh:[],holo:[],i:0};for(let k=0;k<n;k++){openPack(false);R.ids.push(...U.reveal.ids);R.fresh.push(...U.reveal.fresh);R.holo.push(...U.reveal.holo)}if(n>1)R.packs=n;U.reveal=R;save();go("reveal")},430)};
+   setTimeout(()=>{U.opening=false;const n=Math.min(B.n,S.packs,10);if(n<1)return render();const R={ids:[],fresh:[],holo:[],vint:[],i:0};for(let k=0;k<n;k++){openPack(false);R.ids.push(...U.reveal.ids);R.fresh.push(...U.reveal.fresh);R.holo.push(...U.reveal.holo);R.vint.push(...(U.reveal.vint||U.reveal.ids.map(()=>false)))}if(n>1)R.packs=n;U.reveal=R;save();go("reveal")},430)};
   setTimeout(fin,600)},
  saveinv:()=>{if(!meVip())return;const v=$("#sinv").value.trim();if(v&&!/^[A-Za-z0-9_\-]{3,20}$/.test(v))return toast("Le code doit faire 3 à 20 caractères : lettres, chiffres, _ ou -");S.user.invite=v;save();toast(v?"Lien d'invitation personnalisé enregistré.":"Code par défaut rétabli.");render()},
  editav:()=>{const legs=sortIds(Object.keys(S.col).map(Number).filter(id=>AVOK(CARS[id].r)),"rar");const cur=S.user.av||{};const pro=meVip();
@@ -5047,10 +5083,11 @@ document.addEventListener("click",e=>{
  wshare:()=>shareWrap(),
  serclaim:()=>{const s=SERIES.find(x=>x.k===d.k);if(!s||serClaimed().includes(s.k)||serOwned(s)<s.ids.length)return;S.seriesClaimed.push(s.k);S.packs+=s.p;save();blip(880);toast(`Série « ${s.n} » complétée : +${s.p} paquets !`);render()},
  updup:()=>{const id=+d.id,l=lvOf(id);if(l>=LVMAX||dupSpare(id)<l)return;own(id,-l);S.lvl=S.lvl||{};S.lvl[id]=l+1;save();blip(880);toast(`${CARS[id].n} passe au niveau ${l+1} !`);cardModal(id);render(true)},
- advopen:()=>{const t=advToday();if(!t)return;const y=new Date().getFullYear();if(!S.advL||S.advL.y!==y)S.advL={y,d:[]};if(S.advL.d.includes(t))return;S.advL.d.push(t);const r=ADV[t-1];
+ advopen:()=>{const t=advToday();if(!t)return;const y=new Date().getFullYear();if(!S.advL||S.advL.y!==y)S.advL={y,d:[]};if(S.advL.d.includes(t))return;S.advL.d.push(t);U.advJust=t;const r=ADV[t-1];
   if(r[0]==="c"){S.coins+=r[1];save();blip(880);toast(`Case du ${t} décembre : +${r[1]} pistons !`);render()}
   else if(r[0]==="p"){S.packs+=r[1];save();blip(880);toast(`Case du ${t} décembre : +${r[1]} paquet${r[1]>1?"s":""} !`);render()}
-  else{const id=rnd(BYR[r[0]]);const fresh=revealPack([id]);own(id);U.reveal={ids:[id],fresh,holo:[false],i:0};save();go("reveal")}},
+  else{const P=BYR[r[0]].filter(id=>id>=S2_FROM);const id=rnd(P.length?P:BYR[r[0]]);const fresh=revealPack([id]);own(id);U.reveal={ids:[id],fresh,holo:[false],i:0};save();go("reveal")}},
+ advbonus:()=>{if(!advNoel()||advDays().length<24||advBonusGot())return;S.advBL=new Date().getFullYear();const P=BYR.L.filter(id=>id>=S2_FROM);const id=rnd(P.length?P:BYR.L);const fresh=revealPack([id]);own(id);U.reveal={ids:[id],fresh,holo:[false],i:0};save();blip(880);go("reveal")},
  lvfind:()=>toast("La bataille en direct se joue en ligne, sur paddock.click."),lvinvite:()=>toast("La bataille en direct se joue en ligne, sur paddock.click."),
  lvyes:()=>{},lvno:()=>{},
  upgrade:()=>{const id=+d.id;const cost=upCost(id);if(!cost)return;if(S.coins<cost)return toast("Pas assez de pistons.");S.coins-=cost;S.lvl=S.lvl||{};S.lvl[id]=lvOf(id)+1;save();blip(880);toast(`${CARS[id].n} passe au niveau ${S.lvl[id]} !`);cardModal(id);render(true)},

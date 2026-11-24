@@ -111,7 +111,7 @@
       const [st, sub, lv, ev, , cm, wl, lvl, sec, poll, ext, pity, bonus, numb, social, ach2, sec2, s2p] = res;
       apply(st); // crée S (connexion fraîche : S est null) avant d'y écrire quoi que ce soit
       if (ach2 && typeof ach2 === "object") S.ach2 = ach2;
-      if (s2p && typeof s2p === "object") { S.s2pass = s2p.pass || []; S.flash = { d: parisDay(now()), n: s2p.flash || 0 }; S.s2ach = s2p.ach || []; S.plateDep = s2p.dep || null; }
+      if (s2p && typeof s2p === "object") { S.s2pass = s2p.pass || []; S.flash = { d: parisDay(now()), n: s2p.flash || 0 }; S.s2ach = s2p.ach || []; S.plateDep = s2p.dep || null; S.vint = s2p.vint || {}; S.advB = !!s2p.advb; }
       if (sec2 && typeof sec2 === "object") { if (S.sec2) Object.keys(sec2).forEach(k => { if (!S.sec2[k]) sec2Unlocked(k); }); S.sec2 = sec2; }
       if (Array.isArray(numb)) { S.numb = {}; for (const [id, n] of numb) S.numb[id] = n; }
       if (social && typeof social === "object") S.social = social;
@@ -297,7 +297,7 @@
   const packOrder = list => {
     const rk = id => CARS[id].r === "ED" ? -1 : RAR.indexOf(CARS[id].r);
     list.sort((a, b) => rk(b.id) - rk(a.id));
-    return { ids: list.map(x => x.id), fresh: list.map(x => x.new), holo: list.map(x => x.holo), i: 0 };
+    return { ids: list.map(x => x.id), fresh: list.map(x => x.new), holo: list.map(x => x.holo), vint: list.map(x => !!x.vint), i: 0 };
   };
   let preImgs = [];
   function preload(ids) {
@@ -587,6 +587,10 @@
     flash: act(async (el, d) => {
       const r = await rpc("flash_trade", { r: d.r }); S.flash = { d: parisDay(now()), n: FL_MAX - (r.left ?? 0) }; await sync(); flashDone(r);
     }),
+    advbonus: act(async () => {
+      const r = await rpc("claim_advent_bonus"); blip(880); S.advB = true;
+      if (r.card != null && CARS[r.card]) { U.reveal = packOrder([{ id: r.card, new: r.new, holo: false }]); _go("reveal"); sync().catch(() => {}); }
+    }),
     s2ach: act(async (el, d) => {
       const a = S2ACH.find(x => x[0] === d.k); if (!a) return;
       const r = await rpc("claim_s2ach", { k: d.k }); S.s2ach = r.ach || S.s2ach; if (typeof r.coins === "number") S.coins = r.coins;
@@ -635,7 +639,7 @@
       closeModal(); await afterLogin(`Bienvenue au paddock, ${u} ! 10 paquets vous attendent.`);
     }),
     advopen: act(async () => {
-      const r = await rpc("claim_advent"); blip(880);
+      const r = await rpc("claim_advent"); blip(880); U.advJust = r.day;
       if (r.card != null && CARS[r.card]) { U.reveal = packOrder([{ id: r.card, new: r.new, holo: false }]); _go("reveal"); sync().catch(() => {}); return; }
       toast(r.coins ? `Case du ${r.day} décembre : +${r.coins} pistons !` : `Case du ${r.day} décembre : +${r.packs} paquet${r.packs > 1 ? "s" : ""} !`); await after();
     }),

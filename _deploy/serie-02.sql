@@ -2156,7 +2156,7 @@ on conflict (id) do update set rarity = excluded.rarity, brand = excluded.brand,
 -- Reprise de open_pack de la mise à jour de novembre (vérifier qu'elle n'a pas changé depuis avant de lancer)
 create or replace function public.open_pack(kind text default 'normal') returns jsonb language plpgsql security definer set search_path = public as $$
 declare u uuid := _uid(); w wallets; pro boolean := _is_pro(u); n int; ids int[] := '{}'; t int := _ev_theme();
-        c int; h boolean; i int; res jsonb := '[]'::jsonb; isnew boolean; got_holo boolean := false;
+        c int; h boolean; v boolean; i int; res jsonb := '[]'::jsonb; isnew boolean; got_holo boolean := false;
 begin
   perform _sync_packs(u);
   select * into w from wallets where user_id = u for update;
@@ -2213,7 +2213,9 @@ begin
     h := random() < case when kind = 'pro' then 0.05 else 0.03 end;
     got_holo := got_holo or h;
     isnew := _give(u, c, h);
-    res := res || jsonb_build_array(jsonb_build_object('id', c, 'holo', h, 'new', isnew));
+    v := not h and random() < 0.02;   -- carte vintage : 1 chance sur 50 (jamais en même temps que brillante)
+    if v then update inventory set vint = vint + 1 where user_id = u and card_id = c; end if;
+    res := res || jsonb_build_array(jsonb_build_object('id', c, 'holo', h, 'vint', v, 'new', isnew));
   end loop;
   perform _stat_inc(u, 'packs'); perform _wk_inc(u, 'packs'); perform _comm_inc(u);
   if got_holo then perform _notify(u, 'Vous avez obtenu une carte brillante !'); end if;
@@ -2228,6 +2230,9 @@ alter table public.wallets add column if not exists s2pass int[] not null defaul
 create table if not exists public.s2_ach (user_id uuid not null references auth.users(id) on delete cascade, k text not null, at timestamptz not null default now(), primary key (user_id, k));
 alter table public.s2_ach enable row level security;
 alter table public.profiles add column if not exists plate_dep text;
+alter table public.inventory add column if not exists vint int not null default 0;
+create table if not exists public.advent_bonus (user_id uuid not null references auth.users(id) on delete cascade, yr int not null, primary key (user_id, yr));
+alter table public.advent_bonus enable row level security;
 -- (la table des échanges flash est créée plus bas ; get_s2pass renvoie aussi le nombre d'échanges flash du jour)
 create table if not exists public.flash_trades (user_id uuid not null references auth.users(id) on delete cascade, day date not null, n int not null default 0, primary key (user_id, day));
 alter table public.flash_trades enable row level security;
@@ -2235,7 +2240,9 @@ create or replace function public.get_s2pass() returns jsonb language sql stable
   select jsonb_build_object('pass', coalesce((select to_jsonb(s2pass) from wallets where user_id = _uid()), '[]'::jsonb),
                             'flash', coalesce((select n from flash_trades where user_id = _uid() and day = (now() at time zone 'Europe/Paris')::date), 0),
                             'ach', coalesce((select jsonb_agg(k) from s2_ach where user_id = _uid()), '[]'::jsonb),
-                            'dep', (select plate_dep from profiles where id = _uid()));
+                            'dep', (select plate_dep from profiles where id = _uid()),
+                            'vint', (select coalesce(jsonb_object_agg(card_id::text, least(vint, n)), '{}'::jsonb) from inventory where user_id = _uid() and vint > 0 and n > 0),
+                            'advb', exists (select 1 from advent_bonus where user_id = _uid() and yr = extract(year from now() at time zone 'Europe/Paris')::int));
 $$;
 create or replace function public.claim_s2pass(i int) returns jsonb language plpgsql security definer set search_path = public as $$
 declare u uuid := _uid(); need int[] := '{10,25,50,100,175,250,400,600,900,1300}';
@@ -2361,3 +2368,40 @@ create or replace function public.get_plate_dep(name text) returns text language
 $$;
 revoke all on function public.claim_s2ach(text), public.set_plate_dep(text), public.get_plate_dep(text) from public, anon;
 grant execute on function public.claim_s2ach(text), public.set_plate_dep(text), public.get_plate_dep(text) to authenticated;
+
+
+-- ===== Calendrier de l'Avent 2026 : les voitures à gagner viennent de la Série 02, et cadeau du 25 =====
+create or replace function public.claim_advent() returns jsonb language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); d int := _adv_today(); y int := extract(year from now() at time zone 'Europe/Paris')::int; r text[]; c int; isnew boolean;
+begin
+  if d is null then raise exception 'Le calendrier de l''Avent est ouvert du 1er au 24 décembre.'; end if;
+  insert into advent(user_id, yr, day) values (u, y, d) on conflict do nothing;
+  if not found then raise exception 'Vous avez déjà ouvert la case d''aujourd''hui. Revenez demain !'; end if;
+  select array_agg(x) into r from unnest(_adv(d)) x;
+  if r[1] = 'c' then
+    update wallets set coins = coins + r[2]::int where user_id = u;
+    return jsonb_build_object('day', d, 'coins', r[2]::int);
+  elsif r[1] = 'p' then
+    update wallets set packs = packs + r[2]::int where user_id = u;
+    return jsonb_build_object('day', d, 'packs', r[2]::int);
+  else
+    select id into c from cards where rarity = r[1] and id >= 4327 order by random() limit 1;
+    if c is null then select id into c from cards where rarity = r[1] order by random() limit 1; end if;
+    isnew := _give(u, c, false);
+    return jsonb_build_object('day', d, 'card', c, 'new', isnew);
+  end if;
+end $$;
+create or replace function public.claim_advent_bonus() returns jsonb language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); t timestamp := now() at time zone 'Europe/Paris'; y int := extract(year from t)::int; c int; isnew boolean;
+begin
+  if u is null then raise exception 'Connectez-vous.'; end if;
+  if extract(month from t) <> 12 or extract(day from t) < 25 then raise exception 'Le cadeau de Noël s''ouvre à partir du 25 décembre.'; end if;
+  if (select count(*) from advent where user_id = u and yr = y) < 24 then raise exception 'Il faut avoir ouvert les 24 cases du calendrier.'; end if;
+  insert into advent_bonus(user_id, yr) values (u, y) on conflict do nothing;
+  if not found then raise exception 'Cadeau de Noël déjà ouvert. Joyeux Noël !'; end if;
+  select id into c from cards where rarity = 'L' and id >= 4327 order by random() limit 1;
+  isnew := _give(u, c, false);
+  return jsonb_build_object('card', c, 'new', isnew);
+end $$;
+revoke all on function public.claim_advent_bonus() from public, anon;
+grant execute on function public.claim_advent_bonus() to authenticated;
