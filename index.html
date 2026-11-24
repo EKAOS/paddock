@@ -1217,6 +1217,14 @@ body.light .mtile.tg.on svg,body.light .dwal .wi svg,body.light .dpt.best>svg{co
 .mnme{display:flex;align-items:center;gap:12px;width:100%;padding:12px;margin-bottom:6px;border-radius:16px;border:1px solid var(--line2);background:linear-gradient(135deg,rgba(207,178,122,.12),transparent 70%),var(--panel2);color:var(--text);font:inherit;text-align:left;cursor:pointer}
 .mnme .av{width:44px;height:44px}.mnme b{display:block;font-size:15px}.mnme small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
 .mnc{display:flex;align-items:center;gap:5px;font-weight:800;color:var(--green);font-size:14px}.mnc svg{width:15px;height:15px}
+
+/* profil : nom sur sa ligne, badges alignés dessous */
+.vith{display:flex;align-items:center;gap:12px}.vith b{display:block;font-size:15px}.vith small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}.vith .btn{flex:none;padding:8px 12px;font-size:13px}.vith .btn svg{width:15px;height:15px;margin-right:5px;vertical-align:-3px}
+.pfn2{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:24px!important;line-height:1.1!important}
+.pfn2 .nm{display:contents}.pfn2 .nmt{flex-basis:100%;overflow-wrap:anywhere;margin-bottom:2px}
+.pfn2>.nm>*:not(.nmt),.pfn2 .flame{margin:0!important;height:24px;display:inline-flex;align-items:center;vertical-align:middle}
+.pfn2 .flame{font-size:12.5px;padding:0 9px}.pfn2 .lvc{min-width:24px;justify-content:center}.pfn2 .prst svg{height:22px;width:auto}
+.pfid{align-items:flex-end}.pfnm small{margin-top:6px}
 /* ===== Série 02 : finitions ===== */
 .navbadge.nb-g{background:var(--green);color:#1a1408}
 .navdot{position:absolute;top:9px;right:28%;width:9px;height:9px;border-radius:50%;background:var(--red);box-shadow:0 0 0 2px rgba(10,10,11,.9)}
@@ -4643,12 +4651,12 @@ V.profile=()=>{const me=myMe(),p=myLevel(),sk=(me.seeking||[]).filter(id=>CARS[i
   <div class="panel stack pfpr">${prestigeBox()}</div>
   <div class="panel pfpriv"><div class="grow"><b>${S.set.pub?"Profil public":"Profil privé"}</b><small>${S.set.pub?"Tout le monde peut voir votre collection.":"Seuls vos amis voient votre collection."}</small></div><button class="sw ${S.set.pub?"on":""}" data-act="set" data-k="pub" aria-label="Profil public"></button></div>`;
  else if(tab==="tro")body=streakPanel()+s2AchPanel()+(bd||S.brandsClaimed.length?`${bd}${S.brandsClaimed.length?`<div class="panel stack"><b style="font-family:var(--f-head);font-size:16px">Marques complétées</b><div class="modbtns">${S.brandsClaimed.map(b=>`<span class="pill">${esc(b)}</span>`).join("")}</div></div>`:""}`:`<div class="panel pfempty">${I.trophy}<b>Pas encore de trophée</b><small>Complétez des séries, finissez une saison dans le classement ou terminez une chasse pour en gagner.</small></div>`);
- else body=`<div class="panel stack"><div class="headrow"><span style="color:var(--muted);font-size:13px">${showN()} emplacements · touchez + pour exposer une carte</span><button class="linkbtn g3b" data-act="g3d">Voir en 3D${NB()}</button></div>
+ else body=`<div class="panel stack"><div class="vith"><div class="grow"><b>Ma vitrine</b><small>${showN()} emplacements · touchez + pour exposer une carte</small></div><button class="btn ghost g3b" data-act="g3d">${I.cube||""}Voir en 3D</button></div>
  ${decorWrap(myDecor(),`<div class="vit">${S.show.slice(0,showN()).map((id,k)=>id!==null&&S.col[id]?`<div style="position:relative">${cardHTML(id)}<button class="x" data-act="unshow" data-k="${k}" style="position:absolute;top:-6px;right:-6px;background:var(--panel2);border-radius:50%;z-index:3" aria-label="Retirer">${I.x}</button></div>`:`<button class="slot" data-act="pickshow" data-k="${k}" aria-label="Ajouter à la vitrine">+</button>`).join("")}</div>`,myMe().livery)}${window.ONLINE&&myMe().reacts?`<div style="margin-top:12px"><div class="label" style="margin-bottom:6px">Réactions de vos visiteurs</div>${reactBar(S.user.name,myMe().reacts,true)}</div>`:""}</div></div>`;
- return`<div class="pagehead"><h1>Mon profil</h1></div><div class="stack pf2">
+ return`<div class="stack pf2">
  <div class="panel pfh"><div class="banner" style="${bannerStyle()}"></div>
   <div class="pfid"><div class="av ${strkFrame(myStreak().best)?"fr":""}" style="background:${avColor(S.user.name)};${strkFrame(myStreak().best)?`--fc:${strkFrame(myStreak().best)[2]}`:""}">${avInner(S.user.name)}</div>
-   <div class="pfnm"><h2>${nm(S.user.name)}${flameHTML(myStreak())}</h2><div class="pfmeta">${titleHTML(me.title)}${plateHTML(me.plate,myDep())}</div><small>Pilote depuis ${new Date(S.user.since).toLocaleDateString("fr-FR",{month:"long",year:"numeric"})}${window.ONLINE&&me.value?` · collection ≈ <b>${fmt(me.value)}</b> pistons`:""}</small></div></div>
+   <div class="pfnm"><h2 class="pfn2">${nm(S.user.name)}${flameHTML(myStreak())}</h2><div class="pfmeta">${titleHTML(me.title)}${plateHTML(me.plate,myDep())}</div><small>Pilote depuis ${new Date(S.user.since).toLocaleDateString("fr-FR",{month:"long",year:"numeric"})}${window.ONLINE&&me.value?` · collection ≈ <b>${fmt(me.value)}</b> pistons`:""}</small></div></div>
   <div class="pfst"><div><b>${lv}</b><span>niveau</span></div><div><b>${fmt(u)}</b><span>voiture${u>1?"s":""} unique${u>1?"s":""}</span></div><div><b>${fmt(n)}</b><span>carte${n>1?"s":""}</span></div></div>
   <div class="pflv"><div class="headrow"><span>Niveau ${lv} → ${lv+1}</span><span>${fmt(done)} / ${fmt(span)} XP</span></div><div class="bar"><i style="width:${pct.toFixed(1)}%"></i></div></div>
   <div class="pfact"><button class="btn ghost" data-act="editav">${I.cam} Modifier</button><button class="btn green" data-act="shareprof" data-f="${esc(S.user.name)}">${I.link} Partager</button></div></div>
