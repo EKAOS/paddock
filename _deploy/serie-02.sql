@@ -2232,6 +2232,7 @@ create table if not exists public.s2_ach (user_id uuid not null references auth.
 alter table public.s2_ach enable row level security;
 alter table public.profiles add column if not exists plate_dep text;
 alter table public.inventory add column if not exists vint int not null default 0;
+alter table public.inventory add column if not exists ed1 boolean not null default false;   -- « 1re édition » : tirée pendant la semaine de lancement
 create table if not exists public.launch_stats (user_id uuid primary key references auth.users(id) on delete cascade, packs int not null default 0, eve int not null default 0, pts int not null default 0, gift boolean not null default false, leg boolean not null default false, claimed boolean not null default false);
 alter table public.launch_stats enable row level security;
 create table if not exists public.evening_packs (user_id uuid not null references auth.users(id) on delete cascade, day date not null, primary key (user_id, day));
@@ -2261,7 +2262,8 @@ begin
     'advb', exists (select 1 from advent_bonus where user_id = u and yr = extract(year from now() at time zone 'Europe/Paris')::int),
     'eve', (select to_char(day, 'YYYY-MM-DD') from evening_packs where user_id = u and day = d),
     'streak', jsonb_build_object('cur', st.cur, 'best', st.best),
-    'launch', _launch_info(u));
+    'launch', _launch_info(u),
+    'ed1', (select coalesce(jsonb_object_agg(card_id::text, true), '{}'::jsonb) from inventory where user_id = u and ed1 and n > 0));
 end $$;
 create or replace function public.claim_s2pass(i int) returns jsonb language plpgsql security definer set search_path = public as $$
 declare u uuid := _uid(); need int[] := '{10,25,50,100,175,250,400,600,900,1300}';
@@ -2473,6 +2475,7 @@ begin
   if not _launch_on() then return; end if;
   select coalesce(sum(case c.rarity when 'C' then 1 when 'PC' then 1 when 'R' then 2 when 'SR' then 3 when 'UR' then 5 else 10 end), 0) into p
     from unnest(ids) x(id) join cards c on c.id = x.id where c.id >= 4327;
+  update inventory set ed1 = true where user_id = u and card_id = any(ids) and card_id >= 4327 and not ed1;
   insert into launch_stats(user_id, packs, eve, pts) values (u, 1, case when now() < '2026-11-30 23:00+00' then 1 else 0 end, p)
   on conflict (user_id) do update set packs = launch_stats.packs + 1, eve = launch_stats.eve + case when now() < '2026-11-30 23:00+00' then 1 else 0 end, pts = launch_stats.pts + p;
 end $$;

@@ -111,7 +111,7 @@
       const [st, sub, lv, ev, , cm, wl, lvl, sec, poll, ext, pity, bonus, numb, social, ach2, sec2, s2p] = res;
       apply(st); // crée S (connexion fraîche : S est null) avant d'y écrire quoi que ce soit
       if (ach2 && typeof ach2 === "object") S.ach2 = ach2;
-      if (s2p && typeof s2p === "object") { S.s2pass = s2p.pass || []; S.flash = { d: parisDay(now()), n: s2p.flash || 0 }; S.s2ach = s2p.ach || []; S.plateDep = s2p.dep || null; S.vint = s2p.vint || {}; S.advB = !!s2p.advb; S.eve = s2p.eve || null; S.streak = s2p.streak || { cur: 0, best: 0 }; S.launch = s2p.launch || null; }
+      if (s2p && typeof s2p === "object") { S.s2pass = s2p.pass || []; S.flash = { d: parisDay(now()), n: s2p.flash || 0 }; S.s2ach = s2p.ach || []; S.plateDep = s2p.dep || null; S.vint = s2p.vint || {}; S.advB = !!s2p.advb; S.eve = s2p.eve || null; S.streak = s2p.streak || { cur: 0, best: 0 }; S.launch = s2p.launch || null; S.ed1 = s2p.ed1 || {}; }
       if (sec2 && typeof sec2 === "object") { if (S.sec2) Object.keys(sec2).forEach(k => { if (!S.sec2[k]) sec2Unlocked(k); }); S.sec2 = sec2; }
       if (Array.isArray(numb)) { S.numb = {}; for (const [id, n] of numb) S.numb[id] = n; }
       if (social && typeof social === "object") S.social = social;
@@ -560,6 +560,12 @@
   pushState();
   if ("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message", e => { if (e.data === "open-notifs") { const b = document.querySelector('[data-act="notifs"]'); if (b) b.click(); } });
 
+  // recherche partout : les joueurs viennent du serveur
+  window.gsPlayers = async q => {
+    try { const m = await rpc("search_players", { q }); m.forEach(absorb); const g = $("#gsp"), i = $("#gq"); if (!g || !i || i.value.trim() !== q) return;
+      g.innerHTML = m.length ? `<div class="mgt">Joueurs</div><div class="stack">${m.slice(0, 6).map(p => `<div class="lrow"><div class="av" style="background:${avColor(p.u)}">${avInner(p.u)}</div><div class="name">${nm(p.u)}</div></div>`).join("")}</div>` : "";
+    } catch (x) {}
+  };
   window.OA = {
     reportgo: act(async (el, d) => {
       const r = (document.querySelector("input[name=rpr]:checked") || {}).value || "autre";
