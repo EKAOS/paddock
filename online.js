@@ -592,6 +592,8 @@
       const r = await rpc("claim_advent_bonus"); blip(880); S.advB = true;
       if (r.card != null && CARS[r.card]) { U.reveal = packOrder([{ id: r.card, new: r.new, holo: false }]); _go("reveal"); sync().catch(() => {}); }
     }),
+    openall: async () => { if (!(S.packs > 1)) return; askTilt(); buzz([20, 40, 20]); const n = Math.min(S.packs, 10);
+      for (let i = 0; i < n; i++) { openKind("normal").catch(x => toast(x.message)); await wait(140); } },
     lchgift: act(async () => { await rpc("claim_launch_gift"); blip(880); toast(`Cadeau de lancement : +${LCH_GIFT} paquets !`); await after(); openTdy("launch"); }),
     lchleg: act(async () => { const r = await rpc("claim_launch_leg"); blip(880); await after(); if (r && r.card != null && CARS[r.card]) { U.reveal = packOrder([{ id: r.card, new: r.new, holo: false }]); _go("reveal"); } }),
     lchrank: act(async () => { const r = await rpc("claim_launch_rank"); blip(880); await after(); const l = (r && r.cards) || []; if (l.length) { U.reveal = packOrder(l.map(x => ({ id: x.id, new: x.new, holo: false }))); _go("reveal"); } else toast("Récompense récupérée !"); }),
@@ -726,7 +728,7 @@
     lvgo: act(async () => { const L = U.lv; L.busy = true; try { await rpc("live_pick", { bid: L.id, picks: L.pick }); await livePoll(true); } finally { L.busy = false; } }),
     lvmove: act(async (el, d) => { const L = U.lv; if (L.busy) return; L.busy = true; try { await rpc("live_move", { bid: L.id, stat: d.s }); await livePoll(true); } finally { L.busy = false; } }),
     lvquit: () => { U.lv = null; U.btab = "live"; window.go("battle"); },
-    open: act(async () => { if (window.askTilt) askTilt(); if (!(S.packs > 0)) return toast("Plus de paquet disponible pour l'instant."); await openKind("normal"); }),
+    open: act(async () => { if (window.askTilt) askTilt(); if (window.buzz) buzz(15); if (!(S.packs > 0)) return toast("Plus de paquet disponible pour l'instant."); await openKind("normal"); }),
     openpro: act(async () => { await openKind("pro"); }),
     openev: act(async () => { await openKind("event"); }),
     giftsend: act(async (el, d) => { await rpc("send_gift", { nm: d.f }); toast(`Paquet offert à ${d.f} !`); blip(880, .12); await sync(); closeModal(); openTdy("gift"); render(true); }),
