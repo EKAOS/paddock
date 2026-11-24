@@ -111,7 +111,7 @@
       const [st, sub, lv, ev, , cm, wl, lvl, sec, poll, ext, pity, bonus, numb, social, ach2, sec2, s2p] = res;
       apply(st); // crée S (connexion fraîche : S est null) avant d'y écrire quoi que ce soit
       if (ach2 && typeof ach2 === "object") S.ach2 = ach2;
-      if (s2p && typeof s2p === "object") { S.s2pass = s2p.pass || []; S.flash = { d: parisDay(now()), n: s2p.flash || 0 }; }
+      if (s2p && typeof s2p === "object") { S.s2pass = s2p.pass || []; S.flash = { d: parisDay(now()), n: s2p.flash || 0 }; S.s2ach = s2p.ach || []; S.plateDep = s2p.dep || null; }
       if (sec2 && typeof sec2 === "object") { if (S.sec2) Object.keys(sec2).forEach(k => { if (!S.sec2[k]) sec2Unlocked(k); }); S.sec2 = sec2; }
       if (Array.isArray(numb)) { S.numb = {}; for (const [id, n] of numb) S.numb[id] = n; }
       if (social && typeof social === "object") S.social = social;
@@ -507,7 +507,8 @@
   window.OP = async n => {
     modal(`<div class="pp"><h2><span>Profil</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2><div class="spin"></div></div>`);
     try {
-      const r = await rpc("get_profile", { name: n });
+      const [r, dep] = await Promise.all([rpc("get_profile", { name: n }), rpc("get_plate_dep", { name: n }).catch(() => null)]);
+      if (r && dep) r.dep = dep;
       const name = absorb(r.u) || n;
       modal(profileHTML(Object.assign({}, r, { name, seen: T(r.seen), show: r.show || [] })));
     } catch (x) { closeModal(); toast(x.message); }
@@ -585,6 +586,12 @@
     flash: act(async (el, d) => {
       const r = await rpc("flash_trade", { r: d.r }); S.flash = { d: parisDay(now()), n: FL_MAX - (r.left ?? 0) }; await sync(); flashDone(r);
     }),
+    s2ach: act(async (el, d) => {
+      const a = S2ACH.find(x => x[0] === d.k); if (!a) return;
+      const r = await rpc("claim_s2ach", { k: d.k }); S.s2ach = r.ach || S.s2ach; if (typeof r.coins === "number") S.coins = r.coins;
+      blip(880, .12); toast(`${a[1]} Succès « ${a[2]} » ! +${a[5]} pistons`); render(true);
+    }),
+    depset: async v => { try { const r = await rpc("set_plate_dep", { d: v || "" }); S.plateDep = r || null; toast(r ? `Département ${r} enregistré.` : "Département retiré."); render(true); } catch (x) { toast(x.message); render(true); } },
     s2claim: act(async (el, d) => {
       const r = await rpc("claim_s2pass", { i: +d.i }); S.s2pass = r.claimed || S.s2pass; await after(); s2Done(S2PASS[+d.i - 1], r.card);
     }),

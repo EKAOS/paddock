@@ -2224,12 +2224,18 @@ grant execute on function public.open_pack(text) to authenticated;
 
 -- ===== Pass Saison 02 : paliers débloqués en collectionnant les voitures de la Série 02 =====
 alter table public.wallets add column if not exists s2pass int[] not null default '{}';
+-- ===== Succès Série 02 et département sur la plaque =====
+create table if not exists public.s2_ach (user_id uuid not null references auth.users(id) on delete cascade, k text not null, at timestamptz not null default now(), primary key (user_id, k));
+alter table public.s2_ach enable row level security;
+alter table public.profiles add column if not exists plate_dep text;
 -- (la table des échanges flash est créée plus bas ; get_s2pass renvoie aussi le nombre d'échanges flash du jour)
 create table if not exists public.flash_trades (user_id uuid not null references auth.users(id) on delete cascade, day date not null, n int not null default 0, primary key (user_id, day));
 alter table public.flash_trades enable row level security;
 create or replace function public.get_s2pass() returns jsonb language sql stable security definer set search_path = public as $$
   select jsonb_build_object('pass', coalesce((select to_jsonb(s2pass) from wallets where user_id = _uid()), '[]'::jsonb),
-                            'flash', coalesce((select n from flash_trades where user_id = _uid() and day = (now() at time zone 'Europe/Paris')::date), 0));
+                            'flash', coalesce((select n from flash_trades where user_id = _uid() and day = (now() at time zone 'Europe/Paris')::date), 0),
+                            'ach', coalesce((select jsonb_agg(k) from s2_ach where user_id = _uid()), '[]'::jsonb),
+                            'dep', (select plate_dep from profiles where id = _uid()));
 $$;
 create or replace function public.claim_s2pass(i int) returns jsonb language plpgsql security definer set search_path = public as $$
 declare u uuid := _uid(); need int[] := '{10,25,50,100,175,250,400,600,900,1300}';
@@ -2312,3 +2318,46 @@ begin
   perform _notify(u, 'Prestige ' || (p.prestige + 1) || ' : nouvel écusson ! 10 paquets et une légendaire signée vous attendent.');
   return jsonb_build_object('prestige', p.prestige + 1, 'card', c);
 end $$;
+
+
+-- ===== Succès Série 02 : 9 succès, vérifiés sur l'inventaire, récompense en pistons =====
+create or replace function public.claim_s2ach(k text) returns jsonb language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); need int; prize int; cur int;
+  fr text[] := '{Renault,Peugeot,Citroën,Alpine,DS,Simca,Simca-Talbot,Simca-Chrysler,Matra,Matra-Simca,Talbot,Talbot-Lago,Venturi,Bugatti,Delahaye,Delage,Panhard,Hispano-Suiza,Ligier,"Facel Vega",Rondeau,Pescarolo,Courage,Mobilize,Genty}';
+begin
+  if u is null then raise exception 'Connectez-vous pour récupérer ce succès.'; end if;
+  select x.need, x.prize into need, prize from (values ('s2_espace',3,50),('s2_p34',1,25),('s2_tyrrell',5,50),('s2_2020',10,50),('s2_old',5,50),('s2_fr',20,50),('s2_ferrari',10,75),('s2_brands',50,75),('s2_leg',5,100)) as x(k, need, prize) where x.k = claim_s2ach.k;
+  if need is null then raise exception 'Succès inconnu.'; end if;
+  select case claim_s2ach.k
+      when 's2_brands' then count(distinct c.brand)
+      else count(*) filter (where case claim_s2ach.k
+        when 's2_espace' then c.id in (4329, 4332, 4335)
+        when 's2_p34' then c.id = 4339
+        when 's2_tyrrell' then c.brand = 'Tyrrell'
+        when 's2_2020' then c.y1 >= 2020
+        when 's2_old' then c.y1 < 1950
+        when 's2_fr' then c.brand = any(fr)
+        when 's2_ferrari' then c.brand = 'Ferrari'
+        when 's2_leg' then c.rarity = 'L' end) end
+    into cur from inventory i join cards c on c.id = i.card_id where i.user_id = u and i.n > 0 and i.card_id >= 4327;
+  if cur < need then raise exception 'Succès pas encore atteint (% / %).', cur, need; end if;
+  insert into s2_ach(user_id, k) values (u, claim_s2ach.k) on conflict do nothing;
+  if not found then raise exception 'Succès déjà récupéré.'; end if;
+  update wallets set coins = coins + prize where user_id = u;
+  return jsonb_build_object('ach', (select jsonb_agg(a.k) from s2_ach a where a.user_id = u), 'coins', (select coins from wallets where user_id = u));
+end $$;
+
+-- ===== Département affiché sur la plaque d'immatriculation =====
+create or replace function public.set_plate_dep(d text) returns text language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); v text := nullif(upper(trim(coalesce(d, ''))), '');
+begin
+  if u is null then raise exception 'Connectez-vous.'; end if;
+  if v is not null and v !~ '^(0[1-9]|[1-8][0-9]|9[0-5]|2A|2B|97[1-46])$' then raise exception 'Département inconnu.'; end if;
+  update profiles set plate_dep = v where id = u;
+  return v;
+end $$;
+create or replace function public.get_plate_dep(name text) returns text language sql stable security definer set search_path = public as $$
+  select plate_dep from profiles where lower(username) = lower(name) and not banned limit 1;
+$$;
+revoke all on function public.claim_s2ach(text), public.set_plate_dep(text), public.get_plate_dep(text) from public, anon;
+grant execute on function public.claim_s2ach(text), public.set_plate_dep(text), public.get_plate_dep(text) to authenticated;
