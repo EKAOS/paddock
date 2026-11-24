@@ -2233,7 +2233,7 @@ create or replace function public.get_s2pass() returns jsonb language sql stable
 $$;
 create or replace function public.claim_s2pass(i int) returns jsonb language plpgsql security definer set search_path = public as $$
 declare u uuid := _uid(); need int[] := '{10,25,50,100,175,250,400,600,900,1300}';
-        kind text[] := '{coins,packs,coins,packs,coins,packs,coins,leg,packs,coins}'; amt int[] := '{50,2,150,3,300,5,500,1,8,1000}';
+        kind text[] := '{coins,packs,coins,packs,coins,packs,coins,leg,packs,coins}'; amt int[] := '{25,2,75,3,150,5,250,1,8,500}';
         owned int; c int;
 begin
   if u is null then raise exception 'Connectez-vous pour récupérer cette récompense.'; end if;

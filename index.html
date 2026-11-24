@@ -3821,7 +3821,7 @@ function mpList(){const out=[],pv=meVip(),pr=pv&&proReady();
  return out.join("")}
 
 /* ---------- Pass Saison 02 : collectionner les voitures de la Série 02 débloque des paliers ---------- */
-const S2PASS=[[10,"coins",50],[25,"packs",2],[50,"coins",150],[100,"packs",3],[175,"coins",300],[250,"packs",5],[400,"coins",500],[600,"leg",1],[900,"packs",8],[1300,"coins",1000]];
+const S2PASS=[[10,"coins",25],[25,"packs",2],[50,"coins",75],[100,"packs",3],[175,"coins",150],[250,"packs",5],[400,"coins",250],[600,"leg",1],[900,"packs",8],[1300,"coins",500]];
 function s2Owned(){if(!S||!S.col)return 0;let n=0;for(const k in S.col)if(+k>=S2_FROM&&S.col[k]>0)n++;return n}
 const s2Claimed=()=>(S&&S.s2pass)||[];
 const s2Rew=t=>t[1]==="coins"?`${fmt(t[2])} pistons`:t[1]==="packs"?`${t[2]} paquets`:"1 légendaire de la Série 02";
