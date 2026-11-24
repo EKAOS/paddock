@@ -11,7 +11,20 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}
+/* compte à rebours Série 02 */
+.s2cd{width:100%;margin:12px 0 2px;padding:14px 14px 12px;border-radius:16px;text-align:center;position:relative;overflow:hidden;
+ background:radial-gradient(120% 90% at 50% 0%,rgba(185,28,28,.35),transparent 60%),linear-gradient(180deg,#1c0a0d,#0d0708);border:1px solid rgba(220,38,38,.45);box-shadow:0 0 30px rgba(185,28,28,.18)}
+.s2cd::after{content:"02";position:absolute;right:-6px;top:-22px;font:800 96px/1 var(--f-head);color:rgba(241,220,171,.06);pointer-events:none}
+.s2cd-k{font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#f1dcab}
+.s2cd-t{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0 8px}
+.s2cd-t div{background:rgba(0,0,0,.35);border:1px solid rgba(241,220,171,.18);border-radius:11px;padding:8px 0 6px}
+.s2cd-t b{display:block;font:800 26px/1.05 var(--f-head);color:#fff;font-variant-numeric:tabular-nums}
+.s2cd-t span{display:block;font-size:10.5px;color:#fca5a5;letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+.s2cd-now{grid-column:1/-1;font-weight:700;color:#fff;padding:6px 0}
+.s2cd-s{font-size:12.5px;color:#d6c3c3}
+body.light .s2cd{background:linear-gradient(180deg,#fff1f1,#fde2e2);border-color:#fca5a5}body.light .s2cd-t div{background:#fff}body.light .s2cd-t b{color:#7f1d1d}body.light .s2cd-s{color:#7f1d1d}body.light .s2cd-k{color:#991b1b}
+</style>
 
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1204,7 +1217,7 @@ const uniq=()=>Object.keys(S.col).length;
 const total=()=>Object.values(S.col).reduce((a,b)=>a+b,0);
 
 /* ---------- notes de mise à jour ---------- */
-const PATCHES=[{"title": "Mise à jour de novembre", "d": "2026-11-22", "v": "nov22", "items": ["Événements automatiques : 32 thèmes qui changent chaque lundi (Ferrari, Porsche, BMW, Roadsters, Années 80, 300 km/h, Corée…), et un calendrier sur 10 semaines", "Légendaire garantie : au plus tard au 50e paquet", "Roue du garage : un tour gratuit par jour", "Livraison surprise : chaque jour à une heure au hasard, 1 heure pour récupérer 2 paquets + 50 pistons", "Cartes numérotées : 100 exemplaires maximum par voiture", "Défis d'ouverture entre amis : le meilleur paquet gagne 100 pistons", "Offrez un paquet à un ami chaque jour", "Parrainage : 1 paquet pour vous et votre ami dès son inscription", "Code du jour publié chaque matin sur le Discord", "12 nouvelles collections : Rois du rallye, Stars de cinéma, Kei cars, Papaya McLaren, Lancer Evolution…", "22 nouveaux succès dans le Palmarès et 18 succès cachés à découvrir", "Garage 3D : votre vitrine en 3D depuis le Profil", "Vrais sons de moteur sur 33 voitures mythiques, anecdotes « Le saviez-vous ? » sur les fiches, partage d'ouverture en image et couleur de l'interface au choix", "Nouveaux en-têtes pour Échanges, Marché, Amis, Écuries, Bataille, Classement, Atelier et Palmarès", "Plus simple : le Musée et l'actualité des amis sont retirés ; l'Encyclopédie reste dans le menu « Plus »"], "sum": "Événements automatiques chaque semaine, roue du garage, livraison surprise, défis entre amis, vrais sons de moteur et bien plus encore."}];
+const PATCHES=[{"title": "La Série 02 arrive", "d": "2026-11-24", "v": "cd02", "sum": "Compte à rebours lancé : la Série 02 sort le dimanche 30 novembre à 21 h.", "items": ["Un compte à rebours sur l'écran des paquets jusqu'à la sortie de la Série 02, le 30 novembre à 21 h"]}];
 const PKEY_SEEN="paddock-patch-seen";
 function patchSeen(){try{return localStorage.getItem(PKEY_SEEN)===PATCHES[0].v}catch(e){return true}}
 function markPatchSeen(){try{localStorage.setItem(PKEY_SEEN,PATCHES[0].v)}catch(e){}}
@@ -1959,8 +1972,15 @@ const PITY_N=50;
 function pityHTML(){if(typeof S.pity!=="number")return"";const n=Math.min(PITY_N-1,Math.max(0,S.pity)),left=PITY_N-n,pct=n/PITY_N*100;
  return`<div class="pity ${left<=5?"hot":""}"><span class="pi">${I.star}</span><div class="grow"><div class="pt"><b>Légendaire garantie${NB()}</b><em>${left===1?"au prochain paquet !":`dans ${left} paquets max.`}</em></div><div class="pb"><i style="width:${pct.toFixed(1)}%"></i></div></div></div>`}
 function heroH(eye,title,sub,stats,after){return`<div class="hhead hx"><div class="heye">${eye}</div><h1>${title}</h1>${sub?`<p>${sub}</p>`:""}${stats&&stats.length?`<div class="hdash">${stats.map(([ic,v,l,hot])=>`<div class="hd${hot?" hot":""}"><div class="hi">${ic}</div><b class="${String(v).length>8?"hl":""}">${v}</b><span>${l}</span></div>`).join("")}</div>`:""}${after?`<div class="hrow">${after}</div>`:""}</div>`}
+// ---------- compte à rebours : sortie de la Série 02 le 30 novembre 2026 à 21 h (heure de Paris) ----------
+const S2_AT=Date.UTC(2026,10,30,20,0,0);
+function s2cdTxt(){const ms=S2_AT-Date.now();if(ms<=0)return null;const s=Math.floor(ms/1000),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),x=s%60,p=n=>String(n).padStart(2,"0");return[[d,"jours"],[p(h),"heures"],[p(m),"min"],[p(x),"sec"]]}
+function s2cdHTML(){if(Date.now()>S2_AT+864e5)return"";const t=s2cdTxt();
+ return`<div class="s2cd" id="s2cd"><div class="s2cd-k">✦ La Série 02 arrive</div><div class="s2cd-t">${t?t.map(([v,l])=>`<div><b>${v}</b><span>${l}</span></div>`).join(""):'<div class="s2cd-now">C\'est l\'heure ! La mise à jour arrive dans quelques instants…</div>'}</div><div class="s2cd-s">Dimanche 30 novembre à 21 h · 2 150 nouvelles voitures, un nouveau paquet et des surprises</div></div>`}
+setInterval(()=>{const el=document.getElementById("s2cd");if(!el)return;const t=s2cdTxt(),bs=el.querySelectorAll(".s2cd-t b");if(t&&bs.length===4)t.forEach(([v],i)=>{if(bs[i].textContent!==String(v))bs[i].textContent=v});else if(!t&&bs.length)el.outerHTML=s2cdHTML()},1000);
 V.packs=()=>{refillPacks();const tz=teaser(),td=tdyList(),nt=td.filter(x=>x.todo).length,fd="";return`${installBar()}<div class="packview hx">
  <div class="heye">Série 01</div><h1>Ouvrir un paquet</h1>
+ ${s2cdHTML()}
  ${dashHTML()}
  <div class="stage"><div class="beam"></div><div class="floor"></div>${tz.map((id,k)=>`<div class="fan f${k+1}" aria-hidden="true">${cardHTML(id,{})}</div>`).join("")}<div class="dust" aria-hidden="true">${DUST}</div>
   <div class="packw"><button class="pack" id="packbtn" data-act="open" ${S.packs?"":"disabled"} aria-label="Ouvrir un paquet">${PACKSVG}<i class="sheen"></i></button></div>
