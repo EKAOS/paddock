@@ -111,7 +111,7 @@
       const [st, sub, lv, ev, , cm, wl, lvl, sec, poll, ext, pity, bonus, numb, social, ach2, sec2, s2p] = res;
       apply(st); // crée S (connexion fraîche : S est null) avant d'y écrire quoi que ce soit
       if (ach2 && typeof ach2 === "object") S.ach2 = ach2;
-      if (s2p && typeof s2p === "object") { S.s2pass = s2p.pass || []; S.flash = { d: parisDay(now()), n: s2p.flash || 0 }; S.s2ach = s2p.ach || []; S.plateDep = s2p.dep || null; S.vint = s2p.vint || {}; S.advB = !!s2p.advb; S.eve = s2p.eve || null; S.streak = s2p.streak || { cur: 0, best: 0 }; }
+      if (s2p && typeof s2p === "object") { S.s2pass = s2p.pass || []; S.flash = { d: parisDay(now()), n: s2p.flash || 0 }; S.s2ach = s2p.ach || []; S.plateDep = s2p.dep || null; S.vint = s2p.vint || {}; S.advB = !!s2p.advb; S.eve = s2p.eve || null; S.streak = s2p.streak || { cur: 0, best: 0 }; S.launch = s2p.launch || null; }
       if (sec2 && typeof sec2 === "object") { if (S.sec2) Object.keys(sec2).forEach(k => { if (!S.sec2[k]) sec2Unlocked(k); }); S.sec2 = sec2; }
       if (Array.isArray(numb)) { S.numb = {}; for (const [id, n] of numb) S.numb[id] = n; }
       if (social && typeof social === "object") S.social = social;
@@ -592,6 +592,9 @@
       const r = await rpc("claim_advent_bonus"); blip(880); S.advB = true;
       if (r.card != null && CARS[r.card]) { U.reveal = packOrder([{ id: r.card, new: r.new, holo: false }]); _go("reveal"); sync().catch(() => {}); }
     }),
+    lchgift: act(async () => { await rpc("claim_launch_gift"); blip(880); toast(`Cadeau de lancement : +${LCH_GIFT} paquets !`); await after(); openTdy("launch"); }),
+    lchleg: act(async () => { const r = await rpc("claim_launch_leg"); blip(880); await after(); if (r && r.card != null && CARS[r.card]) { U.reveal = packOrder([{ id: r.card, new: r.new, holo: false }]); _go("reveal"); } }),
+    lchrank: act(async () => { const r = await rpc("claim_launch_rank"); blip(880); await after(); const l = (r && r.cards) || []; if (l.length) { U.reveal = packOrder(l.map(x => ({ id: x.id, new: x.new, holo: false }))); _go("reveal"); } else toast("Récompense récupérée !"); }),
     s2claimpro: act(async () => { const r = await rpc("claim_s2pass_pro"); S.s2pass = r.claimed || S.s2pass; await after(); blip(880); toast(`Bonus Paddock Pro : +${S2PRO[2]} paquets !`); openTdy("s2p"); }),
     evepack: act(async () => { await rpc("claim_evening"); blip(880); toast("Paquet du soir : +1 paquet !"); await after(); }),
     s2ach: act(async (el, d) => {

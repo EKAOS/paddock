@@ -2217,6 +2217,7 @@ begin
     if v then update inventory set vint = vint + 1 where user_id = u and card_id = c; end if;
     res := res || jsonb_build_array(jsonb_build_object('id', c, 'holo', h, 'vint', v, 'new', isnew));
   end loop;
+  if kind in ('normal', 'pro') then perform _launch_count(u, ids); end if;   -- semaine de lancement de la Série 02
   perform _stat_inc(u, 'packs'); perform _wk_inc(u, 'packs'); perform _comm_inc(u);
   if got_holo then perform _notify(u, 'Vous avez obtenu une carte brillante !'); end if;
   return res;
@@ -2231,6 +2232,8 @@ create table if not exists public.s2_ach (user_id uuid not null references auth.
 alter table public.s2_ach enable row level security;
 alter table public.profiles add column if not exists plate_dep text;
 alter table public.inventory add column if not exists vint int not null default 0;
+create table if not exists public.launch_stats (user_id uuid primary key references auth.users(id) on delete cascade, packs int not null default 0, eve int not null default 0, pts int not null default 0, gift boolean not null default false, leg boolean not null default false, claimed boolean not null default false);
+alter table public.launch_stats enable row level security;
 create table if not exists public.evening_packs (user_id uuid not null references auth.users(id) on delete cascade, day date not null, primary key (user_id, day));
 alter table public.evening_packs enable row level security;
 create table if not exists public.login_streak (user_id uuid primary key references auth.users(id) on delete cascade, last date not null, cur int not null default 1, best int not null default 1);
@@ -2257,7 +2260,8 @@ begin
     'vint', (select coalesce(jsonb_object_agg(card_id::text, least(vint, n)), '{}'::jsonb) from inventory where user_id = u and vint > 0 and n > 0),
     'advb', exists (select 1 from advent_bonus where user_id = u and yr = extract(year from now() at time zone 'Europe/Paris')::int),
     'eve', (select to_char(day, 'YYYY-MM-DD') from evening_packs where user_id = u and day = d),
-    'streak', jsonb_build_object('cur', st.cur, 'best', st.best));
+    'streak', jsonb_build_object('cur', st.cur, 'best', st.best),
+    'launch', _launch_info(u));
 end $$;
 create or replace function public.claim_s2pass(i int) returns jsonb language plpgsql security definer set search_path = public as $$
 declare u uuid := _uid(); need int[] := '{10,25,50,100,175,250,400,600,900,1300}';
@@ -2457,3 +2461,77 @@ create or replace function public.get_streak(name text) returns jsonb language s
 $$;
 revoke all on function public.claim_s2pass_pro(), public.claim_evening(), public.get_streak(text) from public, anon, authenticated;
 grant execute on function public.claim_s2pass_pro(), public.claim_evening(), public.get_streak(text) to authenticated;
+
+
+-- ===== Semaine de lancement de la Série 02 : du 30 novembre 21 h au 7 décembre 21 h (Paris) =====
+-- cadeau de 5 paquets, légendaire pour les 100 premiers à ouvrir 10 paquets le soir de la sortie (21 h - minuit),
+-- classement par points (voitures Série 02 tirées : 1 à 10 points selon la rareté), récompenses du top 10 à la fin
+create or replace function public._launch_on() returns boolean language sql stable as $$ select now() >= '2026-11-30 20:00+00' and now() < '2026-12-07 20:00+00' $$;
+create or replace function public._launch_count(u uuid, ids int[]) returns void language plpgsql security definer set search_path = public as $$
+declare p int;
+begin
+  if not _launch_on() then return; end if;
+  select coalesce(sum(case c.rarity when 'C' then 1 when 'PC' then 1 when 'R' then 2 when 'SR' then 3 when 'UR' then 5 else 10 end), 0) into p
+    from unnest(ids) x(id) join cards c on c.id = x.id where c.id >= 4327;
+  insert into launch_stats(user_id, packs, eve, pts) values (u, 1, case when now() < '2026-11-30 23:00+00' then 1 else 0 end, p)
+  on conflict (user_id) do update set packs = launch_stats.packs + 1, eve = launch_stats.eve + case when now() < '2026-11-30 23:00+00' then 1 else 0 end, pts = launch_stats.pts + p;
+end $$;
+create or replace function public._launch_rank(u uuid) returns int language sql stable security definer set search_path = public as $$
+  select r from (select l.user_id, row_number() over (order by l.pts desc, l.packs desc, l.user_id) r
+                 from launch_stats l join profiles p on p.id = l.user_id where l.pts > 0 and not p.banned) x where x.user_id = u;
+$$;
+create or replace function public._launch_info(u uuid) returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare l launch_stats;
+begin
+  if now() < '2026-11-30 20:00+00' or now() >= '2026-12-31 23:00+00' then return null; end if;
+  select * into l from launch_stats where user_id = u;
+  return jsonb_build_object('gift', coalesce(l.gift, false), 'packs', coalesce(l.packs, 0), 'eve', coalesce(l.eve, 0), 'pts', coalesce(l.pts, 0),
+    'leg', coalesce(l.leg, false), 'claimed', coalesce(l.claimed, false), 'rank', coalesce(_launch_rank(u), 0),
+    'left', greatest(0, 100 - (select count(*) from launch_stats where leg)),
+    'top', coalesce((select jsonb_agg(jsonb_build_object('n', t.username, 'pts', t.pts)) from (
+       select p.username, l2.pts from launch_stats l2 join profiles p on p.id = l2.user_id where l2.pts > 0 and not p.banned
+       order by l2.pts desc, l2.packs desc, l2.user_id limit 10) t), '[]'::jsonb));
+end $$;
+create or replace function public.claim_launch_gift() returns jsonb language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid();
+begin
+  if u is null then raise exception 'Connectez-vous.'; end if;
+  if not _launch_on() then raise exception 'Le cadeau de lancement n''est plus disponible.'; end if;
+  insert into launch_stats(user_id) values (u) on conflict do nothing;
+  update launch_stats set gift = true where user_id = u and not gift;
+  if not found then raise exception 'Cadeau de lancement déjà ouvert.'; end if;
+  update wallets set packs = packs + 5 where user_id = u;
+  return jsonb_build_object('ok', true);
+end $$;
+create or replace function public.claim_launch_leg() returns jsonb language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); c int; isnew boolean;
+begin
+  if u is null then raise exception 'Connectez-vous.'; end if;
+  if not _launch_on() then raise exception 'La semaine de lancement est terminée.'; end if;
+  perform pg_advisory_xact_lock(hashtext('launch_leg'));   -- une seule attribution à la fois, pour ne jamais dépasser 100
+  if (select count(*) from launch_stats where leg) >= 100 then raise exception 'Les 100 légendaires de la soirée ont toutes été gagnées.'; end if;
+  update launch_stats set leg = true where user_id = u and not leg and eve >= 10;
+  if not found then raise exception 'Il faut avoir ouvert 10 paquets le 30 novembre entre 21 h et minuit.'; end if;
+  select id into c from cards where rarity = 'L' and id >= 4327 order by random() limit 1;
+  isnew := _give(u, c, false);
+  return jsonb_build_object('card', c, 'new', isnew);
+end $$;
+create or replace function public.claim_launch_rank() returns jsonb language plpgsql security definer set search_path = public as $$
+declare u uuid := _uid(); r int; nl int; nu int; np int; c int; res jsonb := '[]'::jsonb; i int;
+begin
+  if u is null then raise exception 'Connectez-vous.'; end if;
+  if now() < '2026-12-07 20:00+00' then raise exception 'Le classement se termine le 7 décembre à 21 h.'; end if;
+  if now() >= '2026-12-31 23:00+00' then raise exception 'Les récompenses du lancement ne sont plus disponibles.'; end if;
+  r := _launch_rank(u);
+  if r is null or r > 10 then raise exception 'Seul le top 10 du classement reçoit une récompense.'; end if;
+  update launch_stats set claimed = true where user_id = u and not claimed;
+  if not found then raise exception 'Récompense déjà récupérée.'; end if;
+  if r = 1 then nl := 2; nu := 0; np := 20; elsif r <= 3 then nl := 1; nu := 0; np := 10; else nl := 0; nu := 1; np := 5; end if;
+  update wallets set packs = packs + np where user_id = u;
+  for i in 1..nl loop select id into c from cards where rarity = 'L' and id >= 4327 order by random() limit 1; res := res || jsonb_build_array(jsonb_build_object('id', c, 'new', _give(u, c, false))); end loop;
+  for i in 1..nu loop select id into c from cards where rarity = 'UR' and id >= 4327 order by random() limit 1; res := res || jsonb_build_array(jsonb_build_object('id', c, 'new', _give(u, c, false))); end loop;
+  return jsonb_build_object('rank', r, 'packs', np, 'cards', res);
+end $$;
+revoke all on function public._launch_count(uuid, int[]), public._launch_info(uuid), public._launch_rank(uuid) from public, anon, authenticated;
+revoke all on function public.claim_launch_gift(), public.claim_launch_leg(), public.claim_launch_rank() from public, anon;
+grant execute on function public.claim_launch_gift(), public.claim_launch_leg(), public.claim_launch_rank() to authenticated;
