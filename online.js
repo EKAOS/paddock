@@ -101,6 +101,7 @@
         rpc("get_community").catch(() => null), rpc("get_wish").catch(() => null), rpc("get_level").catch(() => null),
         rpc("get_secrets").catch(() => null), rpc("get_poll").catch(() => undefined), rpc("get_extras").catch(() => null), rpc("get_pity").catch(() => null), rpc("get_bonus").catch(() => null), rpc("get_numbered").catch(() => null), rpc("get_social").catch(() => null), rpc("get_ach2").catch(() => null), rpc("get_secrets2").catch(() => null)]);
       applyAll(res, true);
+      rpc("offer_s1_state").then(v => { S.offs1 = !!v; }).catch(() => {});   // offre de fin de Série 01 (rien ne s'affiche tant que le serveur ne répond pas)
       try { localStorage.setItem(OKEY, JSON.stringify({ t: Date.now(), r: res.slice(0, 8) })); } catch (e) {}
       if (window.OFFLINE) { window.OFFLINE = false; setTimeout(() => toast("De retour en ligne."), 200); }
     } finally { syncing = false; }
@@ -556,6 +557,7 @@
   if ("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message", e => { if (e.data === "open-notifs") { const b = document.querySelector('[data-act="notifs"]'); if (b) b.click(); } });
 
   window.OA = {
+    offbuy: act(async () => { const r = await rpc("claim_offer_s1"); S.offs1 = true; if (r) { if (typeof r.coins === "number") S.coins = r.coins; if (typeof r.packs === "number") S.packs = r.packs; } closeModal(); blip(990, .2); toast(`🎁 +200 paquets ! Bonne ouverture.`); render(); sync().catch(() => {}); }),
     reportgo: act(async (el, d) => {
       const r = (document.querySelector("input[name=rpr]:checked") || {}).value || "autre";
       await rpc("report_user", { name: d.f, reason: r, details: $("#rpd").value.trim() }); closeModal(); toast("Signalement envoyé. Merci, la modération va regarder.");

@@ -24,6 +24,22 @@
 .s2cd-now{grid-column:1/-1;font-weight:700;color:#fff;padding:6px 0}
 .s2cd-s{font-size:12.5px;color:#d6c3c3}
 body.light .s2cd{background:linear-gradient(180deg,#fff1f1,#fde2e2);border-color:#fca5a5}body.light .s2cd-t div{background:#fff}body.light .s2cd-t b{color:#7f1d1d}body.light .s2cd-s{color:#7f1d1d}body.light .s2cd-k{color:#991b1b}
+
+/* offre de fin de Série 01 */
+.offp{position:relative;text-align:center;padding:8px 4px 4px;display:grid;gap:10px}
+.offx{position:absolute;top:-4px;right:-4px}
+.offk{font-size:11px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:#fca5a5}
+.offt{font:800 24px/1.1 var(--f-head)}
+.offbig{display:grid;justify-items:center;padding:18px 0 10px;border-radius:18px;background:radial-gradient(90% 90% at 50% 20%,rgba(245,210,122,.35),transparent 70%),linear-gradient(180deg,#2a1d08,#120d05);border:1px solid rgba(245,210,122,.55);box-shadow:0 0 40px rgba(245,210,122,.2)}
+.offbig b{font:800 76px/1 var(--f-head);background:linear-gradient(180deg,#fff3cf,#e7c47a 55%,#a88a52);-webkit-background-clip:text;background-clip:text;color:transparent;animation:offpulse 1.8s ease-in-out infinite}
+.offbig span{font-size:14px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;color:#f1dcab;margin-top:4px}
+@keyframes offpulse{50%{transform:scale(1.06)}}
+.offpr{font-size:16px}.offpr b{display:inline-flex;align-items:center;gap:4px;color:var(--green)}.offpr svg{width:16px;height:16px}
+.offs{font-size:12.5px;color:var(--muted)}.offs b{color:var(--text)}
+.offgo{font-size:16px;padding:14px}
+.offbar2{display:flex;align-items:center;gap:10px;width:100%;margin:10px 0 2px;padding:11px 14px;border-radius:14px;border:1px solid rgba(245,210,122,.55);background:linear-gradient(135deg,rgba(245,210,122,.2),rgba(245,210,122,.05));color:var(--text);font:inherit;font-size:13.5px;text-align:left;cursor:pointer}
+.offbar2 span{font-size:18px}.offbar2 em{font-style:normal;font-size:12px;font-weight:700;color:var(--green)}
+@media (prefers-reduced-motion:reduce){.offbig b{animation:none}}
 </style>
 
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -1217,7 +1233,7 @@ const uniq=()=>Object.keys(S.col).length;
 const total=()=>Object.values(S.col).reduce((a,b)=>a+b,0);
 
 /* ---------- notes de mise à jour ---------- */
-const PATCHES=[{"title": "La Série 02 arrive", "d": "2026-11-24", "v": "cd02", "sum": "Compte à rebours lancé : la Série 02 sort le dimanche 30 novembre à 21 h.", "items": ["Un compte à rebours sur l'écran des paquets jusqu'à la sortie de la Série 02, le 30 novembre à 21 h"]}];
+const PATCHES=[{"title": "La Série 02 arrive", "d": "2026-11-24", "v": "cd02", "sum": "Compte à rebours lancé : la Série 02 sort le dimanche 30 novembre à 21 h.", "items": ["Un compte à rebours sur l'écran des paquets jusqu'à la sortie de la Série 02, le 30 novembre à 21 h", "Offre exceptionnelle de fin de Série 01 : 200 paquets pour 10 pistons, une fois par compte, jusqu'au 30 novembre à 21 h"]}];
 const PKEY_SEEN="paddock-patch-seen";
 function patchSeen(){try{return localStorage.getItem(PKEY_SEEN)===PATCHES[0].v}catch(e){return true}}
 function markPatchSeen(){try{localStorage.setItem(PKEY_SEEN,PATCHES[0].v)}catch(e){}}
@@ -1966,7 +1982,7 @@ function supportModal(){try{localStorage.setItem("paddock-support",SUPPORT_V)}ca
  <p>Si le jeu vous plaît, la communauté peut nous aider à le garder en ligne : ${canBuy?"en prenant <b>Paddock Pro</b> ou quelques <b>pistons</b>. Chaque achat compte vraiment, et vous recevez des avantages en échange.":"en invitant vos amis et en parlant de Paddock autour de vous."}</p>
  <p class="supt">Merci à toute la communauté ❤️</p>`}
  <div class="stack" style="margin-top:6px">${pro?`<button class="btn green block" data-act="close">Avec plaisir</button>`:canBuy?`<button class="cta whgo" data-act="supshop" data-s="PADDOCK PRO">Découvrir Paddock Pro</button><button class="btn outline-green block" data-act="supshop" data-s="PISTONS">Acheter des pistons</button><button class="btn ghost block" data-act="close">Plus tard</button>`:`<button class="cta whgo" data-act="invite">Inviter des amis</button><button class="btn ghost block" data-act="close">Plus tard</button>`}</div></div>`)}
-setInterval(()=>{try{if(!S||!S.user||S.loggedOut||supportSeen()||!patchPopSeen()||!tutoDone()||document.querySelector(".overlay,#layer .modal,.g3d")||(window.ONLINE&&!S.user.since))return;if(document.querySelector("#layer")&&document.querySelector("#layer").children.length)return;supportModal()}catch(e){}},2500);
+setInterval(()=>{try{if(!S||!S.user||S.loggedOut||supportSeen()||(offOn()&&!offSeenToday())||!patchPopSeen()||!tutoDone()||document.querySelector(".overlay,#layer .modal,.g3d")||(window.ONLINE&&!S.user.since))return;if(document.querySelector("#layer")&&document.querySelector("#layer").children.length)return;supportModal()}catch(e){}},2500);
 setInterval(()=>{try{if(!S||!S.user||patchPopSeen()||!tutoDone()||document.querySelector(".overlay,.g3d")||(document.querySelector("#layer")&&document.querySelector("#layer").children.length))return;patchPop()}catch(e){}},2000);
 const PITY_N=50;
 function pityHTML(){if(typeof S.pity!=="number")return"";const n=Math.min(PITY_N-1,Math.max(0,S.pity)),left=PITY_N-n,pct=n/PITY_N*100;
@@ -1975,12 +1991,25 @@ function heroH(eye,title,sub,stats,after){return`<div class="hhead hx"><div clas
 // ---------- compte à rebours : sortie de la Série 02 le 30 novembre 2026 à 21 h (heure de Paris) ----------
 const S2_AT=Date.UTC(2026,10,30,20,0,0);
 function s2cdTxt(){const ms=S2_AT-Date.now();if(ms<=0)return null;const s=Math.floor(ms/1000),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),x=s%60,p=n=>String(n).padStart(2,"0");return[[d,"jours"],[p(h),"heures"],[p(m),"min"],[p(x),"sec"]]}
+// ---------- offre exceptionnelle de fin de Série 01 : 200 paquets pour 10 pistons, une fois par compte, jusqu'au 30 novembre 21 h ----------
+const OFF_PRICE=10,OFF_PACKS=200;
+const offOn=()=>Date.now()<S2_AT&&!!(S&&S.user)&&(window.ONLINE?S.offs1===false:!S.offs1L);
+function offTxt(){const ms=S2_AT-Date.now(),d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5),m=Math.floor(ms%36e5/6e4);return(d>0?`${d} j ${h} h`:h>0?`${h} h ${String(m).padStart(2,"0")} min`:`${m} min`).replace(/ /g,"\u00a0")}
+function offModal(){try{localStorage.setItem("paddock-offs1",new Date().toDateString())}catch(e){}
+ modal(`<div class="offp"><button class="x offx" data-act="close" aria-label="Fermer">${I.x}</button><div class="offk">Offre exceptionnelle</div><div class="offt">Fin de la Série 01</div>
+ <div class="offbig"><b>200</b><span>paquets</span></div><div class="offpr">pour seulement <b>${coinIc}${OFF_PRICE} pistons</b></div>
+ <div class="offs">Une seule fois par compte · se termine dans <b>${offTxt()}</b>, à la sortie de la Série 02.</div>
+ <button class="btn green block offgo" data-act="offbuy" ${S.coins<OFF_PRICE?"disabled":""}>${S.coins<OFF_PRICE?`Il vous faut ${OFF_PRICE} pistons`:"J'en profite !"}</button><button class="btn ghost block" data-act="close">Plus tard</button></div>`)}
+setInterval(()=>{try{if(!offOn()||S.loggedOut||!tutoDone()||!patchPopSeen()||document.querySelector(".overlay,#layer .modal,.g3d"))return;if(document.querySelector("#layer")&&document.querySelector("#layer").children.length)return;
+ if(offSeenToday())return;offModal()}catch(e){}},2000);
+function offSeenToday(){try{return localStorage.getItem("paddock-offs1")===new Date().toDateString()}catch(e){return true}}
 function s2cdHTML(){if(Date.now()>S2_AT+864e5)return"";const t=s2cdTxt();
  return`<div class="s2cd" id="s2cd"><div class="s2cd-k">✦ La Série 02 arrive</div><div class="s2cd-t">${t?t.map(([v,l])=>`<div><b>${v}</b><span>${l}</span></div>`).join(""):'<div class="s2cd-now">C\'est l\'heure ! La mise à jour arrive dans quelques instants…</div>'}</div><div class="s2cd-s">Dimanche 30 novembre à 21 h · 2 150 nouvelles voitures, un nouveau paquet et des surprises</div></div>`}
 setInterval(()=>{const el=document.getElementById("s2cd");if(!el)return;const t=s2cdTxt(),bs=el.querySelectorAll(".s2cd-t b");if(t&&bs.length===4)t.forEach(([v],i)=>{if(bs[i].textContent!==String(v))bs[i].textContent=v});else if(!t&&bs.length)el.outerHTML=s2cdHTML()},1000);
 V.packs=()=>{refillPacks();const tz=teaser(),td=tdyList(),nt=td.filter(x=>x.todo).length,fd="";return`${installBar()}<div class="packview hx">
  <div class="heye">Série 01</div><h1>Ouvrir un paquet</h1>
  ${s2cdHTML()}
+ ${offOn()?`<button class="offbar2" data-act="offopen"><span>🎁</span><b class="grow">Offre de fin de Série 01 : 200 paquets pour 10 pistons</b><em>Voir</em></button>`:""}
  ${dashHTML()}
  <div class="stage"><div class="beam"></div><div class="floor"></div>${tz.map((id,k)=>`<div class="fan f${k+1}" aria-hidden="true">${cardHTML(id,{})}</div>`).join("")}<div class="dust" aria-hidden="true">${DUST}</div>
   <div class="packw"><button class="pack" id="packbtn" data-act="open" ${S.packs?"":"disabled"} aria-label="Ouvrir un paquet">${PACKSVG}<i class="sheen"></i></button></div>
@@ -2503,7 +2532,7 @@ document.addEventListener("click",e=>{
  if(a==="closebg"&&e.target!==el)return;
  e.stopPropagation();
  if(window.OA&&OA[a]){OA[a](el,d,e);return}
- const H={
+ const H={offopen:()=>offModal(),offbuy:()=>{if(!offOn()||S.coins<OFF_PRICE)return;S.coins-=OFF_PRICE;S.packs+=OFF_PACKS;S.offs1L=true;save();closeModal();blip(990,.2);toast(`🎁 +${OFF_PACKS} paquets ! Bonne ouverture.`);render()},
  go:()=>{closeModal();go(d.v)},
  close:closeModal,closebg:closeModal,
  more:()=>{const G=[["Moi",[["profile","Profil",I.user],["shop","Boutique",I.coins],["ranking","Classement",I.medal]]],["Social",[["friends","Amis",I.users],["messages","Messages",I.chat],["guild","Écurie",I.flag]]],["Jeu",[["battle","Bataille",I.swords],["atelier","Atelier",I.tool],["encyclo","Encyclopédie",I.book],["all","Toutes les cartes",I.globe],["stats","Statistiques",I.chart],["achievements","Palmarès",I.trophy]]],["Réglages et communauté",[["settings","Paramètres",I.gear],...(isMod(S.user.name)?[["mod","Modération",I.shield]]:[])]]];
