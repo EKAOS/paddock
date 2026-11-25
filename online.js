@@ -750,6 +750,11 @@
     claim2: act(async (el, d) => { const n = await rpc("claim_ach2", { ak: d.k }); toast(`+${n} pistons`); blip(880, .12); await after(); }),
     claim: act(async (el, d) => { const n = await rpc("claim_ach", { i: +d.i }); toast(`+${n} pistons`); await after(); }),
     brandclaim: act(async (el, d) => { const n = await rpc("claim_brand", { b: d.b }); toast(`Marque ${d.b} complétée : +${n} pistons`); await after(); }),
+    fuseall: act(async (el) => {
+      el.disabled = true; el.textContent = "Fusion en cours…"; const got = [], fresh = [];
+      for (const r of FUSE_RS) { for (let g = 0; g < 200; g++) { let x; try { x = await rpc("fuse", { r }); } catch (e) { break; } if (!x || x.id == null) break; got.push(x.id); fresh.push(!!x.new); } }
+      await sync(); closeModal(); if (!got.length) return toast("Pas assez de doublons pour fusionner."); fuseAllDone(got, fresh);
+    }),
     fusego: act(async (el, d) => {
       const r = await rpc("fuse", { r: d.r }); blip(900, .25); await sync();
       modal(`<h2><span>Fusion réussie</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2>${cardHTML(r.id, { big: true, isnew: r.new })}<button class="btn green block" style="margin-top:14px" data-act="fuse">Continuer</button>`); render(true);
