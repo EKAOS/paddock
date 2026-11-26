@@ -40,6 +40,11 @@ body.light .s2cd{background:linear-gradient(180deg,#fff1f1,#fde2e2);border-color
 .offbar2{display:flex;align-items:center;gap:10px;width:100%;margin:10px 0 2px;padding:11px 14px;border-radius:14px;border:1px solid rgba(245,210,122,.55);background:linear-gradient(135deg,rgba(245,210,122,.2),rgba(245,210,122,.05));color:var(--text);font:inherit;font-size:13.5px;text-align:left;cursor:pointer}
 .offbar2 span{font-size:18px}.offbar2 em{font-style:normal;font-size:12px;font-weight:700;color:var(--green)}
 @media (prefers-reduced-motion:reduce){.offbig b{animation:none}}
+
+/* achat d'une carte manquante */
+.buyb{display:grid;gap:8px;padding:12px;border-radius:14px;border:1px solid rgba(207,178,122,.45);background:linear-gradient(135deg,rgba(207,178,122,.12),rgba(207,178,122,.03));margin-bottom:4px}
+.buyh{display:flex;align-items:center;justify-content:space-between;gap:10px}.buyh b{font-size:14px}.buyh span{display:flex;align-items:center;gap:4px;font-weight:800;color:var(--green)}.buyh svg{width:15px;height:15px}
+.buyb .linkbtn{justify-self:center;font-size:13px}
 </style>
 
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -1233,7 +1238,7 @@ const uniq=()=>Object.keys(S.col).length;
 const total=()=>Object.values(S.col).reduce((a,b)=>a+b,0);
 
 /* ---------- notes de mise à jour ---------- */
-const PATCHES=[{"title": "La Série 02 arrive", "d": "2026-11-24", "v": "cd02", "sum": "Compte à rebours lancé : la Série 02 sort le dimanche 30 novembre à 21 h.", "items": ["Un compte à rebours sur l'écran des paquets jusqu'à la sortie de la Série 02, le 30 novembre à 21 h", "Offre exceptionnelle de fin de Série 01 : 200 paquets pour 10 pistons, une fois par compte, jusqu'au 30 novembre à 21 h"]}];
+const PATCHES=[{"title": "La Série 02 arrive", "d": "2026-11-24", "v": "cd02", "sum": "Compte à rebours lancé : la Série 02 sort le dimanche 30 novembre à 21 h.", "items": ["Un compte à rebours sur l'écran des paquets jusqu'à la sortie de la Série 02, le 30 novembre à 21 h", "Offre exceptionnelle de fin de Série 01 : 200 paquets pour 10 pistons, une fois par compte, jusqu'au 30 novembre à 21 h", "Achetez les voitures qui vous manquent : 2 500 pistons la carte, depuis sa fiche"]}];
 const PKEY_SEEN="paddock-patch-seen";
 function patchSeen(){try{return localStorage.getItem(PKEY_SEEN)===PATCHES[0].v}catch(e){return true}}
 function markPatchSeen(){try{localStorage.setItem(PKEY_SEEN,PATCHES[0].v)}catch(e){}}
@@ -2445,6 +2450,13 @@ V.pcol=()=>{const P=U.pcol;if(!P)return"";const F=P;const own=Object.keys(P.card
  :`<div class="panel empty">${I.book}<b>Aucune carte ne correspond</b>Essayez un autre filtre.</div>`}`};
 function openProfile(n){if(!n)return;if(S.user&&n===S.user.name){closeModal();go("profile");return}
  if(window.OP)return OP(n);if(!S.fc[n])S.fc[n]=Array.from({length:40},()=>drawId(0));modal(profileHTML(demoProfile(n)))}
+// ---------- acheter une carte qui manque : 2 500 pistons, quelle que soit la rareté ----------
+const BUY_PRICE=2500;
+const buyOn=()=>window.ONLINE?S.buyOk===true:true;
+function buyBox(id){if(!buyOn()||S.col[id])return"";const ok=S.coins>=BUY_PRICE,cf=U.buyConf===id;
+ return`<div class="buyb"><div class="buyh"><b>Acheter cette carte${NB()}</b><span>${coinIc}${fmt(BUY_PRICE)}</span></div>${ok?(cf?`<button class="btn green block" data-act="buyok" data-id="${id}">Confirmer : payer ${fmt(BUY_PRICE)} pistons</button><button class="linkbtn" data-act="buyno" data-id="${id}">Annuler</button>`:`<button class="btn green block" data-act="buycard" data-id="${id}">Acheter pour ${fmt(BUY_PRICE)} pistons</button>`):`<button class="btn ghost block" disabled>Il vous manque ${fmt(BUY_PRICE-S.coins)} pistons</button><button class="linkbtn" data-act="go" data-v="shop">Obtenir des pistons</button>`}</div>`}
+function buyDone(id,isNew){U.buyConf=null;blip(990,.2);[660,880,1100].forEach((f,i)=>setTimeout(()=>blip(f,.1),i*110));
+ modal(`<h2><span>Carte achetée !</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2>${cardHTML(id,{big:true,isnew:isNew})}<p style="text-align:center;color:var(--muted)">${esc(CARS[id].n)} rejoint votre collection.</p><button class="btn green block" data-act="close">Super !</button>`);render()}
 function cardModal(id,mode){const c=CARS[id];const n=S.col[id]||0;const inWish=S.wish.includes(id);
  modal(`<h2><span>${RNAME[c.r]}</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2>${cardHTML(id,{big:true,own:true})}
  ${c.th?(IMGMODE==="url"?`<div class="credit">Photo : ${esc(c.art||"auteur inconnu")} · ${esc(c.lic)} · <a href="${esc(c.fp)}" target="_blank" rel="noopener">Wikimedia Commons</a></div>`:`<div class="credit"><a href="${esc(c.fp)}" target="_blank" rel="noopener">Voir la photo sur Wikimedia Commons</a> · ${esc(c.art||"auteur inconnu")} · ${esc(c.lic)}</div>`):""}
@@ -2452,7 +2464,7 @@ function cardModal(id,mode){const c=CARS[id];const n=S.col[id]||0;const inWish=S
  ${SNDMAP[id]!=null?`<button class="btn ghost block enb" data-act="engine" data-id="${id}"><span class="enl">🔊 Écouter le moteur</span>${NB()}</button><div class="encr">Vrai son${SND[SNDMAP[id]].r!==c.n?` : ${esc(SND[SNDMAP[id]].r)}`:""} · ${esc(SND[SNDMAP[id]].by)} · ${esc(SND[SNDMAP[id]].lic)} · <a href="${esc(SND[SNDMAP[id]].p)}" target="_blank" rel="noopener">Wikimedia Commons</a></div>`:""}${factsHTML(id)}
  ${c.wt?`<div style="text-align:center;margin-bottom:12px"><a class="linkbtn" style="text-decoration:none" href="https://${c.wiki}.wikipedia.org/wiki/${encodeURIComponent(c.wt.replace(/ /g,"_"))}" target="_blank" rel="noopener">Lire l'article Wikipédia</a></div>`:""}
  ${n&&signedOf(id)?`<div style="text-align:center;color:#fde68a;margin:-4px 0 12px">✍ Exemplaire signé par ${SIGNERS[id%SIGNERS.length]}${signedOf(id)>1?` (×${signedOf(id)})`:""}</div>`:""}${RECORDS[id]?`<div class="recline">🏆 ${esc(RECORDS[id])}</div>`:""}<div id="cotebox">${coteHTML(id)}</div>
- ${n?upBox(id):""}<div class="stack"><button class="btn outline-green" data-act="sharec" data-id="${id}">${I.link} Partager la carte</button>${n?`<button class="btn ghost" data-act="favm" data-id="${id}">${S.fav.includes(id)?"Retirer des favorites":"Ajouter aux favorites"}</button><button class="btn outline-green" data-act="sellid" data-id="${id}">Mettre en vente au marché</button>`:`<button class="btn ${inWish?"ghost":"green"}" data-act="wishm" data-id="${id}">${inWish?"Retirer de la liste de souhaits":"Ajouter à la liste de souhaits"}</button><div style="color:var(--muted);font-size:13px;text-align:center">Vous recevrez une notification dès qu'elle sera mise en vente au marché.</div>`}</div>`)}
+ ${n?upBox(id):""}<div class="stack"><button class="btn outline-green" data-act="sharec" data-id="${id}">${I.link} Partager la carte</button>${n?`<button class="btn ghost" data-act="favm" data-id="${id}">${S.fav.includes(id)?"Retirer des favorites":"Ajouter aux favorites"}</button><button class="btn outline-green" data-act="sellid" data-id="${id}">Mettre en vente au marché</button>`:`${buyBox(id)}<button class="btn ${inWish?"ghost":"green"}" data-act="wishm" data-id="${id}">${inWish?"Retirer de la liste de souhaits":"Ajouter à la liste de souhaits"}</button><div style="color:var(--muted);font-size:13px;text-align:center">Vous recevrez une notification dès qu'elle sera mise en vente au marché.</div>`}</div>`)}
 /* ---------- partage d'une carte : belle image (format 4:5 pour Insta, Snap, TikTok) + lien vers paddock.click ---------- */
 const shareLink=()=>{const b=siteBase()||"https://paddock.click/";return S&&S.user?inviteLink(myInvite()):b};
 function loadImg(src,cors){return new Promise((ok,ko)=>{const im=new Image();if(cors)im.crossOrigin="anonymous";im.referrerPolicy="no-referrer";im.onload=()=>ok(im);im.onerror=ko;im.src=src;setTimeout(()=>ko(new Error("délai")),9000)})}
@@ -2532,7 +2544,7 @@ document.addEventListener("click",e=>{
  if(a==="closebg"&&e.target!==el)return;
  e.stopPropagation();
  if(window.OA&&OA[a]){OA[a](el,d,e);return}
- const H={offopen:()=>offModal(),offbuy:()=>{if(!offOn()||S.coins<OFF_PRICE)return;S.coins-=OFF_PRICE;S.packs+=OFF_PACKS;S.offs1L=true;save();closeModal();blip(990,.2);toast(`🎁 +${OFF_PACKS} paquets ! Bonne ouverture.`);render()},
+ const H={buycard:()=>{U.buyConf=+d.id;cardModal(+d.id)},buyno:()=>{U.buyConf=null;cardModal(+d.id)},buyok:()=>{const id=+d.id;if(S.col[id]||S.coins<BUY_PRICE)return;S.coins-=BUY_PRICE;const nw=!S.col[id];own(id);save();buyDone(id,nw)},offopen:()=>offModal(),offbuy:()=>{if(!offOn()||S.coins<OFF_PRICE)return;S.coins-=OFF_PRICE;S.packs+=OFF_PACKS;S.offs1L=true;save();closeModal();blip(990,.2);toast(`🎁 +${OFF_PACKS} paquets ! Bonne ouverture.`);render()},
  go:()=>{closeModal();go(d.v)},
  close:closeModal,closebg:closeModal,
  more:()=>{const G=[["Moi",[["profile","Profil",I.user],["shop","Boutique",I.coins],["ranking","Classement",I.medal]]],["Social",[["friends","Amis",I.users],["messages","Messages",I.chat],["guild","Écurie",I.flag]]],["Jeu",[["battle","Bataille",I.swords],["atelier","Atelier",I.tool],["encyclo","Encyclopédie",I.book],["all","Toutes les cartes",I.globe],["stats","Statistiques",I.chart],["achievements","Palmarès",I.trophy]]],["Réglages et communauté",[["settings","Paramètres",I.gear],...(isMod(S.user.name)?[["mod","Modération",I.shield]]:[])]]];
