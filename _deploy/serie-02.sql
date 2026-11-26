@@ -2151,12 +2151,14 @@ insert into public.cards(id, rarity, brand, hp, vmax, y1, body, rk, name) values
 (6475,'C','Gumpert',282,268,2021,'k',1423,'Gumpert Nathalie'),
 (6476,'C','HSV',306,277,1990,'b',1424,'HSV ClubSport')
 on conflict (id) do update set rarity = excluded.rarity, brand = excluded.brand, hp = excluded.hp, vmax = excluded.vmax, y1 = excluded.y1, body = excluded.body, rk = excluded.rk, name = excluded.name;
+-- percentiles de puissance et de vitesse (utilisés par la Bataille) recalculés avec les nouvelles voitures, comme pour les anciennes
+update public.cards c set php = x.a, pv = x.b from (select id, percent_rank() over (order by hp) a, percent_rank() over (order by vmax) b from public.cards) x where c.id = x.id;
 
 -- Paquets : 35 % de chances par carte d'être une voiture de la Série 02 (même rareté)
 -- Reprise de open_pack de la mise à jour de novembre (vérifier qu'elle n'a pas changé depuis avant de lancer)
 create or replace function public.open_pack(kind text default 'normal') returns jsonb language plpgsql security definer set search_path = public as $$
 declare u uuid := _uid(); w wallets; pro boolean := _is_pro(u); n int; ids int[] := '{}'; t int := _ev_theme();
-        c int; h boolean; v boolean; i int; res jsonb := '[]'::jsonb; isnew boolean; got_holo boolean := false;
+        c int; h boolean; v boolean; i int; res jsonb := '[]'::jsonb; isnew boolean; got_holo boolean := false; num int;
 begin
   perform _sync_packs(u);
   select * into w from wallets where user_id = u for update;
@@ -2215,7 +2217,16 @@ begin
     isnew := _give(u, c, h);
     v := not h and random() < 0.02;   -- carte vintage : 1 chance sur 50 (jamais en même temps que brillante)
     if v then update inventory set vint = vint + 1 where user_id = u and card_id = c; end if;
-    res := res || jsonb_build_array(jsonb_build_object('id', c, 'holo', h, 'vint', v, 'new', isnew));
+    -- carte numérotée : 1 chance sur 200, 100 exemplaires numérotés au maximum par voiture (repris de la version en ligne)
+    num := null;
+    if random() < 0.005 then
+      select coalesce(max(serial), 0) + 1 into num from numbered where card_id = c;
+      if num <= 100 then
+        insert into numbered(card_id, serial, user_id) values (c, num, u) on conflict do nothing;
+        perform _notify(u, 'Incroyable : vous avez obtenu une carte numérotée N° ' || num || ' / 100 !');
+      else num := null; end if;
+    end if;
+    res := res || jsonb_build_array(jsonb_build_object('id', c, 'holo', h, 'vint', v, 'new', isnew) || case when num is null then '{}'::jsonb else jsonb_build_object('num', num) end);
   end loop;
   if kind in ('normal', 'pro') then perform _launch_count(u, ids); end if;   -- semaine de lancement de la Série 02
   perform _stat_inc(u, 'packs'); perform _wk_inc(u, 'packs'); perform _comm_inc(u);
@@ -2409,13 +2420,14 @@ begin
   else
     select id into c from cards where rarity = r[1] and id >= 4327 order by random() limit 1;
     if c is null then select id into c from cards where rarity = r[1] order by random() limit 1; end if;
-    isnew := _give(u, c, false);
+    -- le 24 : une légendaire signée (comme avant)
+    if r[1] = 'L' then isnew := _give_signed(u, c); else isnew := _give(u, c, false); end if;
     if mx = 2 then
       select id into c2 from cards where rarity = r[1] and id >= 4327 order by random() limit 1;
       isnew2 := _give(u, c2, false);
-      return jsonb_build_object('day', d, 'card', c, 'new', isnew, 'card2', c2, 'new2', isnew2);
+      return jsonb_build_object('day', d, 'card', c, 'new', isnew, 'signed', r[1] = 'L', 'card2', c2, 'new2', isnew2);
     end if;
-    return jsonb_build_object('day', d, 'card', c, 'new', isnew);
+    return jsonb_build_object('day', d, 'card', c, 'new', isnew, 'signed', r[1] = 'L');
   end if;
 end $$;
 create or replace function public.claim_advent_bonus() returns jsonb language plpgsql security definer set search_path = public as $$
