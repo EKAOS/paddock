@@ -101,6 +101,7 @@
         rpc("get_community").catch(() => null), rpc("get_wish").catch(() => null), rpc("get_level").catch(() => null),
         rpc("get_secrets").catch(() => null), rpc("get_poll").catch(() => undefined), rpc("get_extras").catch(() => null), rpc("get_pity").catch(() => null), rpc("get_bonus").catch(() => null), rpc("get_numbered").catch(() => null), rpc("get_social").catch(() => null), rpc("get_ach2").catch(() => null), rpc("get_secrets2").catch(() => null), rpc("get_s2pass").catch(() => null)]);
       applyAll(res, true);
+      if (S.buyOk !== true) rpc("buy_card_price").then(v => { S.buyOk = v === 2500; }).catch(() => {});   // achat de cartes (caché tant que le serveur ne répond pas)   // offre de fin de Série 01 (rien ne s'affiche tant que le serveur ne répond pas)
       try { localStorage.setItem(OKEY, JSON.stringify({ t: Date.now(), r: res.slice(0, 8) })); } catch (e) {}
       if (window.OFFLINE) { window.OFFLINE = false; setTimeout(() => toast("De retour en ligne."), 200); }
     } finally { syncing = false; }
@@ -567,6 +568,7 @@
     } catch (x) {}
   };
   window.OA = {
+    buyok: act(async (el, d) => { const id = +d.id; el.disabled = true; const r = await rpc("buy_card", { id }); if (r && typeof r.coins === "number") S.coins = r.coins; S.col[id] = (S.col[id] || 0) + 1; buyDone(id, !!(r && r.new)); sync().catch(() => {}); }),
     reportgo: act(async (el, d) => {
       const r = (document.querySelector("input[name=rpr]:checked") || {}).value || "autre";
       await rpc("report_user", { name: d.f, reason: r, details: $("#rpd").value.trim() }); closeModal(); toast("Signalement envoyé. Merci, la modération va regarder.");
