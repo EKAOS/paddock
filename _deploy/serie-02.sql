@@ -2538,3 +2538,16 @@ end $$;
 revoke all on function public._launch_count(uuid, int[]), public._launch_info(uuid), public._launch_rank(uuid) from public, anon, authenticated;
 revoke all on function public.claim_launch_gift(), public.claim_launch_leg(), public.claim_launch_rank() from public, anon;
 grant execute on function public.claim_launch_gift(), public.claim_launch_leg(), public.claim_launch_rank() to authenticated;
+
+
+-- ===== Collection complète : Série 01 (cartes 0 à 4326) et Série 02 (4327 et plus) — cadre d'avatar animé et badge visibles par tous =====
+create or replace function public.get_complete(name text) returns jsonb language sql stable security definer set search_path = public as $$
+  with u as (select p.id from profiles p where lower(p.username) = lower(name) and not p.banned limit 1),
+       o as (select i.card_id from inventory i join u on i.user_id = u.id where i.n > 0)
+  select jsonb_build_object(
+    's1', (select count(*) from o where card_id < 4327) >= (select count(*) from cards where id < 4327),
+    's2', (select count(*) from o where card_id >= 4327) >= (select count(*) from cards where id >= 4327))
+  where exists (select 1 from u);
+$$;
+revoke all on function public.get_complete(text) from public, anon;
+grant execute on function public.get_complete(text) to authenticated;

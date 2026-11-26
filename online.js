@@ -509,7 +509,8 @@
   window.OP = async n => {
     modal(`<div class="pp"><h2><span>Profil</span><button class="x" data-act="close" aria-label="Fermer">${I.x}</button></h2><div class="spin"></div></div>`);
     try {
-      const [r, dep, st] = await Promise.all([rpc("get_profile", { name: n }), rpc("get_plate_dep", { name: n }).catch(() => null), rpc("get_streak", { name: n }).catch(() => null)]);
+      const [r, dep, st, cp] = await Promise.all([rpc("get_profile", { name: n }), rpc("get_plate_dep", { name: n }).catch(() => null), rpc("get_streak", { name: n }).catch(() => null), rpc("get_complete", { name: n }).catch(() => null)]);
+      if (r && cp) r.comp = cp;
       if (r && dep) r.dep = dep;
       if (r && st) r.strk = st;
       const name = absorb(r.u) || n;
