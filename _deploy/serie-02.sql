@@ -2563,3 +2563,11 @@ create or replace function public.get_complete(name text) returns jsonb language
 $$;
 revoke all on function public.get_complete(text) from public, anon;
 grant execute on function public.get_complete(text) to authenticated;
+
+-- ===== Correctif : plus de notification sur le téléphone pour les actions que le joueur fait lui-même (à chaque connexion) =====
+create or replace function public._push_on_notify() returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is not distinct from new.user_id then return new; end if;
+  perform _push_send(new.user_id, new.body);
+  return new;
+end $$;
